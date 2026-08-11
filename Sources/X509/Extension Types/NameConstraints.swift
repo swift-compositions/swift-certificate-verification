@@ -666,16 +666,21 @@ public struct NameConstraints {
     ///     `ISO_8824.ObjectIdentifier.X509ExtensionID.nameConstraints`.
     @inlinable
     @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
-    public init(_ ext: Certificate.Extension) throws {
+    public init(_ ext: Certificate.Extension) throws(Certificate.Error) {
         guard ext.oid == .X509ExtensionID.nameConstraints else {
             throw Certificate.Error.extension(
                 .incorrectOID(expected: .X509ExtensionID.nameConstraints, found: ext.oid)
             )
         }
 
-        let nameConstraintsValue = try NameConstraintsValue(derEncoded: ext.value)
-        guard nameConstraintsValue.permittedSubtrees != nil || nameConstraintsValue.excludedSubtrees != nil else {
-            throw ISO_8824.Error.invalidASN1Object(reason: "Name Constraints has no permitted or excluded subtrees")
+        let nameConstraintsValue: NameConstraintsValue
+        do throws(ISO_8824.Error) {
+            nameConstraintsValue = try NameConstraintsValue(derEncoded: ext.value)
+            guard nameConstraintsValue.permittedSubtrees != nil || nameConstraintsValue.excludedSubtrees != nil else {
+                throw ISO_8824.Error.invalidASN1Object(reason: "Name Constraints has no permitted or excluded subtrees")
+            }
+        } catch {
+            throw Certificate.Error.asn1(error.code)
         }
 
         self.permittedSubtrees = nameConstraintsValue.permittedSubtrees ?? []
@@ -733,7 +738,7 @@ extension Certificate.Extension {
     ///   - nameConstraints: The extension to wrap
     ///   - critical: Whether this extension should have the critical bit set.
     @inlinable
-    public init(_ nameConstraints: NameConstraints, critical: Bool) throws {
+    public init(_ nameConstraints: NameConstraints, critical: Bool) throws(ISO_8824.Error) {
         let asn1Representation = NameConstraintsValue(nameConstraints)
         var serializer = ISO_8825.DER.Serializer()
         try serializer.serialize(asn1Representation)

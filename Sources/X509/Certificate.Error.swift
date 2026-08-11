@@ -12,6 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+import ISO_8824
+
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension Certificate {
     /// A failure condition raised by the certificate model surfaces.
@@ -27,5 +29,8 @@ extension Certificate {
 
         /// An extension whose OID usage is invalid.
         case `extension`(Extension)
+
+        /// ASN.1 data that cannot represent the requested certificate model value.
+        case asn1(ISO_8824.Error.Code)
     }
 }

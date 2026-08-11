@@ -58,15 +58,7 @@ public struct RelativeDistinguishedName {
 
     @inlinable
     package init(_ attributes: ISO_8825.DER.LazySetOfSequence<Attribute>) throws(ISO_8824.Error) {
-        // _TinyArray's Result-sequence init is untyped `throws`; the LazySetOfSequence
-        // only ever surfaces ISO_8824.Error, so re-throw it unwrapped (preserving detail).
-        do {
-            self.attributes = try .init(attributes)
-        } catch let error as ISO_8824.Error {
-            throw error
-        } catch {
-            throw ISO_8824.Error.invalidASN1Object(reason: "\(error)")
-        }
+        self.attributes = try .init(attributes)
         Self._sortElements(&self.attributes)
     }
 
@@ -136,7 +128,9 @@ extension RelativeDistinguishedName: RandomAccessCollection {
     ///   ``RelativeDistinguishedName`` as its argument and returns a Boolean value indicating
     ///   whether the ``Attribute`` should be removed from the ``RelativeDistinguishedName``.
     @inlinable
-    public mutating func removeAll(where shouldBeRemoved: (Attribute) throws -> Bool) rethrows {
+    public mutating func removeAll<Failure: Swift.Error>(
+        where shouldBeRemoved: (Attribute) throws(Failure) -> Bool
+    ) throws(Failure) {
         try self.attributes.removeAll(where: shouldBeRemoved)
         // removing elements doesn't change the order and therefore sorting is not required
     }

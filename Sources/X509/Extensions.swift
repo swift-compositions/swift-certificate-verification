@@ -64,7 +64,8 @@ extension Certificate {
         /// - Parameter extensions: The base extensions.
         /// - Throws: if multiple extensions have the same OID
         @inlinable
-        public init<Elements>(_ extensions: Elements) throws where Elements: Sequence, Elements.Element == Extension {
+        public init<Elements>(_ extensions: Elements) throws(Certificate.Error)
+        where Elements: Sequence, Elements.Element == Extension {
             self._extensions = Array(extensions)
 
             // This limit is somewhat arbitrary. Linear search for under 32 elements
@@ -74,9 +75,8 @@ extension Certificate {
             // This can be used for DoS attacks so we have added this limit.
             let maxExtensions = 32
             guard self._extensions.count <= maxExtensions else {
-                throw ISO_8824.Error.invalidASN1Object(
-                    reason:
-                        "Too many extensions. Found \(self._extensions.count) but only \(maxExtensions) are allowed."
+                throw Certificate.Error.extension(
+                    .tooManyExtensions(found: self._extensions.count, maximum: maxExtensions)
                 )
             }
 
@@ -212,7 +212,7 @@ extension Certificate.Extensions {
     /// Throws if it is not possible to decode the AIA extension.
     @inlinable
     public var authorityInformationAccess: AuthorityInformationAccess? {
-        get throws {
+        get throws(Certificate.Error) {
             try self[oid: .X509ExtensionID.authorityInformationAccess].map { try .init($0) }
         }
     }
@@ -223,7 +223,7 @@ extension Certificate.Extensions {
     /// Throws if it is not possible to decode the SKI extension.
     @inlinable
     public var subjectKeyIdentifier: SubjectKeyIdentifier? {
-        get throws {
+        get throws(Certificate.Error) {
             try self[oid: .X509ExtensionID.subjectKeyIdentifier].map { try .init($0) }
         }
     }
@@ -234,7 +234,7 @@ extension Certificate.Extensions {
     /// Throws if it is not possible to decode the AKI extension.
     @inlinable
     public var authorityKeyIdentifier: AuthorityKeyIdentifier? {
-        get throws {
+        get throws(Certificate.Error) {
             try self[oid: .X509ExtensionID.authorityKeyIdentifier].map { try .init($0) }
         }
     }
@@ -245,7 +245,7 @@ extension Certificate.Extensions {
     /// Throws if it is not possible to decode the EKU extension.
     @inlinable
     public var extendedKeyUsage: ExtendedKeyUsage? {
-        get throws {
+        get throws(Certificate.Error) {
             try self[oid: .X509ExtensionID.extendedKeyUsage].map { try .init($0) }
         }
     }
@@ -256,7 +256,7 @@ extension Certificate.Extensions {
     /// Throws if it is not possible to decode the basic constraints extension.
     @inlinable
     public var basicConstraints: BasicConstraints? {
-        get throws {
+        get throws(Certificate.Error) {
             try self[oid: .X509ExtensionID.basicConstraints].map { try .init($0) }
         }
     }
@@ -267,7 +267,7 @@ extension Certificate.Extensions {
     /// Throws if it is not possible to decode the key usage extension.
     @inlinable
     public var keyUsage: KeyUsage? {
-        get throws {
+        get throws(Certificate.Error) {
             try self[oid: .X509ExtensionID.keyUsage].map { try .init($0) }
         }
     }
@@ -278,7 +278,7 @@ extension Certificate.Extensions {
     /// Throws if it is not possible to decode the name constraints extension.
     @inlinable
     public var nameConstraints: NameConstraints? {
-        get throws {
+        get throws(Certificate.Error) {
             try self[oid: .X509ExtensionID.nameConstraints].map { try .init($0) }
         }
     }
@@ -289,7 +289,7 @@ extension Certificate.Extensions {
     /// Throws if it is not possible to decode the SAN extension.
     @inlinable
     public var subjectAlternativeNames: SubjectAlternativeNames? {
-        get throws {
+        get throws(Certificate.Error) {
             try self[oid: .X509ExtensionID.subjectAlternativeName].map { try .init($0) }
         }
     }

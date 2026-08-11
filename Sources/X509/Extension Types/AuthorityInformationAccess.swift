@@ -47,14 +47,19 @@ public struct AuthorityInformationAccess {
     ///     `ISO_8824.ObjectIdentifier.X509ExtensionID.authorityInformationAccess`.
     @inlinable
     @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
-    public init(_ ext: Certificate.Extension) throws {
+    public init(_ ext: Certificate.Extension) throws(Certificate.Error) {
         guard ext.oid == .X509ExtensionID.authorityInformationAccess else {
             throw Certificate.Error.extension(
                 .incorrectOID(expected: .X509ExtensionID.authorityInformationAccess, found: ext.oid)
             )
         }
 
-        let aiaSyntax = try AuthorityInfoAccessSyntax(derEncoded: ext.value)
+        let aiaSyntax: AuthorityInfoAccessSyntax
+        do throws(ISO_8824.Error) {
+            aiaSyntax = try AuthorityInfoAccessSyntax(derEncoded: ext.value)
+        } catch {
+            throw Certificate.Error.asn1(error.code)
+        }
         self.descriptions = aiaSyntax.descriptions.map { AccessDescription($0) }
     }
 }
@@ -228,7 +233,7 @@ extension Certificate.Extension {
     ///   - aia: The extension to wrap
     ///   - critical: Whether this extension should have the critical bit set.
     @inlinable
-    public init(_ aia: AuthorityInformationAccess, critical: Bool) throws {
+    public init(_ aia: AuthorityInformationAccess, critical: Bool) throws(ISO_8824.Error) {
         let asn1Representation = AuthorityInfoAccessSyntax(aia)
         var serializer = ISO_8825.DER.Serializer()
         try serializer.serialize(asn1Representation)

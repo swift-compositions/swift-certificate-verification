@@ -38,14 +38,19 @@ public enum BasicConstraints {
     ///     `ISO_8824.ObjectIdentifier.X509ExtensionID.basicConstraints`.
     @inlinable
     @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
-    public init(_ ext: Certificate.Extension) throws {
+    public init(_ ext: Certificate.Extension) throws(Certificate.Error) {
         guard ext.oid == .X509ExtensionID.basicConstraints else {
             throw Certificate.Error.extension(
                 .incorrectOID(expected: .X509ExtensionID.basicConstraints, found: ext.oid)
             )
         }
 
-        let basicConstraintsValue = try BasicConstraintsValue(derEncoded: ext.value)
+        let basicConstraintsValue: BasicConstraintsValue
+        do throws(ISO_8824.Error) {
+            basicConstraintsValue = try BasicConstraintsValue(derEncoded: ext.value)
+        } catch {
+            throw Certificate.Error.asn1(error.code)
+        }
         if basicConstraintsValue.isCA {
             self = .isCertificateAuthority(maxPathLength: basicConstraintsValue.pathLenConstraint)
         } else {
@@ -85,7 +90,7 @@ extension Certificate.Extension {
     ///   - basicConstraints: The extension to wrap
     ///   - critical: Whether this extension should have the critical bit set.
     @inlinable
-    public init(_ basicConstraints: BasicConstraints, critical: Bool) throws {
+    public init(_ basicConstraints: BasicConstraints, critical: Bool) throws(ISO_8824.Error) {
         let asn1Representation = BasicConstraintsValue(basicConstraints)
         var serializer = ISO_8825.DER.Serializer()
         try serializer.serialize(asn1Representation)

@@ -79,7 +79,9 @@ extension _TinyArray {
     }
 
     @inlinable
-    public init(_ elements: some Sequence<Result<Element, some Error>>) throws {
+    public init<Failure: Swift.Error>(
+        _ elements: some Sequence<Result<Element, Failure>>
+    ) throws(Failure) {
         self.storage = try .init(elements)
     }
 
@@ -105,12 +107,16 @@ extension _TinyArray {
     }
 
     @inlinable
-    public mutating func removeAll(where shouldBeRemoved: (Element) throws -> Bool) rethrows {
+    public mutating func removeAll<Failure: Swift.Error>(
+        where shouldBeRemoved: (Element) throws(Failure) -> Bool
+    ) throws(Failure) {
         try self.storage.removeAll(where: shouldBeRemoved)
     }
 
     @inlinable
-    public mutating func sort(by areInIncreasingOrder: (Element, Element) throws -> Bool) rethrows {
+    public mutating func sort<Failure: Swift.Error>(
+        by areInIncreasingOrder: (Element, Element) throws(Failure) -> Bool
+    ) throws(Failure) {
         try self.storage.sort(by: areInIncreasingOrder)
     }
 }
@@ -200,7 +206,9 @@ extension _TinyArray.Storage {
     }
 
     @inlinable
-    init(_ newElements: some Sequence<Result<Element, some Error>>) throws {
+    init<Failure: Swift.Error>(
+        _ newElements: some Sequence<Result<Element, Failure>>
+    ) throws(Failure) {
         var iterator = newElements.makeIterator()
         guard let firstElement = try iterator.next()?.get() else {
             self = .arbitrary([])
@@ -299,7 +307,9 @@ extension _TinyArray.Storage {
     }
 
     @inlinable
-    mutating func removeAll(where shouldBeRemoved: (Element) throws -> Bool) rethrows {
+    mutating func removeAll<Failure: Swift.Error>(
+        where shouldBeRemoved: (Element) throws(Failure) -> Bool
+    ) throws(Failure) {
         switch self {
         case .one(let oldElement):
             if try shouldBeRemoved(oldElement) {
@@ -316,7 +326,9 @@ extension _TinyArray.Storage {
     }
 
     @inlinable
-    mutating func sort(by areInIncreasingOrder: (Element, Element) throws -> Bool) rethrows {
+    mutating func sort<Failure: Swift.Error>(
+        by areInIncreasingOrder: (Element, Element) throws(Failure) -> Bool
+    ) throws(Failure) {
         switch self {
         case .one:
             // a collection of just one element is always sorted, nothing to do

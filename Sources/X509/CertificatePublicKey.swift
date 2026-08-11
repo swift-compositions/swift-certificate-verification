@@ -30,7 +30,7 @@ extension Certificate {
         var backing: BackingPublicKey
 
         @inlinable
-        package init(spki: SubjectPublicKeyInfo) throws {
+        package init(spki: SubjectPublicKeyInfo) throws(Certificate.Error) {
             switch spki.algorithmIdentifier {
             case .p256PublicKey:
                 guard spki.key.bytes.count == Certificate.PublicKey.p256X963ByteCount else {

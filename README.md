@@ -32,8 +32,11 @@ reshaped against Institute conventions:
   in place of vendored ASN.1, `inet_pton`, and `Foundation.URL`.
 - **Injected verification time.** `Instant` replaces `Foundation.Date`; the
   verifier never reads a system clock.
-- **Typed errors.** `CertificateError` is reshaped into a nested
-  `Certificate.Error` taxonomy whose payloads carry evidence.
+- **Typed errors.** Every public throwing model and extension operation names
+  its failure type. Model validation and extension decoding use the exhaustive
+  `Certificate.Error` taxonomy; ASN.1 serialization uses `ISO_8824.Error`, the
+  wire-format owner's error currency. Callback-polymorphic collection
+  operations preserve the callback's concrete failure type.
 
 ### Certificate-verification API
 

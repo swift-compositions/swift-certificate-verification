@@ -24,5 +24,11 @@ extension Certificate.Error {
 
         /// The same OID is present more than once where uniqueness is required.
         case duplicateOID(ISO_8824.ObjectIdentifier)
+
+        /// A certificate carries more extensions than the model accepts.
+        case tooManyExtensions(found: Int, maximum: Int)
+
+        /// An extended-key-usage value carries more usages than the model accepts.
+        case tooManyUsages(found: Int, maximum: Int)
     }
 }

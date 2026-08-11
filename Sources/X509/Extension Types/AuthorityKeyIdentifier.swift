@@ -56,14 +56,19 @@ public struct AuthorityKeyIdentifier {
     /// - Throws: if the ``Certificate/Extension/oid`` is not equal to
     ///     `ISO_8824.ObjectIdentifier.X509ExtensionID.authorityKeyIdentifier`.
     @inlinable
-    public init(_ ext: Certificate.Extension) throws {
+    public init(_ ext: Certificate.Extension) throws(Certificate.Error) {
         guard ext.oid == .X509ExtensionID.authorityKeyIdentifier else {
             throw Certificate.Error.extension(
                 .incorrectOID(expected: .X509ExtensionID.authorityKeyIdentifier, found: ext.oid)
             )
         }
 
-        let asn1KeyIdentifier = try AuthorityKeyIdentifierValue(derEncoded: ext.value)
+        let asn1KeyIdentifier: AuthorityKeyIdentifierValue
+        do throws(ISO_8824.Error) {
+            asn1KeyIdentifier = try AuthorityKeyIdentifierValue(derEncoded: ext.value)
+        } catch {
+            throw Certificate.Error.asn1(error.code)
+        }
         self.keyIdentifier = asn1KeyIdentifier.keyIdentifier.map { $0.bytes }
         self.authorityCertIssuer = asn1KeyIdentifier.authorityCertIssuer
         self.authorityCertSerialNumber = asn1KeyIdentifier.authorityCertSerialNumber.map {
@@ -114,7 +119,7 @@ extension Certificate.Extension {
     ///   - aki: The extension to wrap
     ///   - critical: Whether this extension should have the critical bit set.
     @inlinable
-    public init(_ aki: AuthorityKeyIdentifier, critical: Bool) throws {
+    public init(_ aki: AuthorityKeyIdentifier, critical: Bool) throws(ISO_8824.Error) {
         let asn1Representation = AuthorityKeyIdentifierValue(aki)
         var serializer = ISO_8825.DER.Serializer()
         try serializer.serialize(asn1Representation)

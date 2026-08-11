@@ -39,10 +39,18 @@ extension Certificate {
         }
 
         @inlinable
-        public init(signatureAlgorithm: SignatureAlgorithm, signatureBytes: ISO_8824.BitString) throws {
+        public init(
+            signatureAlgorithm: SignatureAlgorithm,
+            signatureBytes: ISO_8824.BitString
+        ) throws(Certificate.Error) {
             switch signatureAlgorithm {
             case .ecdsaWithSHA256, .ecdsaWithSHA384, .ecdsaWithSHA512:
-                let signature = try ECDSASignature(derEncoded: signatureBytes.bytes)
+                let signature: ECDSASignature
+                do throws(ISO_8824.Error) {
+                    signature = try ECDSASignature(derEncoded: signatureBytes.bytes)
+                } catch {
+                    throw Certificate.Error.asn1(error.code)
+                }
                 self.backing = .ecdsa(signature)
             case .ed25519:
                 guard signatureBytes.paddingBits == 0 else {

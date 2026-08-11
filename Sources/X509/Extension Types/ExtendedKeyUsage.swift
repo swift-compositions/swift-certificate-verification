@@ -27,7 +27,7 @@ public struct ExtendedKeyUsage {
     ///
     /// - Parameter usages: The purposes for which the certificate may be used.
     @inlinable
-    public init<Usages: Sequence>(_ usages: Usages) throws where Usages.Element == Usage {
+    public init<Usages: Sequence>(_ usages: Usages) throws(Certificate.Error) where Usages.Element == Usage {
         self.usages = Array(usages)
 
         // This limit is somewhat arbitrary. Linear search for under 32 elements
@@ -37,8 +37,8 @@ public struct ExtendedKeyUsage {
         // This can be used for DoS attacks so we have added this limit.
         let maxUsages = 32
         guard self.usages.count <= maxUsages else {
-            throw ISO_8824.Error.invalidASN1Object(
-                reason: "Too many extended key usages. Found \(self.usages.count) but only \(maxUsages) are allowed."
+            throw Certificate.Error.extension(
+                .tooManyUsages(found: self.usages.count, maximum: maxUsages)
             )
         }
 
@@ -57,14 +57,19 @@ public struct ExtendedKeyUsage {
     ///     `ISO_8824.ObjectIdentifier.X509ExtensionID.extendedKeyUsage`.
     @inlinable
     @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
-    public init(_ ext: Certificate.Extension) throws {
+    public init(_ ext: Certificate.Extension) throws(Certificate.Error) {
         guard ext.oid == .X509ExtensionID.extendedKeyUsage else {
             throw Certificate.Error.extension(
                 .incorrectOID(expected: .X509ExtensionID.extendedKeyUsage, found: ext.oid)
             )
         }
 
-        let asn1EKU = try ASN1ExtendedKeyUsage(derEncoded: ext.value)
+        let asn1EKU: ASN1ExtendedKeyUsage
+        do throws(ISO_8824.Error) {
+            asn1EKU = try ASN1ExtendedKeyUsage(derEncoded: ext.value)
+        } catch {
+            throw Certificate.Error.asn1(error.code)
+        }
         try self.init(asn1EKU.usages.map { Usage(oid: $0) })
     }
 
@@ -328,7 +333,7 @@ extension Certificate.Extension {
     ///   - eku: The extension to wrap
     ///   - critical: Whether this extension should have the critical bit set.
     @inlinable
-    public init(_ eku: ExtendedKeyUsage, critical: Bool) throws {
+    public init(_ eku: ExtendedKeyUsage, critical: Bool) throws(ISO_8824.Error) {
         let asn1Representation = ASN1ExtendedKeyUsage(eku)
         var serializer = ISO_8825.DER.Serializer()
         try serializer.serialize(asn1Representation)
