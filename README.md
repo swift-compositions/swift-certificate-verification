@@ -36,7 +36,8 @@ reshaped against Institute conventions:
   its failure type. Model validation and extension decoding use the exhaustive
   `Certificate.Error` taxonomy; ASN.1 serialization uses `ISO_8824.Error`, the
   wire-format owner's error currency. Callback-polymorphic collection
-  operations preserve the callback's concrete failure type.
+  operations and policy-builder entry points preserve the callback's concrete
+  failure type.
 
 ### Certificate-verification API
 

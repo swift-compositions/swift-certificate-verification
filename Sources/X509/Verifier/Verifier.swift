@@ -35,11 +35,11 @@ public struct Verifier<Policy: VerifierPolicy> {
     public var verify: Certificate.Verify
 
     @inlinable
-    public init(
+    public init<Failure: Swift.Error>(
         rootCertificates: CertificateStore,
         verify: Certificate.Verify,
-        @PolicyBuilder policy: () throws -> Policy
-    ) rethrows {
+        @PolicyBuilder policy: () throws(Failure) -> Policy
+    ) throws(Failure) {
         self.rootCertificates = rootCertificates
         self.verify = verify
         self.policy = try policy()

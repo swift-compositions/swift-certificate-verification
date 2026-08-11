@@ -41,7 +41,9 @@ public struct AnyPolicy: VerifierPolicy {
     /// Erases the type of some ``VerifierPolicy`` to ``AnyPolicy``.
     /// - Parameter makePolicy: the ``VerifierPolicy`` constructed using the ``PolicyBuilder`` DSL.
     @inlinable
-    public init(@PolicyBuilder makePolicy: () throws -> some VerifierPolicy) rethrows {
+    public init<Failure: Swift.Error>(
+        @PolicyBuilder makePolicy: () throws(Failure) -> some VerifierPolicy
+    ) throws(Failure) {
         self.init(try makePolicy())
     }
 

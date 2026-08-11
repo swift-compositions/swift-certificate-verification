@@ -39,7 +39,9 @@ public struct AllOfPolicies<Policy: VerifierPolicy>: VerifierPolicy {
     var policy: Policy
 
     @inlinable
-    public init(@PolicyBuilder policy: () throws -> Policy) throws {
+    public init<Failure: Swift.Error>(
+        @PolicyBuilder policy: () throws(Failure) -> Policy
+    ) throws(Failure) {
         self.policy = try policy()
     }
 

@@ -20,7 +20,7 @@ import Foundation
 import Testing
 import ISO_8824
 import ISO_8825
-@_spi(Testing) import Certificates
+import Certificates
 
 // These certificates are bound from the frozen DER corpus rather than issued in-test
 // (issuance is an excluded surface in slice 1). Each was frozen to match the original

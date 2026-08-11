@@ -190,7 +190,9 @@ public struct OneOfPolicies<Policy: VerifierPolicy>: VerifierPolicy {
     var policy: Policy
 
     @inlinable
-    public init(@OneOfPolicyBuilder policy: () throws -> Policy) throws {
+    public init<Failure: Swift.Error>(
+        @OneOfPolicyBuilder policy: () throws(Failure) -> Policy
+    ) throws(Failure) {
         self.policy = try policy()
     }
 

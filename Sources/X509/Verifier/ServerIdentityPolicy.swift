@@ -143,14 +143,12 @@ extension ServerIdentityPolicy {
     }
 
     // This should really be an init, but weird compiler issues have prevented it from being one.
-    @_spi(Testing)
-    public static func parsingIPv4Address(_ string: String) -> RFC_791.IPv4.Address? {
+    package static func parsingIPv4Address(_ string: String) -> RFC_791.IPv4.Address? {
         try? RFC_791.IPv4.Address(string)
     }
 
     // This should really be an init, but weird compiler issues have prevented it from being one.
-    @_spi(Testing)
-    public static func parsingIPv6Address(_ string: String) -> RFC_4291.IPv6.Address? {
+    package static func parsingIPv6Address(_ string: String) -> RFC_4291.IPv6.Address? {
         try? RFC_4291.IPv6.Address(ascii: string.utf8.map(Byte.init))
     }
 }

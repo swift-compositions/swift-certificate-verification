@@ -367,7 +367,7 @@ extension PolicyBuilder.Test.`Edge Case` {
     @Test func `all of policies throwing`() {
         // Creating a AllOfPolicies which throws an error inside will itself throw
         struct TestError: Error {}
-        func throwingPolicyBuilder() throws -> Policy {
+        func throwingPolicyBuilder() throws(TestError) -> Policy {
             throw TestError()
         }
 
@@ -381,12 +381,38 @@ extension PolicyBuilder.Test.`Edge Case` {
     @Test func `one of policies throwing`() {
         // Creating a OneOfPolicies which throws an error inside will itself throw
         struct TestError: Error {}
-        func throwingPolicyBuilder() throws -> Policy {
+        func throwingPolicyBuilder() throws(TestError) -> Policy {
             throw TestError()
         }
 
         #expect(throws: TestError.self) {
             try OneOfPolicies {
+                try throwingPolicyBuilder()
+            }
+        }
+    }
+
+    @Test func `any policy throwing`() {
+        struct TestError: Error {}
+        func throwingPolicyBuilder() throws(TestError) -> Policy {
+            throw TestError()
+        }
+
+        #expect(throws: TestError.self) {
+            try AnyPolicy {
+                try throwingPolicyBuilder()
+            }
+        }
+    }
+
+    @Test func `verifier throwing`() {
+        struct TestError: Error {}
+        func throwingPolicyBuilder() throws(TestError) -> Policy {
+            throw TestError()
+        }
+
+        #expect(throws: TestError.self) {
+            try Verifier(rootCertificates: CertificateStore(), verify: .crypto) {
                 try throwingPolicyBuilder()
             }
         }

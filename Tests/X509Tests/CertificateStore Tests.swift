@@ -20,7 +20,7 @@ import Foundation
 import Testing
 import ISO_8824
 import ISO_8825
-@_spi(Testing) @testable import Certificates
+@testable import Certificates
 @preconcurrency import Crypto
 
 extension CertificateStore {
