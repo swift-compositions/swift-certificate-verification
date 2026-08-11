@@ -22,7 +22,7 @@ let package = Package(
         // Test-only owner of the Crypto-backed Certificate.Verify witness. Keeping this
         // edge in the nested package keeps swift-crypto and apple/swift-asn1 outside the
         // root package's production resolution closure.
-        .package(url: "https://github.com/apple/swift-crypto.git", from: "4.3.0"),
+        .package(url: "https://github.com/apple/swift-crypto.git", branch: "main"),
     ],
     targets: [
         .testTarget(
