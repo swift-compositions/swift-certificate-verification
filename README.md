@@ -24,8 +24,9 @@ reshaped against Institute conventions:
 
 - **Crypto-free, Foundation-free main target.** Signature verification enters
   through an injected `Certificate.Verify` witness (algorithm + raw bytes);
-  the production Crypto-backed witness lives with the test target as the
-  prototype of a future crypto adapter package.
+  the Crypto-backed test witness lives in the nested test package, keeping
+  `swift-crypto` and its transitive dependencies outside the production
+  package's resolution closure.
 - **Institute standards owners replace bundled implementations.** ASN.1 via
   ISO 8824/8825, IP addresses via RFC 791/4291, URI parsing via RFC 3986 —
   in place of vendored ASN.1, `inet_pton`, and `Foundation.URL`.
@@ -63,11 +64,12 @@ needs.
 
 ## Test posture
 
-The suite is converted to swift-testing and gates green on the verifier-essence
-tier against a frozen DER fixture corpus. A further tier of upstream test files
-remains excluded from the test target (see `Package.swift`) pending rewiring
-onto the test-target issuance shim; the exclusions are recorded per case in the
-fork's deferral ledger.
+The root package retains the `Certificate Internals Tests`, while
+`Tests/Package.swift` owns the Crypto-backed `Certificates Tests`. A further
+tier of upstream test files remains excluded from the nested test target
+pending the TestPKI restoration tracked by
+[PR #8](https://github.com/swift-foundations/swift-certificate-verification/pull/8);
+the exclusions are recorded per case in the fork's deferral ledger.
 
 ## License
 
