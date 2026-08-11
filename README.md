@@ -34,6 +34,27 @@ reshaped against Institute conventions:
 - **Typed errors.** `CertificateError` is reshaped into a nested
   `Certificate.Error` taxonomy whose payloads carry evidence.
 
+### Certificate-verification API
+
+Certificate verification is exposed from its owner under the canonical
+`Certificate` vocabulary:
+
+- `Certificate.Verifier<Policy>` builds candidate chains and evaluates a policy.
+- `Certificate.Chain` is the validated leaf-to-root result; its
+  `Certificate.Chain.Unverified` counterpart is provided to policies during
+  evaluation.
+- `Certificate.Hostname` validates the certificate identity for a hostname or
+  IP address.
+- `Certificate.Policy`, `Certificate.Policy.Result`,
+  `Certificate.Policy.Failure`, `Certificate.Verification`, and
+  `Certificate.Verification.Failure` describe policy and validation outcomes.
+
+These names are additive aliases of the established verification capability.
+The original `Verifier`, `ValidatedCertificateChain`, `ServerIdentityPolicy`,
+`VerifierPolicy`, and result spellings remain available for source
+compatibility. This package does not implement TLS state, transport, or a
+cryptographic backend; callers supply the existing `Certificate.Verify` witness.
+
 Excluded surfaces — issuance and private keys, CSR, CMS, OCSP, PEM,
 RSA/SecKey/SecureEnclave backends, system trust stores — were deleted at the
 fork point and are deferred to dedicated future packages, not silently dropped:
