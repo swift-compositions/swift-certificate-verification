@@ -8,7 +8,7 @@ chain-verification essence, with cryptography injected rather than linked.
 > Forked from [apple/swift-certificates](https://github.com/apple/swift-certificates)
 > at `24ccdee` (1.18.0). The upstream history remains reachable below the fork
 > point; every retained source file keeps its upstream Apache-2.0 header, and
-> `NOTICE.txt` names the SwiftCertificates project.
+> The NOTICE section of `LICENSE.md` names the SwiftCertificates project.
 
 **This is not the publication tree.** The canonical `swift-certificates` name is
 deliberately vacated while the wider Swift ecosystem resolves
@@ -50,4 +50,5 @@ fork's deferral ledger.
 
 ## License
 
-Apache 2.0, unchanged from upstream — see `LICENSE.txt` and `NOTICE.txt`.
+Apache 2.0, unchanged from upstream — see [LICENSE.md](LICENSE.md), which carries
+the licence text and the upstream NOTICE verbatim.
