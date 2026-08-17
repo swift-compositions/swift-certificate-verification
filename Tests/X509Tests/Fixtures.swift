@@ -12,22 +12,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation
+import Byte_Primitive
 import Testing
 @testable import Certificates
 
-/// Loads the frozen DER fixture corpus (N5 gate scenarios) committed under
-/// `Fixtures/`. Slice-1 tests bind pre-generated certificates rather than
+/// Loads the frozen DER fixture corpus (N5 gate scenarios) embedded in
+/// `Fixture.Documents`. Slice-1 tests bind pre-generated certificates rather than
 /// issuing them in-test (issuance is an excluded surface — see the fixture
 /// MANIFEST and the deferred-tests ledger).
 enum Fixture {
     /// The raw DER bytes of a frozen fixture (e.g. `.der("leaf-valid")`).
     static func der(_ name: String) throws -> [UInt8] {
-        let url = try #require(
-            Bundle.module.url(forResource: name, withExtension: "der", subdirectory: "Fixtures"),
-            "missing frozen fixture: \(name).der"
+        let document = try #require(
+            Documents[name],
+            "missing frozen fixture: \(name)"
         )
-        return try [UInt8](Data(contentsOf: url))
+        return document.map(\.underlying)
     }
 
     /// A frozen fixture parsed into a `Certificate`.

@@ -82,6 +82,7 @@ let package = Package(
                 // Test-only: binds the Crypto-backed Certificate.Verify witness. The
                 // main target stays Crypto-free; main-target purity governs main targets.
                 .product(name: "Crypto", package: "swift-crypto"),
+                .product(name: "Byte Primitive", package: "swift-byte-primitives"),
             ],
             path: "Tests/X509Tests",
             // N5 increment 1 (lead A+B+C ruling): compile the issuance-free verifier-essence
@@ -96,8 +97,7 @@ let package = Package(
                 "CertificateStore Tests.swift",
                 "RFC5280Policy Tests.swift",
                 "Verifier Tests.swift",
-            ],
-            resources: [.copy("Fixtures")]
+            ]
         ),
         .testTarget(
             name: "Certificate Internals Tests",
