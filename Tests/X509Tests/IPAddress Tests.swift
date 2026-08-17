@@ -20,6 +20,9 @@ import ISO_8825
 #if canImport(Android)
 import Android
 #endif
+#if canImport(WinSDK)
+import WinSDK
+#endif
 
 @Suite struct `IPAddress Tests` {
     static let fixtures: [(ISO_8824.OctetString, ISO_8824.OctetString, Bool)] = [
