@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,18 +10,20 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
-#if canImport(FoundationEssentials)
-import FoundationEssentials
-#else
-import Foundation
-#endif
-import Testing
+@preconcurrency import Crypto
 import ISO_8824
 import ISO_8825
+import Testing
+
 @_spi(Testing) @testable import Certificates
-@preconcurrency import Crypto
+
+#if canImport(FoundationEssentials)
+    import FoundationEssentials
+#else
+    import Foundation
+#endif
 
 extension CertificateStore {
     @Suite struct Test {
@@ -47,7 +49,9 @@ extension CertificateStore {
             }
 
             @Test func `loading fails gracefully if first file does not exist`() throws {
-                let caCertificatesURL = try #require(Bundle.module.url(forResource: "ca-certificates", withExtension: "crt"))
+                let caCertificatesURL = try #require(
+                    Bundle.module.url(forResource: "ca-certificates", withExtension: "crt")
+                )
                 let searchPaths = [
                     "/some/path/that/does/not/exist/1",
                     caCertificatesURL.path,
@@ -61,21 +65,25 @@ extension CertificateStore {
 
         @Suite struct Integration {
             #if os(Linux)
-            @Test func `loading default trust roots`() async throws {
-                let log = DiagnosticsLog()
-                let store = await CertificateStore.systemTrustRoots.resolve(diagnosticsCallback: log.append(_:))
-                #expect(store.totalCertificateCount >= 100)
-                #expect(log == [])
-            }
+                @Test func `loading default trust roots`() async throws {
+                    let log = DiagnosticsLog()
+                    let store = await CertificateStore.systemTrustRoots.resolve(
+                        diagnosticsCallback: log.append(_:)
+                    )
+                    #expect(store.totalCertificateCount >= 100)
+                    #expect(log == [])
+                }
             #else
-            @Test func `loading default trust roots`() async throws {
-                let log = DiagnosticsLog()
+                @Test func `loading default trust roots`() async throws {
+                    let log = DiagnosticsLog()
 
-                let store = await CertificateStore.systemTrustRoots.resolve(diagnosticsCallback: log.append(_:))
-                #expect(store.totalCertificateCount == 0)
+                    let store = await CertificateStore.systemTrustRoots.resolve(
+                        diagnosticsCallback: log.append(_:)
+                    )
+                    #expect(store.totalCertificateCount == 0)
 
-                #expect(log.count == 1)
-            }
+                    #expect(log.count == 1)
+                }
             #endif
 
             static func normalizeDistinguishedName(_ dn: DistinguishedName) -> DistinguishedName {
@@ -88,7 +96,9 @@ extension CertificateStore {
                                 }
                                 return RelativeDistinguishedName.Attribute(
                                     type: $0.type,
-                                    value: RelativeDistinguishedName.Attribute.Value(utf8String: str)
+                                    value: RelativeDistinguishedName.Attribute.Value(
+                                        utf8String: str
+                                    )
                                 )
                             }
                         )
@@ -104,12 +114,19 @@ extension CertificateStore {
                 }
 
                 func contains(_ certificate: Certificates.Certificate) async -> Bool {
-                    self.trustRoots[normalizeDistinguishedName(certificate.subject)]?.contains(certificate) == true
+                    self.trustRoots[normalizeDistinguishedName(certificate.subject)]?.contains(
+                        certificate
+                    ) == true
                 }
 
-                mutating func append(contentsOf certificates: some Sequence<Certificates.Certificate>) {
+                mutating func append(
+                    contentsOf certificates: some Sequence<Certificates.Certificate>
+                ) {
                     for certificate in certificates {
-                        self.trustRoots[normalizeDistinguishedName(certificate.subject), default: []].append(certificate)
+                        self.trustRoots[
+                            normalizeDistinguishedName(certificate.subject),
+                            default: []
+                        ].append(certificate)
                     }
                 }
 
@@ -129,6 +146,8 @@ extension CertificateStore {
             private static let ca1PrivateKey = P384.Signing.PrivateKey()
             private static let ca1: Certificate = {
                 // Force CA to encode using printableString:
+                // IMPL-108: known-valid input; construction cannot fail.
+                // swiftlint:disable:next force_try
                 let ca1Name = try! DistinguishedName([
                     RelativeDistinguishedName([
                         RelativeDistinguishedName.Attribute(
@@ -139,16 +158,22 @@ extension CertificateStore {
                     RelativeDistinguishedName([
                         RelativeDistinguishedName.Attribute(
                             type: .RDNAttributeType.organizationName,
-                            value: RelativeDistinguishedName.Attribute.Value(printableString: "Apple")
+                            value: RelativeDistinguishedName.Attribute.Value(
+                                printableString: "Apple"
+                            )
                         )
                     ]),
                     RelativeDistinguishedName([
                         RelativeDistinguishedName.Attribute(
                             type: .RDNAttributeType.commonName,
-                            value: RelativeDistinguishedName.Attribute.Value(printableString: "Swift Certificate Test CA 1")
+                            value: RelativeDistinguishedName.Attribute.Value(
+                                printableString: "Swift Certificate Test CA 1"
+                            )
                         )
                     ]),
                 ])
+                // IMPL-108: known-valid input; construction cannot fail.
+                // swiftlint:disable:next force_try
                 return try! Certificate(
                     version: .v3,
                     serialNumber: .init(),
@@ -164,7 +189,9 @@ extension CertificateStore {
                         )
                         KeyUsage(keyCertSign: true)
                         SubjectKeyIdentifier(
-                            keyIdentifier: ArraySlice(Insecure.SHA1.hash(data: ca1PrivateKey.publicKey.derRepresentation))
+                            keyIdentifier: ArraySlice(
+                                Insecure.SHA1.hash(data: ca1PrivateKey.publicKey.derRepresentation)
+                            )
                         )
                     },
                     issuerPrivateKey: .init(ca1PrivateKey)
@@ -173,6 +200,8 @@ extension CertificateStore {
 
             private static let leafPrivateKey = P256.Signing.PrivateKey()
             private static let leafCert: Certificate = {
+                // IMPL-108: known-valid input; construction cannot fail.
+                // swiftlint:disable:next force_try
                 try! Certificate(
                     version: .v3,
                     serialNumber: .init(),
@@ -190,16 +219,22 @@ extension CertificateStore {
                         RelativeDistinguishedName([
                             RelativeDistinguishedName.Attribute(
                                 type: .RDNAttributeType.organizationName,
-                                value: RelativeDistinguishedName.Attribute.Value(utf8String: "Apple")
+                                value: RelativeDistinguishedName.Attribute.Value(
+                                    utf8String: "Apple"
+                                )
                             )
                         ]),
                         RelativeDistinguishedName([
                             RelativeDistinguishedName.Attribute(
                                 type: .RDNAttributeType.commonName,
-                                value: RelativeDistinguishedName.Attribute.Value(utf8String: "Swift Certificate Test CA 1")
+                                value: RelativeDistinguishedName.Attribute.Value(
+                                    utf8String: "Swift Certificate Test CA 1"
+                                )
                             )
                         ]),
                     ]),
+                    // IMPL-108: known-valid input; construction cannot fail.
+                    // swiftlint:disable:next force_try
                     subject: try! DistinguishedName {
                         CountryName("US")
                         OrganizationName("Apple")
@@ -211,7 +246,11 @@ extension CertificateStore {
                             BasicConstraints.notCertificateAuthority
                         )
                         KeyUsage(keyCertSign: true)
-                        AuthorityKeyIdentifier(keyIdentifier: try! ca1.extensions.subjectKeyIdentifier!.keyIdentifier)
+                        AuthorityKeyIdentifier(
+                            // IMPL-108: known-valid input; construction cannot fail.
+                            // swiftlint:disable:next force_try
+                            keyIdentifier: try! ca1.extensions.subjectKeyIdentifier!.keyIdentifier
+                        )
                     },
                     issuerPrivateKey: .init(ca1PrivateKey)
                 )
@@ -247,7 +286,7 @@ extension CertificateStore {
                     intermediates: CertificateStore()
                 )
 
-                guard case .validCertificate(_) = customResult else {
+                guard case .validCertificate = customResult else {
                     Issue.record("Failed to validate: \(customResult)")
                     return
                 }

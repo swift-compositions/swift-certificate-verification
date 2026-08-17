@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,21 +10,22 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
-import Testing
 import ISO_8824
 import ISO_8825
+import Testing
 import Time_Primitive
+
 @testable import Certificates
 
 // gmtime_r/time_t for the reference comparison against the system library.
 #if canImport(Darwin)
-import Darwin
+    import Darwin
 #elseif canImport(Glibc)
-import Glibc
+    import Glibc
 #elseif canImport(Musl)
-import Musl
+    import Musl
 #endif
 
 extension Certificates.Time {
@@ -38,7 +39,14 @@ extension Certificates.Time {
 extension Certificates.Time.Test.Unit {
     @Test func `convert utc time to instant`() throws {
         // 2022-07-01 12:15:55 corresponds to 1656677755 seconds from 1970.
-        let utctime = try ISO_8824.UTCTime(year: 2022, month: 07, day: 01, hours: 12, minutes: 15, seconds: 55)
+        let utctime = try ISO_8824.UTCTime(
+            year: 2022,
+            month: 07,
+            day: 01,
+            hours: 12,
+            minutes: 15,
+            seconds: 55
+        )
         let expected = Instant(secondsSinceUnixEpoch: 1_656_677_755)
         #expect(expected == Instant(.utcTime(utctime)))
     }
@@ -60,7 +68,14 @@ extension Certificates.Time.Test.Unit {
 
     @Test func `convert utc time as time to instant`() throws {
         // 2022-07-01 12:15:55 corresponds to 1656677755 seconds from 1970.
-        let utctime = try ISO_8824.UTCTime(year: 2022, month: 07, day: 01, hours: 12, minutes: 15, seconds: 55)
+        let utctime = try ISO_8824.UTCTime(
+            year: 2022,
+            month: 07,
+            day: 01,
+            hours: 12,
+            minutes: 15,
+            seconds: 55
+        )
         let time = Certificates.Time.utcTime(utctime)
         let expected = Instant(secondsSinceUnixEpoch: 1_656_677_755)
         #expect(expected == Instant(time))
@@ -160,12 +175,15 @@ extension Certificates.Time.Test.`Edge Case` {
                 switch month {
                 case 1, 3, 5, 7, 8, 10, 12:
                     days = 31
+
                 case 4, 6, 9, 11:
                     days = 30
+
                 case 2:
                     days = isLeapYear ? 29 : 28
+
                 default:
-                    fatalError()
+                    fatalError("month \(month) is outside 1...12")
                 }
 
                 for day in 1...days {
@@ -192,34 +210,34 @@ extension Certificates.Time.Test.`Edge Case` {
 // The reference oracle is POSIX gmtime_r; Windows has no gmtime_r (its reentrant
 // spelling is gmtime_s with reversed arguments), so the comparison is POSIX-only.
 #if !os(Windows)
-extension Certificates.Time.Test.Integration {
-    @Test func `compare random inputs for gm time`() throws {
-        // These numbers are determined experimentally on macOS.
-        let smallestUsableTimeT = Int64(-67_768_040_609_740_800)
-        let largestUsableTimeT = Int64(67_768_036_191_676_799)
+    extension Certificates.Time.Test.Integration {
+        @Test func `compare random inputs for gm time`() throws {
+            // These numbers are determined experimentally on macOS.
+            let smallestUsableTimeT = Int64(-67_768_040_609_740_800)
+            let largestUsableTimeT = Int64(67_768_036_191_676_799)
 
-        // If we're constrained by the system library time_t size, let's do that.
-        let lowerBound = max(smallestUsableTimeT, Int64(time_t.min))
-        let upperBound = min(largestUsableTimeT, Int64(time_t.max))
+            // If we're constrained by the system library time_t size, let's do that.
+            let lowerBound = max(smallestUsableTimeT, Int64(time_t.min))
+            let upperBound = min(largestUsableTimeT, Int64(time_t.max))
 
-        for _ in 0..<10_000 {
-            let random = Int64.random(in: lowerBound...upperBound)
-            let mine = random.utcDateFromTimestamp
+            for _ in 0..<10_000 {
+                let random = Int64.random(in: lowerBound...upperBound)
+                let mine = random.utcDateFromTimestamp
 
-            var time = time_t(random)
-            var theirs = tm()
-            #expect(gmtime_r(&time, &theirs) != nil, "Seed: \(random)")
+                var time = time_t(random)
+                var theirs = tm()
+                #expect(gmtime_r(&time, &theirs) != nil, "Seed: \(random)")
 
-            #expect(mine.year == Int(theirs.tm_year) + 1900, "Seed: \(random)")
-            #expect(mine.month == Int(theirs.tm_mon) + 1, "Seed: \(random)")
-            #expect(mine.day == Int(theirs.tm_mday), "Seed: \(random)")
-            #expect(mine.hours == Int(theirs.tm_hour), "Seed: \(random)")
-            #expect(mine.minutes == Int(theirs.tm_min), "Seed: \(random)")
-            #expect(mine.seconds == Int(theirs.tm_sec), "Seed: \(random)")
+                #expect(mine.year == Int(theirs.tm_year) + 1900, "Seed: \(random)")
+                #expect(mine.month == Int(theirs.tm_mon) + 1, "Seed: \(random)")
+                #expect(mine.day == Int(theirs.tm_mday), "Seed: \(random)")
+                #expect(mine.hours == Int(theirs.tm_hour), "Seed: \(random)")
+                #expect(mine.minutes == Int(theirs.tm_min), "Seed: \(random)")
+                #expect(mine.seconds == Int(theirs.tm_sec), "Seed: \(random)")
 
-            let returned = Int64(timestampFromUTCDate: mine)
-            #expect(returned == random)
+                let returned = Int64(timestampFromUTCDate: mine)
+                #expect(returned == random)
+            }
         }
     }
-}
 #endif

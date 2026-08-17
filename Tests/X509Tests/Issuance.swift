@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,12 +10,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 @preconcurrency import Crypto
 import ISO_8824
 import ISO_8825
 import Time_Primitive
+
 @testable import Certificates
 
 extension Certificate {
@@ -94,22 +95,28 @@ extension Certificate.Issuance {
             switch (self.backing, algorithm) {
             case (.p256(let key), .ecdsaWithSHA256):
                 return Array(try key.signature(for: SHA256.hash(data: bytes)).derRepresentation)
+
             case (.p256(let key), .ecdsaWithSHA384):
                 return Array(try key.signature(for: SHA384.hash(data: bytes)).derRepresentation)
+
             case (.p256(let key), .ecdsaWithSHA512):
                 return Array(try key.signature(for: SHA512.hash(data: bytes)).derRepresentation)
 
             case (.p384(let key), .ecdsaWithSHA256):
                 return Array(try key.signature(for: SHA256.hash(data: bytes)).derRepresentation)
+
             case (.p384(let key), .ecdsaWithSHA384):
                 return Array(try key.signature(for: SHA384.hash(data: bytes)).derRepresentation)
+
             case (.p384(let key), .ecdsaWithSHA512):
                 return Array(try key.signature(for: SHA512.hash(data: bytes)).derRepresentation)
 
             case (.p521(let key), .ecdsaWithSHA256):
                 return Array(try key.signature(for: SHA256.hash(data: bytes)).derRepresentation)
+
             case (.p521(let key), .ecdsaWithSHA384):
                 return Array(try key.signature(for: SHA384.hash(data: bytes)).derRepresentation)
+
             case (.p521(let key), .ecdsaWithSHA512):
                 return Array(try key.signature(for: SHA512.hash(data: bytes)).derRepresentation)
 
@@ -123,13 +130,15 @@ extension Certificate.Issuance {
     }
 
     /// Why an issuance attempt could not produce a certificate.
-    enum Failure: Error {
+    enum Failure: Swift.Error {
         /// The signing key cannot sign under the requested signature algorithm.
         case keyDoesNotSupportAlgorithm
     }
 }
 
 extension Certificate.Issuance {
+    // Parameters mirror the TBSCertificate fields one-to-one.
+    // swiftlint:disable function_parameter_count
     /// Issue a certificate, signing `subject`'s details with `issuerPrivateKey`.
     ///
     /// The returned certificate is parsed from the bytes just written, so anything the
@@ -152,6 +161,7 @@ extension Certificate.Issuance {
         extensions: Certificate.Extensions,
         issuerPrivateKey: Key
     ) throws -> Certificate {
+        // swiftlint:enable function_parameter_count
         let validity = Validity(
             notBefore: try Time.makeTime(from: notValidBefore),
             notAfter: try Time.makeTime(from: notValidAfter)

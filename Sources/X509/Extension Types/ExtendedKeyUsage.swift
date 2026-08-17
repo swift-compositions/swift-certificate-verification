@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -38,7 +38,8 @@ public struct ExtendedKeyUsage {
         let maxUsages = 32
         guard self.usages.count <= maxUsages else {
             throw ISO_8824.Error.invalidASN1Object(
-                reason: "Too many extended key usages. Found \(self.usages.count) but only \(maxUsages) are allowed."
+                reason:
+                    "Too many extended key usages. Found \(self.usages.count) but only \(maxUsages) are allowed."
             )
         }
 
@@ -125,9 +126,7 @@ extension ExtendedKeyUsage: RandomAccessCollection {
     }
 
     public subscript(position: Int) -> Usage {
-        get {
-            self.usages[position]
-        }
+        self.usages[position]
     }
 }
 
@@ -217,20 +216,28 @@ extension ExtendedKeyUsage {
             switch oid {
             case .ExtendedKeyUsage.serverAuth:
                 self = .serverAuth
+
             case .ExtendedKeyUsage.clientAuth:
                 self = .clientAuth
+
             case .ExtendedKeyUsage.codeSigning:
                 self = .codeSigning
+
             case .ExtendedKeyUsage.emailProtection:
                 self = .emailProtection
+
             case .ExtendedKeyUsage.timeStamping:
                 self = .timeStamping
+
             case .ExtendedKeyUsage.ocspSigning:
                 self = .ocspSigning
+
             case .ExtendedKeyUsage.any:
                 self = .any
+
             case .ExtendedKeyUsage.certificateTransparency:
                 self = .certificateTransparency
+
             default:
                 self.backing = .unknown(oid)
             }
@@ -271,20 +278,28 @@ extension ExtendedKeyUsage.Usage: CustomStringConvertible {
         switch self.backing {
         case .any:
             return "anyKeyUsage"
+
         case .serverAuth:
             return "serverAuth"
+
         case .clientAuth:
             return "clientAuth"
+
         case .codeSigning:
             return "codeSigning"
+
         case .emailProtection:
             return "emailProtection"
+
         case .timeStamping:
             return "timeStamping"
+
         case .ocspSigning:
             return "ocspSigning"
+
         case .certificateTransparency:
             return "certificateTransparency"
+
         case .unknown(let oid):
             return String(describing: oid)
         }
@@ -296,20 +311,28 @@ extension ExtendedKeyUsage.Usage: CustomDebugStringConvertible {
         switch self.backing {
         case .any:
             return "anyKeyUsage"
+
         case .serverAuth:
             return "serverAuth"
+
         case .clientAuth:
             return "clientAuth"
+
         case .codeSigning:
             return "codeSigning"
+
         case .emailProtection:
             return "emailProtection"
+
         case .timeStamping:
             return "timeStamping"
+
         case .ocspSigning:
             return "ocspSigning"
+
         case .certificateTransparency:
             return "certificateTransparency"
+
         case .unknown(let oid):
             return String(reflecting: oid)
         }
@@ -332,7 +355,11 @@ extension Certificate.Extension {
         let asn1Representation = ASN1ExtendedKeyUsage(eku)
         var serializer = ISO_8825.DER.Serializer()
         try serializer.serialize(asn1Representation)
-        self.init(oid: .X509ExtensionID.extendedKeyUsage, critical: critical, value: serializer.serializedBytes[...])
+        self.init(
+            oid: .X509ExtensionID.extendedKeyUsage,
+            critical: critical,
+            value: serializer.serializedBytes[...]
+        )
     }
 }
 
@@ -345,20 +372,28 @@ extension ISO_8824.ObjectIdentifier {
         switch usage.backing {
         case .serverAuth:
             self = .ExtendedKeyUsage.serverAuth
+
         case .clientAuth:
             self = .ExtendedKeyUsage.clientAuth
+
         case .codeSigning:
             self = .ExtendedKeyUsage.codeSigning
+
         case .emailProtection:
             self = .ExtendedKeyUsage.emailProtection
+
         case .timeStamping:
             self = .ExtendedKeyUsage.timeStamping
+
         case .ocspSigning:
             self = .ExtendedKeyUsage.ocspSigning
+
         case .any:
             self = .ExtendedKeyUsage.any
+
         case .certificateTransparency:
             self = .ExtendedKeyUsage.certificateTransparency
+
         case .unknown(let oid):
             self = oid
         }
@@ -390,7 +425,9 @@ extension ISO_8824.ObjectIdentifier {
         public static let ocspSigning: ISO_8824.ObjectIdentifier = [1, 3, 6, 1, 5, 5, 7, 3, 9]
 
         /// The public key may be used for signing certificate transparency precertificates.
-        public static let certificateTransparency: ISO_8824.ObjectIdentifier = [1, 3, 6, 1, 4, 1, 11129, 2, 4, 4]
+        public static let certificateTransparency: ISO_8824.ObjectIdentifier = [
+            1, 3, 6, 1, 4, 1, 11129, 2, 4, 4,
+        ]
     }
 }
 
@@ -415,12 +452,18 @@ struct ASN1ExtendedKeyUsage: ISO_8825.DER.ImplicitlyTaggable, Sendable {
     }
 
     @inlinable
-    init(derEncoded rootNode: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
+    init(
+        derEncoded rootNode: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
         self.usages = try ISO_8825.DER.sequence(identifier: identifier, rootNode: rootNode)
     }
 
     @inlinable
-    func serialize(into coder: inout ISO_8825.DER.Serializer, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
+    func serialize(
+        into coder: inout ISO_8825.DER.Serializer,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
         try coder.serializeSequenceOf(self.usages, identifier: identifier)
     }
 }

@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,11 +10,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
+import Certificate_Internals
 import ISO_8824
 import ISO_8825
-import Certificate_Internals
 
 /// A ``RelativeDistinguishedName`` is a collection of elements at a single level of a hierarchical
 /// ``DistinguishedName``.
@@ -94,9 +94,7 @@ extension RelativeDistinguishedName: RandomAccessCollection {
 
     @inlinable
     public subscript(position: Int) -> RelativeDistinguishedName.Attribute {
-        get {
-            self.attributes[position]
-        }
+        self.attributes[position]
     }
 
     /// Insert a new ``Attribute`` into this ``RelativeDistinguishedName``.
@@ -164,21 +162,31 @@ extension RelativeDistinguishedName: ISO_8825.DER.ImplicitlyTaggable {
     }
 
     @inlinable
-    public init(derEncoded rootNode: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
+    public init(
+        derEncoded rootNode: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
         try self.init(ISO_8825.DER.lazySet(identifier: identifier, rootNode: rootNode))
     }
 
     @inlinable
-    public func serialize(into coder: inout ISO_8825.DER.Serializer, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
+    public func serialize(
+        into coder: inout ISO_8825.DER.Serializer,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
         try coder.serializeSetOf(self.attributes, identifier: identifier)
     }
 
     @inlinable
-    package static func _sortElements(_ elements: inout _TinyArray<RelativeDistinguishedName.Attribute>) {
+    package static func _sortElements(
+        _ elements: inout _TinyArray<RelativeDistinguishedName.Attribute>
+    ) {
         // We keep the elements sorted at all times. This is dumb, but we assume that these objects get
         // mutated infrequently.
         // This is weird. We need to individually serialize each element, then lexicographically compare
         // them and then write them out. We could do this in place but for now let's not worry about it.
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         try! elements.sort { lhs, rhs in
             var serializer = ISO_8825.DER.Serializer()
             try serializer.serialize(lhs)

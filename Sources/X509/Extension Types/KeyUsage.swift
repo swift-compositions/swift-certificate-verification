@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -255,6 +255,7 @@ public struct KeyUsage {
         case 0:
             // This is fine, no bits are set.
             precondition(bitstring.paddingBits == 0)
+
         case 1:
             // This is fine, no more than 8 bits.
             // We want to confirm that the bit _before_ the first padding bit isn't 0.
@@ -264,11 +265,13 @@ public struct KeyUsage {
             if (bitstring.bytes[bitstring.bytes.startIndex] & bitMask) == 0 {
                 throw ISO_8824.Error.invalidASN1Object(reason: "Invalid leading padding bit")
             }
+
         case 2 where bitstring.paddingBits == 7:
             // This is fine, there are 9 valid bits: 8 from the prior byte and 1 here.
             if (bitstring.bytes[bitstring.bytes.startIndex &+ 1] & 0x80) == 0 {
                 throw ISO_8824.Error.invalidASN1Object(reason: "Invalid padding bit")
             }
+
         default:
             // Too many bits!
             throw ISO_8824.Error.invalidASN1Object(reason: "Too many bits for Key Usage")
@@ -334,7 +337,11 @@ extension Certificate.Extension {
         let asn1Representation = try ISO_8824.BitString(keyUsage)
         var serializer = ISO_8825.DER.Serializer()
         try serializer.serialize(asn1Representation)
-        self.init(oid: .X509ExtensionID.keyUsage, critical: critical, value: serializer.serializedBytes[...])
+        self.init(
+            oid: .X509ExtensionID.keyUsage,
+            critical: critical,
+            value: serializer.serializedBytes[...]
+        )
     }
 }
 
@@ -344,11 +351,14 @@ extension UInt16 {
         switch bitString.bytes.count {
         case 0:
             self = 0
+
         case 1:
             self = UInt16(bitString.bytes[bitString.bytes.startIndex]) << 8
+
         case 2:
             self = UInt16(bitString.bytes[bitString.bytes.startIndex]) << 8
             self |= UInt16(bitString.bytes[bitString.bytes.startIndex + 1])
+
         default:
             preconditionFailure()
         }
@@ -360,7 +370,10 @@ extension ISO_8824.BitString {
     package init(_ ext: KeyUsage) throws(ISO_8824.Error) {
         if ext.decipherOnly {
             // We need two bytes here.
-            let bytes = [UInt8(truncatingIfNeeded: ext.rawValue >> 8), UInt8(truncatingIfNeeded: ext.rawValue)]
+            let bytes = [
+                UInt8(truncatingIfNeeded: ext.rawValue >> 8),
+                UInt8(truncatingIfNeeded: ext.rawValue),
+            ]
             self = try .init(bytes: bytes[...], paddingBits: 7)
         } else {
             // We only need one byte here.

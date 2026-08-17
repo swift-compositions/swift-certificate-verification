@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -34,26 +34,40 @@ extension Certificate {
             switch spki.algorithmIdentifier {
             case .p256PublicKey:
                 guard spki.key.bytes.count == Certificate.PublicKey.p256X963ByteCount else {
-                    throw Certificate.Error.algorithm(.unsupportedPublicKey(spki.algorithmIdentifier.algorithm))
+                    throw Certificate.Error.algorithm(
+                        .unsupportedPublicKey(spki.algorithmIdentifier.algorithm)
+                    )
                 }
                 self.backing = .p256(x963: Array(spki.key.bytes))
+
             case .p384PublicKey:
                 guard spki.key.bytes.count == Certificate.PublicKey.p384X963ByteCount else {
-                    throw Certificate.Error.algorithm(.unsupportedPublicKey(spki.algorithmIdentifier.algorithm))
+                    throw Certificate.Error.algorithm(
+                        .unsupportedPublicKey(spki.algorithmIdentifier.algorithm)
+                    )
                 }
                 self.backing = .p384(x963: Array(spki.key.bytes))
+
             case .p521PublicKey:
                 guard spki.key.bytes.count == Certificate.PublicKey.p521X963ByteCount else {
-                    throw Certificate.Error.algorithm(.unsupportedPublicKey(spki.algorithmIdentifier.algorithm))
+                    throw Certificate.Error.algorithm(
+                        .unsupportedPublicKey(spki.algorithmIdentifier.algorithm)
+                    )
                 }
                 self.backing = .p521(x963: Array(spki.key.bytes))
+
             case .ed25519:
                 guard spki.key.bytes.count == Certificate.PublicKey.ed25519RawByteCount else {
-                    throw Certificate.Error.algorithm(.unsupportedPublicKey(spki.algorithmIdentifier.algorithm))
+                    throw Certificate.Error.algorithm(
+                        .unsupportedPublicKey(spki.algorithmIdentifier.algorithm)
+                    )
                 }
                 self.backing = .ed25519(raw: Array(spki.key.bytes))
+
             default:
-                throw Certificate.Error.algorithm(.unsupportedPublicKey(spki.algorithmIdentifier.algorithm))
+                throw Certificate.Error.algorithm(
+                    .unsupportedPublicKey(spki.algorithmIdentifier.algorithm)
+                )
             }
         }
 
@@ -125,10 +139,13 @@ extension Certificate.PublicKey: CustomStringConvertible {
         switch self.backing {
         case .p256:
             return "P256.PublicKey"
+
         case .p384:
             return "P384.PublicKey"
+
         case .p521:
             return "P521.PublicKey"
+
         case .ed25519:
             return "Ed25519.PublicKey"
         }
@@ -164,12 +181,15 @@ extension SubjectPublicKeyInfo {
         case .p256(let bytes):
             algorithmIdentifier = .p256PublicKey
             key = try .init(bytes: bytes[...])
+
         case .p384(let bytes):
             algorithmIdentifier = .p384PublicKey
             key = try .init(bytes: bytes[...])
+
         case .p521(let bytes):
             algorithmIdentifier = .p521PublicKey
             key = try .init(bytes: bytes[...])
+
         case .ed25519(let bytes):
             algorithmIdentifier = .ed25519
             key = try .init(bytes: bytes[...])
@@ -205,7 +225,10 @@ extension Certificate.PublicKey: ISO_8825.DER.ImplicitlyTaggable {
     }
 
     @inlinable
-    public init(derEncoded: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
+    public init(
+        derEncoded: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
         let spki = try SubjectPublicKeyInfo(derEncoded: derEncoded, withIdentifier: identifier)
         // Decode-boundary bridge (N5 Option A): init(spki:) validates the key algorithm
         // and its encoded length, and surfaces Certificate.Error; map to the ASN.1 error.

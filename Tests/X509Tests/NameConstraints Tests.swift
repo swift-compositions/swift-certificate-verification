@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,11 +10,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
-import Testing
 import ISO_8824
 import ISO_8825
+import Testing
+
 @testable import Certificates
 
 extension NameConstraints {
@@ -26,6 +27,8 @@ extension NameConstraints {
             // PrintableString, the rest as UTF8String — so the names, and
             // therefore the equality semantics under test, are unchanged.
             static let names: [DistinguishedName] = [
+                // IMPL-108: known-valid input; construction cannot fail.
+                // swiftlint:disable:next force_try
                 try! DistinguishedName([
                     RelativeDistinguishedName.Attribute(
                         type: .RDNAttributeType.countryName,
@@ -35,8 +38,13 @@ extension NameConstraints {
                         type: .RDNAttributeType.stateOrProvinceName,
                         utf8String: "CA"
                     ),
-                    RelativeDistinguishedName.Attribute(type: .RDNAttributeType.organizationName, utf8String: "Apple"),
+                    RelativeDistinguishedName.Attribute(
+                        type: .RDNAttributeType.organizationName,
+                        utf8String: "Apple"
+                    ),
                 ]),
+                // IMPL-108: known-valid input; construction cannot fail.
+                // swiftlint:disable:next force_try
                 try! DistinguishedName([
                     RelativeDistinguishedName.Attribute(
                         type: .RDNAttributeType.countryName,
@@ -46,16 +54,30 @@ extension NameConstraints {
                         type: .RDNAttributeType.stateOrProvinceName,
                         utf8String: "CA"
                     ),
-                    RelativeDistinguishedName.Attribute(type: .RDNAttributeType.organizationName, utf8String: "Apple"),
-                    RelativeDistinguishedName.Attribute(type: .RDNAttributeType.commonName, utf8String: "Test"),
+                    RelativeDistinguishedName.Attribute(
+                        type: .RDNAttributeType.organizationName,
+                        utf8String: "Apple"
+                    ),
+                    RelativeDistinguishedName.Attribute(
+                        type: .RDNAttributeType.commonName,
+                        utf8String: "Test"
+                    ),
                 ]),
+                // IMPL-108: known-valid input; construction cannot fail.
+                // swiftlint:disable:next force_try
                 try! DistinguishedName([
                     RelativeDistinguishedName.Attribute(
                         type: .RDNAttributeType.countryName,
                         printableString: "GB"
                     ),
-                    RelativeDistinguishedName.Attribute(type: .RDNAttributeType.organizationName, utf8String: "Apple"),
-                    RelativeDistinguishedName.Attribute(type: .RDNAttributeType.commonName, utf8String: "Test"),
+                    RelativeDistinguishedName.Attribute(
+                        type: .RDNAttributeType.organizationName,
+                        utf8String: "Apple"
+                    ),
+                    RelativeDistinguishedName.Attribute(
+                        type: .RDNAttributeType.commonName,
+                        utf8String: "Test"
+                    ),
                 ]),
             ]
 
@@ -90,7 +112,10 @@ extension NameConstraints {
 
                         self.assertValueIsSet = { constraints in
                             // check Equatable conformance
-                            #expect(constraints[keyPath: keyPath] == value, sourceLocation: sourceLocation)
+                            #expect(
+                                constraints[keyPath: keyPath] == value,
+                                sourceLocation: sourceLocation
+                            )
 
                             // check Hashable conformance
                             var lhsHasher = Hasher()
@@ -110,38 +135,74 @@ extension NameConstraints {
                     NameConstraintsPropertyValue(\.excludedDNSDomains, value: []),
                     NameConstraintsPropertyValue(\.excludedDNSDomains, value: ["apple.com"]),
                     NameConstraintsPropertyValue(\.excludedDNSDomains, value: ["example.com"]),
-                    NameConstraintsPropertyValue(\.excludedDNSDomains, value: ["apple.com", "example.com"]),
+                    NameConstraintsPropertyValue(
+                        \.excludedDNSDomains,
+                        value: ["apple.com", "example.com"]
+                    ),
                     NameConstraintsPropertyValue(\.permittedDNSDomains, value: []),
                     NameConstraintsPropertyValue(\.permittedDNSDomains, value: ["apple.com"]),
                     NameConstraintsPropertyValue(\.permittedDNSDomains, value: ["example.com"]),
-                    NameConstraintsPropertyValue(\.permittedDNSDomains, value: ["apple.com", "example.com"]),
+                    NameConstraintsPropertyValue(
+                        \.permittedDNSDomains,
+                        value: ["apple.com", "example.com"]
+                    ),
 
                     NameConstraintsPropertyValue(\.excludedEmailAddresses, value: []),
-                    NameConstraintsPropertyValue(\.excludedEmailAddresses, value: ["foo@example.com"]),
-                    NameConstraintsPropertyValue(\.excludedEmailAddresses, value: ["bar@example.com"]),
-                    NameConstraintsPropertyValue(\.excludedEmailAddresses, value: ["foo@example.com", "bar@example.com"]),
+                    NameConstraintsPropertyValue(
+                        \.excludedEmailAddresses,
+                        value: ["foo@example.com"]
+                    ),
+                    NameConstraintsPropertyValue(
+                        \.excludedEmailAddresses,
+                        value: ["bar@example.com"]
+                    ),
+                    NameConstraintsPropertyValue(
+                        \.excludedEmailAddresses,
+                        value: ["foo@example.com", "bar@example.com"]
+                    ),
                     NameConstraintsPropertyValue(\.permittedEmailAddresses, value: []),
-                    NameConstraintsPropertyValue(\.permittedEmailAddresses, value: ["foo@example.com"]),
-                    NameConstraintsPropertyValue(\.permittedEmailAddresses, value: ["bar@example.com"]),
-                    NameConstraintsPropertyValue(\.permittedEmailAddresses, value: ["foo@example.com", "bar@example.com"]),
+                    NameConstraintsPropertyValue(
+                        \.permittedEmailAddresses,
+                        value: ["foo@example.com"]
+                    ),
+                    NameConstraintsPropertyValue(
+                        \.permittedEmailAddresses,
+                        value: ["bar@example.com"]
+                    ),
+                    NameConstraintsPropertyValue(
+                        \.permittedEmailAddresses,
+                        value: ["foo@example.com", "bar@example.com"]
+                    ),
 
                     NameConstraintsPropertyValue(\.excludedIPRanges, value: []),
                     NameConstraintsPropertyValue(\.excludedIPRanges, value: [.v4("127.0.0.1")]),
                     NameConstraintsPropertyValue(\.excludedIPRanges, value: [.v4("192.168.0.1")]),
-                    NameConstraintsPropertyValue(\.excludedIPRanges, value: [.v4("127.0.0.1"), .v4("192.168.0.1")]),
+                    NameConstraintsPropertyValue(
+                        \.excludedIPRanges,
+                        value: [.v4("127.0.0.1"), .v4("192.168.0.1")]
+                    ),
                     NameConstraintsPropertyValue(\.permittedIPRanges, value: []),
                     NameConstraintsPropertyValue(\.permittedIPRanges, value: [.v4("127.0.0.1")]),
                     NameConstraintsPropertyValue(\.permittedIPRanges, value: [.v4("192.168.0.1")]),
-                    NameConstraintsPropertyValue(\.permittedIPRanges, value: [.v4("127.0.0.1"), .v4("192.168.0.1")]),
+                    NameConstraintsPropertyValue(
+                        \.permittedIPRanges,
+                        value: [.v4("127.0.0.1"), .v4("192.168.0.1")]
+                    ),
 
                     NameConstraintsPropertyValue(\.forbiddenURIDomains, value: []),
                     NameConstraintsPropertyValue(\.forbiddenURIDomains, value: [".example.com"]),
                     NameConstraintsPropertyValue(\.forbiddenURIDomains, value: [".apple.com"]),
-                    NameConstraintsPropertyValue(\.forbiddenURIDomains, value: [".example.com", ".apple.com"]),
+                    NameConstraintsPropertyValue(
+                        \.forbiddenURIDomains,
+                        value: [".example.com", ".apple.com"]
+                    ),
                     NameConstraintsPropertyValue(\.permittedURIDomains, value: []),
                     NameConstraintsPropertyValue(\.permittedURIDomains, value: [".example.com"]),
                     NameConstraintsPropertyValue(\.permittedURIDomains, value: [".apple.com"]),
-                    NameConstraintsPropertyValue(\.permittedURIDomains, value: [".example.com", ".apple.com"]),
+                    NameConstraintsPropertyValue(
+                        \.permittedURIDomains,
+                        value: [".example.com", ".apple.com"]
+                    ),
                 ]
 
                 // This will set the properties to the above values in order (and in reversed order).
@@ -149,7 +210,8 @@ extension NameConstraints {
                 // to their previous latest values and are not modified.
 
                 var nameConstraints = NameConstraints()
-                var latestValueForProperty: [PartialKeyPath<NameConstraints>: NameConstraintsPropertyValue] = [:]
+                var latestValueForProperty:
+                    [PartialKeyPath<NameConstraints>: NameConstraintsPropertyValue] = [:]
 
                 for test in tests + tests.reversed() {
                     test.setValue(&nameConstraints)

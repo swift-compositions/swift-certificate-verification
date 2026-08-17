@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -106,8 +106,14 @@ extension Certificate.Extension: ISO_8825.DER.ImplicitlyTaggable {
     }
 
     @inlinable
-    public init(derEncoded rootNode: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) { (nodes: inout ISO_8825.Node.Collection.Iterator) throws(ISO_8824.Error) -> Certificate.Extension in
+    public init(
+        derEncoded rootNode: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) {
+            (
+                nodes: inout ISO_8825.Node.Collection.Iterator
+            ) throws(ISO_8824.Error) -> Certificate.Extension in
             let extensionID = try ISO_8824.ObjectIdentifier(derEncoded: &nodes)
             let critical = try ISO_8825.DER.decodeDefault(&nodes, defaultValue: false)
             let value = try ISO_8824.OctetString(derEncoded: &nodes)
@@ -117,8 +123,12 @@ extension Certificate.Extension: ISO_8825.DER.ImplicitlyTaggable {
     }
 
     @inlinable
-    public func serialize(into coder: inout ISO_8825.DER.Serializer, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        try coder.appendConstructedNode(identifier: identifier) { (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) -> Void in
+    public func serialize(
+        into coder: inout ISO_8825.DER.Serializer,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        try coder.appendConstructedNode(identifier: identifier) {
+            (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) in
             try coder.serialize(self.oid)
 
             if self.critical {

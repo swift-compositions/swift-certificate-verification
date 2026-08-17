@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,11 +10,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
-import Testing
 import ISO_8824
 import ISO_8825
+import Testing
+
 @testable import Certificates
 
 extension DistinguishedName {
@@ -26,7 +27,9 @@ extension DistinguishedName {
 }
 
 extension DistinguishedName {
-    fileprivate static func assertRoundTrips<ASN1Object: ISO_8825.DER.Parseable & ISO_8825.DER.Serializable & Equatable>(
+    fileprivate static func assertRoundTrips<
+        ASN1Object: ISO_8825.DER.Parseable & ISO_8825.DER.Serializable & Equatable
+    >(
         _ value: ASN1Object
     ) throws {
         var serializer = ISO_8825.DER.Serializer()
@@ -39,7 +42,10 @@ extension DistinguishedName {
 extension DistinguishedName.Test.Unit {
     @Test func `simple relative distinguished name sorts its elements`() throws {
         let expected = [
-            try RelativeDistinguishedName.Attribute(type: .NameAttributes.commonName, printableString: "efgh"),
+            try RelativeDistinguishedName.Attribute(
+                type: .NameAttributes.commonName,
+                printableString: "efgh"
+            ),
             RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcd"),
         ]
         let nameA = RelativeDistinguishedName(expected)
@@ -48,9 +54,15 @@ extension DistinguishedName.Test.Unit {
         #expect(Array(nameB) == expected)
     }
 
-    @Test func `simple relative distinguished name sorts its elements when assigned after the fact`() throws {
+    @Test
+    func `simple relative distinguished name sorts its elements when assigned after the fact`()
+        throws
+    {
         let expected = [
-            try RelativeDistinguishedName.Attribute(type: .NameAttributes.commonName, printableString: "efgh"),
+            try RelativeDistinguishedName.Attribute(
+                type: .NameAttributes.commonName,
+                printableString: "efgh"
+            ),
             RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcd"),
         ]
         var nameA = RelativeDistinguishedName()
@@ -61,7 +73,8 @@ extension DistinguishedName.Test.Unit {
         #expect(Array(nameB) == expected)
     }
 
-    @Test func `simple relative distinguished name sorts its elements including by length`() throws {
+    @Test func `simple relative distinguished name sorts its elements including by length`() throws
+    {
         let expected = [
             RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcd"),
             RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcde"),
@@ -81,26 +94,49 @@ extension DistinguishedName.Test.Unit {
         ])
 
         #expect(
-            rdn.remove(at: 1) == RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcde")
+            rdn.remove(at: 1)
+                == RelativeDistinguishedName.Attribute(
+                    type: .NameAttributes.name,
+                    utf8String: "abcde"
+                )
         )
         #expect(
-            rdn == RelativeDistinguishedName([
-                RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcd"),
-                RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcdef"),
-            ])
+            rdn
+                == RelativeDistinguishedName([
+                    RelativeDistinguishedName.Attribute(
+                        type: .NameAttributes.name,
+                        utf8String: "abcd"
+                    ),
+                    RelativeDistinguishedName.Attribute(
+                        type: .NameAttributes.name,
+                        utf8String: "abcdef"
+                    ),
+                ])
         )
 
         #expect(
-            rdn.remove(at: 0) == RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcd")
+            rdn.remove(at: 0)
+                == RelativeDistinguishedName.Attribute(
+                    type: .NameAttributes.name,
+                    utf8String: "abcd"
+                )
         )
         #expect(
-            rdn == RelativeDistinguishedName([
-                RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcdef")
-            ])
+            rdn
+                == RelativeDistinguishedName([
+                    RelativeDistinguishedName.Attribute(
+                        type: .NameAttributes.name,
+                        utf8String: "abcdef"
+                    )
+                ])
         )
 
         #expect(
-            rdn.remove(at: 0) == RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcdef")
+            rdn.remove(at: 0)
+                == RelativeDistinguishedName.Attribute(
+                    type: .NameAttributes.name,
+                    utf8String: "abcdef"
+                )
         )
         #expect(rdn == RelativeDistinguishedName())
     }
@@ -113,38 +149,76 @@ extension DistinguishedName.Test.Unit {
         ])
 
         rdn.removeAll(where: {
-            $0 == RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcde")
+            $0
+                == RelativeDistinguishedName.Attribute(
+                    type: .NameAttributes.name,
+                    utf8String: "abcde"
+                )
         })
 
         #expect(
-            rdn == RelativeDistinguishedName([
-                RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcd"),
-                RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcdef"),
-            ])
+            rdn
+                == RelativeDistinguishedName([
+                    RelativeDistinguishedName.Attribute(
+                        type: .NameAttributes.name,
+                        utf8String: "abcd"
+                    ),
+                    RelativeDistinguishedName.Attribute(
+                        type: .NameAttributes.name,
+                        utf8String: "abcdef"
+                    ),
+                ])
         )
 
         rdn.removeAll(where: {
-            $0 == RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcd")
+            $0
+                == RelativeDistinguishedName.Attribute(
+                    type: .NameAttributes.name,
+                    utf8String: "abcd"
+                )
         })
         #expect(
-            rdn == RelativeDistinguishedName([
-                RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcdef")
-            ])
+            rdn
+                == RelativeDistinguishedName([
+                    RelativeDistinguishedName.Attribute(
+                        type: .NameAttributes.name,
+                        utf8String: "abcdef"
+                    )
+                ])
         )
 
         rdn.removeAll(where: {
-            $0 == RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcdef")
+            $0
+                == RelativeDistinguishedName.Attribute(
+                    type: .NameAttributes.name,
+                    utf8String: "abcdef"
+                )
         })
         #expect(rdn == RelativeDistinguishedName())
     }
 
     @Test func `distinguished name representation`() throws {
         let name = try DistinguishedName([
-            RelativeDistinguishedName.Attribute(type: .RDNAttributeType.domainComponent, ia5String: "com"),
-            RelativeDistinguishedName.Attribute(type: .RDNAttributeType.domainComponent, ia5String: "apple"),
-            RelativeDistinguishedName.Attribute(type: .RDNAttributeType.emailAddress, ia5String: "jon.doe@apple.com"),
-            RelativeDistinguishedName.Attribute(type: .RDNAttributeType.countryName, utf8String: "US"),
-            RelativeDistinguishedName.Attribute(type: .RDNAttributeType.organizationName, utf8String: "DigiCert Inc"),
+            RelativeDistinguishedName.Attribute(
+                type: .RDNAttributeType.domainComponent,
+                ia5String: "com"
+            ),
+            RelativeDistinguishedName.Attribute(
+                type: .RDNAttributeType.domainComponent,
+                ia5String: "apple"
+            ),
+            RelativeDistinguishedName.Attribute(
+                type: .RDNAttributeType.emailAddress,
+                ia5String: "jon.doe@apple.com"
+            ),
+            RelativeDistinguishedName.Attribute(
+                type: .RDNAttributeType.countryName,
+                utf8String: "US"
+            ),
+            RelativeDistinguishedName.Attribute(
+                type: .RDNAttributeType.organizationName,
+                utf8String: "DigiCert Inc"
+            ),
             RelativeDistinguishedName.Attribute(
                 type: .RDNAttributeType.organizationalUnitName,
                 utf8String: "www.digicert.com"
@@ -165,10 +239,16 @@ extension DistinguishedName.Test.Unit {
     @Test func `distinguished name representation with nested attributes`() throws {
         let name = try DistinguishedName([
             RelativeDistinguishedName([
-                RelativeDistinguishedName.Attribute(type: .RDNAttributeType.domainComponent, ia5String: "com")
+                RelativeDistinguishedName.Attribute(
+                    type: .RDNAttributeType.domainComponent,
+                    ia5String: "com"
+                )
             ]),
             RelativeDistinguishedName([
-                RelativeDistinguishedName.Attribute(type: .RDNAttributeType.domainComponent, ia5String: "apple")
+                RelativeDistinguishedName.Attribute(
+                    type: .RDNAttributeType.domainComponent,
+                    ia5String: "apple"
+                )
             ]),
             RelativeDistinguishedName([
                 RelativeDistinguishedName.Attribute(
@@ -177,10 +257,16 @@ extension DistinguishedName.Test.Unit {
                 )
             ]),
             RelativeDistinguishedName([
-                RelativeDistinguishedName.Attribute(type: .RDNAttributeType.countryName, utf8String: "US")
+                RelativeDistinguishedName.Attribute(
+                    type: .RDNAttributeType.countryName,
+                    utf8String: "US"
+                )
             ]),
             RelativeDistinguishedName([
-                RelativeDistinguishedName.Attribute(type: .RDNAttributeType.stateOrProvinceName, printableString: "CA"),
+                RelativeDistinguishedName.Attribute(
+                    type: .RDNAttributeType.stateOrProvinceName,
+                    printableString: "CA"
+                ),
                 RelativeDistinguishedName.Attribute(
                     type: .RDNAttributeType.stateOrProvinceName,
                     utf8String: "California"
@@ -249,14 +335,22 @@ extension DistinguishedName.Test.Unit {
 
         expectEqualValueAndHash(
             try RelativeDistinguishedName.Attribute.Value(
-                asn1Any: ISO_8825.`Any`(erasing: ISO_8824.UTF8String("This is a fancy UTF8 String with Emojies 🥳🐥"))
+                asn1Any: ISO_8825.`Any`(
+                    erasing: ISO_8824.UTF8String("This is a fancy UTF8 String with Emojies 🥳🐥")
+                )
             ),
-            RelativeDistinguishedName.Attribute.Value(utf8String: "This is a fancy UTF8 String with Emojies 🥳🐥")
+            RelativeDistinguishedName.Attribute.Value(
+                utf8String: "This is a fancy UTF8 String with Emojies 🥳🐥"
+            )
         )
 
         expectEqualValueAndHash(
             try RelativeDistinguishedName.Attribute.Value(
-                asn1Any: ISO_8825.`Any`(erasing: ISO_8824.PrintableString("This is a simple printable string 123456789 ():="))
+                asn1Any: ISO_8825.`Any`(
+                    erasing: ISO_8824.PrintableString(
+                        "This is a simple printable string 123456789 ():="
+                    )
+                )
             ),
             try RelativeDistinguishedName.Attribute.Value(
                 printableString: "This is a simple printable string 123456789 ():="
@@ -265,16 +359,24 @@ extension DistinguishedName.Test.Unit {
 
         expectEqualValueAndHash(
             try RelativeDistinguishedName.Attribute.Value(
-                asn1Any: ISO_8825.`Any`(erasing: ISO_8824.UTF8String(String(repeating: "A", count: 129)))
+                asn1Any: ISO_8825.`Any`(
+                    erasing: ISO_8824.UTF8String(String(repeating: "A", count: 129))
+                )
             ),
-            RelativeDistinguishedName.Attribute.Value(utf8String: String(repeating: "A", count: 129))
+            RelativeDistinguishedName.Attribute.Value(
+                utf8String: String(repeating: "A", count: 129)
+            )
         )
 
         expectEqualValueAndHash(
             try RelativeDistinguishedName.Attribute.Value(
-                asn1Any: ISO_8825.`Any`(erasing: ISO_8824.UTF8String(String(repeating: "A", count: Int(UInt16.max) + 1)))
+                asn1Any: ISO_8825.`Any`(
+                    erasing: ISO_8824.UTF8String(String(repeating: "A", count: Int(UInt16.max) + 1))
+                )
             ),
-            RelativeDistinguishedName.Attribute.Value(utf8String: String(repeating: "A", count: Int(UInt16.max) + 1))
+            RelativeDistinguishedName.Attribute.Value(
+                utf8String: String(repeating: "A", count: Int(UInt16.max) + 1)
+            )
         )
     }
 }
@@ -294,13 +396,22 @@ extension DistinguishedName.Test.`Edge Case` {
 
     @Test func `distinguished name representation with commas and newlines`() throws {
         let name = try DistinguishedName([
-            RelativeDistinguishedName.Attribute(type: .RDNAttributeType.countryName, utf8String: "US "),
-            RelativeDistinguishedName.Attribute(type: .RDNAttributeType.organizationName, utf8String: " DigiCert Inc"),
+            RelativeDistinguishedName.Attribute(
+                type: .RDNAttributeType.countryName,
+                utf8String: "US "
+            ),
+            RelativeDistinguishedName.Attribute(
+                type: .RDNAttributeType.organizationName,
+                utf8String: " DigiCert Inc"
+            ),
             RelativeDistinguishedName.Attribute(
                 type: .RDNAttributeType.organizationalUnitName,
                 utf8String: "#www.digicert.com"
             ),
-            RelativeDistinguishedName.Attribute(type: .RDNAttributeType.commonName, utf8String: ",+\"\\<>;"),
+            RelativeDistinguishedName.Attribute(
+                type: .RDNAttributeType.commonName,
+                utf8String: ",+\"\\<>;"
+            ),
         ])
 
         let s = String(describing: name)
@@ -314,12 +425,18 @@ extension DistinguishedName.Test.`Edge Case` {
             (.init(type: .RDNAttributeType.commonName, ia5String: "foo"), "foo"),
             /// ISO_8824.IA5String with wrong tag
             (
-                .init(type: .RDNAttributeType.commonName, value: ISO_8825.`Any`(derEncoded: [0x19, 0x03, 0x41, 0x42, 0x43])),
+                .init(
+                    type: .RDNAttributeType.commonName,
+                    value: ISO_8825.`Any`(derEncoded: [0x19, 0x03, 0x41, 0x42, 0x43])
+                ),
                 nil
             ),
             /// ISO_8824.IA5String byte that falls outside the range of 7-bit ASCII
             (
-                .init(type: .RDNAttributeType.commonName, value: ISO_8825.`Any`(derEncoded: [0x16, 0x03, 0x41, 0x42, 0x80])),
+                .init(
+                    type: .RDNAttributeType.commonName,
+                    value: ISO_8825.`Any`(derEncoded: [0x16, 0x03, 0x41, 0x42, 0x80])
+                ),
                 nil
             ),
         ]
@@ -329,17 +446,37 @@ extension DistinguishedName.Test.`Edge Case` {
         }
     }
 
-    @Test func `rdn attribute values can be converted to strings in some of the any cases too`() throws {
+    @Test func `rdn attribute values can be converted to strings in some of the any cases too`()
+        throws
+    {
         let weirdOID: ISO_8824.ObjectIdentifier = [1, 2, 3, 4, 5]
 
         let examplesAndResults: [(RelativeDistinguishedName.Attribute, String?)] = try [
             (.init(type: weirdOID, printableString: "foo"), "foo"),
             (.init(type: weirdOID, utf8String: "bar"), "bar"),
-            (.init(type: weirdOID, value: ISO_8825.`Any`(erasing: ISO_8824.UTF8String("foo"))), "foo"),
-            (.init(type: weirdOID, value: ISO_8825.`Any`(erasing: ISO_8824.PrintableString("baz"))), "baz"),
-            (.init(type: weirdOID, value: ISO_8825.`Any`(erasing: ISO_8824.IA5String("foo"))), "foo"),
+            (
+                .init(type: weirdOID, value: ISO_8825.`Any`(erasing: ISO_8824.UTF8String("foo"))),
+                "foo"
+            ),
+            (
+                .init(
+                    type: weirdOID,
+                    value: ISO_8825.`Any`(erasing: ISO_8824.PrintableString("baz"))
+                ), "baz"
+            ),
+            (
+                .init(type: weirdOID, value: ISO_8825.`Any`(erasing: ISO_8824.IA5String("foo"))),
+                "foo"
+            ),
             (.init(type: weirdOID, value: ISO_8825.`Any`(erasing: 5)), nil),
-            (.init(type: weirdOID, value: ISO_8825.`Any`(erasing: ISO_8824.OctetString(contentBytes: [1, 2, 3, 4]))), nil),
+            (
+                .init(
+                    type: weirdOID,
+                    value: ISO_8825.`Any`(
+                        erasing: ISO_8824.OctetString(contentBytes: [1, 2, 3, 4])
+                    )
+                ), nil
+            ),
         ]
 
         for (example, result) in examplesAndResults {
@@ -349,11 +486,16 @@ extension DistinguishedName.Test.`Edge Case` {
 
     @Test func `rdn attribute values can be parsed when printable string is invalid`() throws {
         // '&' is not allowed in PrintableString.
-        let value = try ISO_8825.`Any`(erasing: ISO_8824.UTF8String("Wells Fargo & Company"), withIdentifier: .printableString)
+        let value = try ISO_8825.`Any`(
+            erasing: ISO_8824.UTF8String("Wells Fargo & Company"),
+            withIdentifier: .printableString
+        )
 
         let attribute = try RelativeDistinguishedName.Attribute(derEncoded: [
-            0x30, 0x1c, 0x06, 0x03, 0x55, 0x04, 0x0a, 0x13, 0x15, 0x57, 0x65, 0x6c, 0x6c, 0x73, 0x20,
-            0x46, 0x61, 0x72, 0x67, 0x6f, 0x20, 0x26, 0x20, 0x43, 0x6f, 0x6d, 0x70, 0x61, 0x6e, 0x79,
+            0x30, 0x1c, 0x06, 0x03, 0x55, 0x04, 0x0a, 0x13, 0x15, 0x57, 0x65, 0x6c, 0x6c, 0x73,
+            0x20,
+            0x46, 0x61, 0x72, 0x67, 0x6f, 0x20, 0x26, 0x20, 0x43, 0x6f, 0x6d, 0x70, 0x61, 0x6e,
+            0x79,
         ])
 
         #expect(attribute.type == .RDNAttributeType.organizationName)
@@ -366,14 +508,20 @@ extension DistinguishedName.Test.Integration {
     @Test func `simple relative distinguished name round trips`() throws {
         let name = RelativeDistinguishedName([
             RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcd"),
-            try RelativeDistinguishedName.Attribute(type: .NameAttributes.commonName, printableString: "efgh"),
+            try RelativeDistinguishedName.Attribute(
+                type: .NameAttributes.commonName,
+                printableString: "efgh"
+            ),
         ])
         try DistinguishedName.assertRoundTrips(name)
     }
 
     @Test func `simple relative distinguished name serializes as expected`() throws {
         let name = RelativeDistinguishedName([
-            try RelativeDistinguishedName.Attribute(type: .NameAttributes.commonName, printableString: "efgh"),
+            try RelativeDistinguishedName.Attribute(
+                type: .NameAttributes.commonName,
+                printableString: "efgh"
+            ),
             RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcd"),
         ])
 
@@ -381,7 +529,8 @@ extension DistinguishedName.Test.Integration {
         try serializer.serialize(name)
 
         let expectedBytes: [UInt8] = [
-            49, 26, 48, 11, 6, 3, 85, 4, 3, 19, 4, 0x65, 0x66, 0x67, 0x68, 48, 11, 6, 3, 85, 4, 41, 12, 4, 0x61, 0x62,
+            49, 26, 48, 11, 6, 3, 85, 4, 3, 19, 4, 0x65, 0x66, 0x67, 0x68, 48, 11, 6, 3, 85, 4, 41,
+            12, 4, 0x61, 0x62,
             0x63, 0x64,
         ]
 
@@ -391,11 +540,17 @@ extension DistinguishedName.Test.Integration {
     @Test func `simple distinguished name round trips`() throws {
         let firstName = RelativeDistinguishedName([
             RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcd"),
-            try RelativeDistinguishedName.Attribute(type: .NameAttributes.commonName, printableString: "efgh"),
+            try RelativeDistinguishedName.Attribute(
+                type: .NameAttributes.commonName,
+                printableString: "efgh"
+            ),
         ])
         let secondName = RelativeDistinguishedName([
             RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "ijkl"),
-            try RelativeDistinguishedName.Attribute(type: .NameAttributes.commonName, printableString: "mnop"),
+            try RelativeDistinguishedName.Attribute(
+                type: .NameAttributes.commonName,
+                printableString: "mnop"
+            ),
         ])
         let name = DistinguishedName([firstName, secondName])
         try DistinguishedName.assertRoundTrips(name)
@@ -404,11 +559,17 @@ extension DistinguishedName.Test.Integration {
     @Test func `simple distinguished name serializes as expected`() throws {
         let firstName = RelativeDistinguishedName([
             RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcd"),
-            try RelativeDistinguishedName.Attribute(type: .NameAttributes.commonName, printableString: "efgh"),
+            try RelativeDistinguishedName.Attribute(
+                type: .NameAttributes.commonName,
+                printableString: "efgh"
+            ),
         ])
         let secondName = RelativeDistinguishedName([
             RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "ijkl"),
-            try RelativeDistinguishedName.Attribute(type: .NameAttributes.commonName, printableString: "mnop"),
+            try RelativeDistinguishedName.Attribute(
+                type: .NameAttributes.commonName,
+                printableString: "mnop"
+            ),
         ])
         let name = DistinguishedName([firstName, secondName])
 
@@ -417,7 +578,8 @@ extension DistinguishedName.Test.Integration {
 
         let expectedBytes: [UInt8] = [
             48, 56, 49, 26, 48, 11, 6, 3, 85, 4, 3, 19, 4, 0x65, 0x66, 0x67, 0x68, 48, 11, 6, 3, 85,
-            4, 41, 12, 4, 0x61, 0x62, 0x63, 0x64, 49, 26, 48, 11, 6, 3, 85, 4, 3, 19, 4, 0x6d, 0x6e, 0x6f,
+            4, 41, 12, 4, 0x61, 0x62, 0x63, 0x64, 49, 26, 48, 11, 6, 3, 85, 4, 3, 19, 4, 0x6d, 0x6e,
+            0x6f,
             0x70, 48, 11, 6, 3, 85, 4, 41, 12, 4, 0x69, 0x6a, 0x6b, 0x6c,
         ]
 

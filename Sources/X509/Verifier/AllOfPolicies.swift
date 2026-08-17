@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -54,8 +54,9 @@ public struct AllOfPolicies<Policy: VerifierPolicy>: VerifierPolicy {
     }
 
     @inlinable
-    public mutating func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) async -> PolicyEvaluationResult
-    {
+    public mutating func chainMeetsPolicyRequirements(
+        chain: UnverifiedCertificateChain
+    ) async -> PolicyEvaluationResult {
         await self.policy.chainMeetsPolicyRequirements(chain: chain)
     }
 }

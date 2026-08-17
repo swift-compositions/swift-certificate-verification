@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -27,7 +27,9 @@ import Standard_Library_Extensions
 /// the same name is also matched in a permitted tree.
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 public struct NameConstraints {
-    public struct DNSNames: Hashable, Sendable, Collection, ExpressibleByArrayLiteral, CustomStringConvertible {
+    public struct DNSNames: Hashable, Sendable, Collection, ExpressibleByArrayLiteral,
+        CustomStringConvertible
+    {
         public typealias Element = String
 
         @inlinable
@@ -125,7 +127,9 @@ public struct NameConstraints {
         }
     }
 
-    public struct IPRanges: Hashable, Sendable, Collection, ExpressibleByArrayLiteral, CustomStringConvertible {
+    public struct IPRanges: Hashable, Sendable, Collection, ExpressibleByArrayLiteral,
+        CustomStringConvertible
+    {
         @inlinable
         public static func == (lhs: Self, rhs: Self) -> Bool {
             lhs.elementsEqual(rhs)
@@ -221,7 +225,9 @@ public struct NameConstraints {
         }
     }
 
-    public struct EmailAddresses: Hashable, Sendable, Collection, ExpressibleByArrayLiteral, CustomStringConvertible {
+    public struct EmailAddresses: Hashable, Sendable, Collection, ExpressibleByArrayLiteral,
+        CustomStringConvertible
+    {
         @inlinable
         public static func == (lhs: Self, rhs: Self) -> Bool {
             lhs.elementsEqual(rhs)
@@ -317,7 +323,9 @@ public struct NameConstraints {
         }
     }
 
-    public struct URIDomains: Hashable, Sendable, Collection, ExpressibleByArrayLiteral, CustomStringConvertible {
+    public struct URIDomains: Hashable, Sendable, Collection, ExpressibleByArrayLiteral,
+        CustomStringConvertible
+    {
         @inlinable
         public static func == (lhs: Self, rhs: Self) -> Bool {
             lhs.elementsEqual(rhs)
@@ -626,22 +634,32 @@ public struct NameConstraints {
         self.permittedSubtrees = []
         self.permittedSubtrees.reserveCapacity(
             permittedDNSDomains.underestimatedCount + permittedIPRanges.underestimatedCount
-                + permittedEmailAddresses.underestimatedCount + permittedURIDomains.underestimatedCount
+                + permittedEmailAddresses.underestimatedCount
+                + permittedURIDomains.underestimatedCount
         )
         self.permittedSubtrees.append(contentsOf: permittedDNSDomains.lazy.map { .dnsName($0) })
         self.permittedSubtrees.append(contentsOf: permittedIPRanges.lazy.map { .ipAddress($0) })
-        self.permittedSubtrees.append(contentsOf: permittedEmailAddresses.lazy.map { .rfc822Name($0) })
-        self.permittedSubtrees.append(contentsOf: permittedURIDomains.lazy.map { .uniformResourceIdentifier($0) })
+        self.permittedSubtrees.append(
+            contentsOf: permittedEmailAddresses.lazy.map { .rfc822Name($0) }
+        )
+        self.permittedSubtrees.append(
+            contentsOf: permittedURIDomains.lazy.map { .uniformResourceIdentifier($0) }
+        )
 
         self.excludedSubtrees = []
         self.excludedSubtrees.reserveCapacity(
             excludedDNSDomains.underestimatedCount + excludedIPRanges.underestimatedCount
-                + excludedEmailAddresses.underestimatedCount + forbiddenURIDomains.underestimatedCount
+                + excludedEmailAddresses.underestimatedCount
+                + forbiddenURIDomains.underestimatedCount
         )
         self.excludedSubtrees.append(contentsOf: excludedDNSDomains.lazy.map { .dnsName($0) })
         self.excludedSubtrees.append(contentsOf: excludedIPRanges.lazy.map { .ipAddress($0) })
-        self.excludedSubtrees.append(contentsOf: excludedEmailAddresses.lazy.map { .rfc822Name($0) })
-        self.excludedSubtrees.append(contentsOf: forbiddenURIDomains.lazy.map { .uniformResourceIdentifier($0) })
+        self.excludedSubtrees.append(
+            contentsOf: excludedEmailAddresses.lazy.map { .rfc822Name($0) }
+        )
+        self.excludedSubtrees.append(
+            contentsOf: forbiddenURIDomains.lazy.map { .uniformResourceIdentifier($0) }
+        )
     }
 
     /// Construct an extension constraining the names a CA may issue.
@@ -674,8 +692,13 @@ public struct NameConstraints {
         }
 
         let nameConstraintsValue = try NameConstraintsValue(derEncoded: ext.value)
-        guard nameConstraintsValue.permittedSubtrees != nil || nameConstraintsValue.excludedSubtrees != nil else {
-            throw ISO_8824.Error.invalidASN1Object(reason: "Name Constraints has no permitted or excluded subtrees")
+        guard
+            nameConstraintsValue.permittedSubtrees != nil
+                || nameConstraintsValue.excludedSubtrees != nil
+        else {
+            throw ISO_8824.Error.invalidASN1Object(
+                reason: "Name Constraints has no permitted or excluded subtrees"
+            )
         }
 
         self.permittedSubtrees = nameConstraintsValue.permittedSubtrees ?? []
@@ -737,7 +760,11 @@ extension Certificate.Extension {
         let asn1Representation = NameConstraintsValue(nameConstraints)
         var serializer = ISO_8825.DER.Serializer()
         try serializer.serialize(asn1Representation)
-        self.init(oid: .X509ExtensionID.nameConstraints, critical: critical, value: serializer.serializedBytes[...])
+        self.init(
+            oid: .X509ExtensionID.nameConstraints,
+            critical: critical,
+            value: serializer.serializedBytes[...]
+        )
     }
 }
 
@@ -773,8 +800,14 @@ struct NameConstraintsValue: ISO_8825.DER.ImplicitlyTaggable, Sendable {
     }
 
     @inlinable
-    init(derEncoded rootNode: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) { (nodes: inout ISO_8825.Node.Collection.Iterator) throws(ISO_8824.Error) -> NameConstraintsValue in
+    init(
+        derEncoded rootNode: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) {
+            (
+                nodes: inout ISO_8825.Node.Collection.Iterator
+            ) throws(ISO_8824.Error) -> NameConstraintsValue in
             let permittedSubtrees: GeneralSubtrees? = try ISO_8825.DER.optionalImplicitlyTagged(
                 &nodes,
                 tag: .init(tagWithNumber: 0, tagClass: .contextSpecific)
@@ -792,15 +825,19 @@ struct NameConstraintsValue: ISO_8825.DER.ImplicitlyTaggable, Sendable {
     }
 
     @inlinable
-    func serialize(into coder: inout ISO_8825.DER.Serializer, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        try coder.appendConstructedNode(identifier: identifier) { (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) -> Void in
+    func serialize(
+        into coder: inout ISO_8825.DER.Serializer,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        try coder.appendConstructedNode(identifier: identifier) {
+            (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) in
             try coder.serializeOptionalImplicitlyTagged(
-                self.permittedSubtrees.map { GeneralSubtrees($0) },
+                permittedSubtrees.map { GeneralSubtrees($0) },
                 withIdentifier: .init(tagWithNumber: 0, tagClass: .contextSpecific)
             )
 
             try coder.serializeOptionalImplicitlyTagged(
-                self.excludedSubtrees.map { GeneralSubtrees($0) },
+                excludedSubtrees.map { GeneralSubtrees($0) },
                 withIdentifier: .init(tagWithNumber: 1, tagClass: .contextSpecific)
             )
         }
@@ -847,11 +884,21 @@ struct GeneralSubtrees: ISO_8825.DER.ImplicitlyTaggable, Sendable {
     }
 
     @inlinable
-    init(derEncoded rootNode: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        self.base = try ISO_8825.DER.sequence(rootNode, identifier: identifier) { (nodes: inout ISO_8825.Node.Collection.Iterator) throws(ISO_8824.Error) -> [GeneralName] in
+    init(
+        derEncoded rootNode: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        self.base = try ISO_8825.DER.sequence(rootNode, identifier: identifier) {
+            (
+                nodes: inout ISO_8825.Node.Collection.Iterator
+            ) throws(ISO_8824.Error)
+                -> [GeneralName] in
             var names: [GeneralName] = []
             while let node = nodes.next() {
-                let name = try ISO_8825.DER.sequence(node, identifier: .sequence) { (nodes: inout ISO_8825.Node.Collection.Iterator) throws(ISO_8824.Error) -> GeneralName in
+                let name = try ISO_8825.DER.sequence(node, identifier: .sequence) {
+                    (
+                        nodes: inout ISO_8825.Node.Collection.Iterator
+                    ) throws(ISO_8824.Error) -> GeneralName in
                     try GeneralName(derEncoded: &nodes)
                 }
                 names.append(name)
@@ -861,10 +908,15 @@ struct GeneralSubtrees: ISO_8825.DER.ImplicitlyTaggable, Sendable {
     }
 
     @inlinable
-    func serialize(into coder: inout ISO_8825.DER.Serializer, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        try coder.appendConstructedNode(identifier: identifier) { (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) -> Void in
-            for name in self.base {
-                try coder.appendConstructedNode(identifier: .sequence) { (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) -> Void in
+    func serialize(
+        into coder: inout ISO_8825.DER.Serializer,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        try coder.appendConstructedNode(identifier: identifier) {
+            (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) in
+            for name in base {
+                try coder.appendConstructedNode(identifier: .sequence) {
+                    (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) in
                     try coder.serialize(name)
                 }
             }

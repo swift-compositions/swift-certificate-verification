@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -63,8 +63,10 @@ extension BasicConstraints: CustomStringConvertible {
         switch self {
         case .isCertificateAuthority(maxPathLength: nil):
             return "CA=TRUE"
+
         case .isCertificateAuthority(maxPathLength: .some(let maxLen)):
             return "CA=TRUE, maxPathLength=\(maxLen)"
+
         case .notCertificateAuthority:
             return "CA=FALSE"
         }
@@ -89,7 +91,11 @@ extension Certificate.Extension {
         let asn1Representation = BasicConstraintsValue(basicConstraints)
         var serializer = ISO_8825.DER.Serializer()
         try serializer.serialize(asn1Representation)
-        self.init(oid: .X509ExtensionID.basicConstraints, critical: critical, value: serializer.serializedBytes[...])
+        self.init(
+            oid: .X509ExtensionID.basicConstraints,
+            critical: critical,
+            value: serializer.serializedBytes[...]
+        )
     }
 }
 
@@ -127,6 +133,7 @@ struct BasicConstraintsValue: ISO_8825.DER.ImplicitlyTaggable, Sendable {
         case .isCertificateAuthority(maxPathLength: let maxPathLen):
             self.isCA = true
             self.pathLenConstraint = maxPathLen
+
         case .notCertificateAuthority:
             self.isCA = false
             self.pathLenConstraint = nil
@@ -134,8 +141,14 @@ struct BasicConstraintsValue: ISO_8825.DER.ImplicitlyTaggable, Sendable {
     }
 
     @inlinable
-    init(derEncoded rootNode: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) { (nodes: inout ISO_8825.Node.Collection.Iterator) throws(ISO_8824.Error) -> BasicConstraintsValue in
+    init(
+        derEncoded rootNode: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) {
+            (
+                nodes: inout ISO_8825.Node.Collection.Iterator
+            ) throws(ISO_8824.Error) -> BasicConstraintsValue in
             let isCA: Bool = try ISO_8825.DER.decodeDefault(&nodes, defaultValue: false)
             let pathLenConstraint: Int? = try ISO_8825.DER.optionalImplicitlyTagged(&nodes)
             return try BasicConstraintsValue(isCA: isCA, pathLenConstraint: pathLenConstraint)
@@ -143,12 +156,16 @@ struct BasicConstraintsValue: ISO_8825.DER.ImplicitlyTaggable, Sendable {
     }
 
     @inlinable
-    func serialize(into coder: inout ISO_8825.DER.Serializer, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        try coder.appendConstructedNode(identifier: identifier) { (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) -> Void in
-            if self.isCA != false {
-                try coder.serialize(self.isCA)
+    func serialize(
+        into coder: inout ISO_8825.DER.Serializer,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        try coder.appendConstructedNode(identifier: identifier) {
+            (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) in
+            if isCA != false {
+                try coder.serialize(isCA)
             }
-            try coder.serializeOptionalImplicitlyTagged(self.pathLenConstraint)
+            try coder.serializeOptionalImplicitlyTagged(pathLenConstraint)
         }
     }
 }

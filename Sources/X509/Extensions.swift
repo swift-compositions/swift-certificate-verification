@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -64,7 +64,8 @@ extension Certificate {
         /// - Parameter extensions: The base extensions.
         /// - Throws: if multiple extensions have the same OID
         @inlinable
-        public init<Elements>(_ extensions: Elements) throws where Elements: Sequence, Elements.Element == Extension {
+        public init<Elements>(_ extensions: Elements) throws
+        where Elements: Sequence, Elements.Element == Extension {
             self._extensions = Array(extensions)
 
             // This limit is somewhat arbitrary. Linear search for under 32 elements
@@ -113,9 +114,7 @@ extension Certificate.Extensions: RandomAccessCollection {
 
     @inlinable
     public subscript(position: Int) -> Certificate.Extension {
-        get {
-            self._extensions[position]
-        }
+        self._extensions[position]
     }
 }
 
@@ -197,7 +196,7 @@ extension Certificate.Extensions {
             self._extensions.first(where: { $0.oid == oid })
         }
         set {
-            if let newValue = newValue {
+            if let newValue {
                 precondition(oid == newValue.oid)
                 self.update(newValue)
             } else {

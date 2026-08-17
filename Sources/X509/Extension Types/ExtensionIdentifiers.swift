@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -48,6 +48,8 @@ extension ISO_8824.ObjectIdentifier {
 
         /// Identifies the authority information access extension, corresponding to
         /// ``AuthorityInformationAccess``.
-        public static let authorityInformationAccess: ISO_8824.ObjectIdentifier = [1, 3, 6, 1, 5, 5, 7, 1, 1]
+        public static let authorityInformationAccess: ISO_8824.ObjectIdentifier = [
+            1, 3, 6, 1, 5, 5, 7, 1, 1,
+        ]
     }
 }

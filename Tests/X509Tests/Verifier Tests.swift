@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,18 +10,20 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
-#if canImport(FoundationEssentials)
-import FoundationEssentials
-#else
-import Foundation
-#endif
-import Testing
+@preconcurrency import Crypto
 import ISO_8824
 import ISO_8825
+import Testing
+
 @testable import Certificates
-@preconcurrency import Crypto
+
+#if canImport(FoundationEssentials)
+    import FoundationEssentials
+#else
+    import Foundation
+#endif
 
 @available(macOS 11.0, iOS 14, tvOS 14, watchOS 7, macCatalyst 14, visionOS 1.0, *)
 @Suite struct `Verifier Tests` {
@@ -31,12 +33,16 @@ import ISO_8825
         private static let referenceTime = Date()
 
         private static let ca1PrivateKey = P384.Signing.PrivateKey()
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         private static let ca1Name = try! DistinguishedName {
             CountryName("US")
             OrganizationName("Apple")
             CommonName("Swift Certificate Test CA 1")
         }
         private static let ca1: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -52,13 +58,17 @@ import ISO_8825
                     )
                     KeyUsage(keyCertSign: true)
                     SubjectKeyIdentifier(
-                        keyIdentifier: ArraySlice(Insecure.SHA1.hash(data: ca1PrivateKey.publicKey.derRepresentation))
+                        keyIdentifier: ArraySlice(
+                            Insecure.SHA1.hash(data: ca1PrivateKey.publicKey.derRepresentation)
+                        )
                     )
                 },
                 issuerPrivateKey: .init(ca1PrivateKey)
             )
         }()
         private static let ca1WithoutSubjectKeyIdentifier: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -78,6 +88,8 @@ import ISO_8825
             )
         }()
         private static let ca1CrossSignedByCA2: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -92,9 +104,15 @@ import ISO_8825
                         BasicConstraints.isCertificateAuthority(maxPathLength: nil)
                     )
                     KeyUsage(keyCertSign: true)
-                    AuthorityKeyIdentifier(keyIdentifier: try! ca2.extensions.subjectKeyIdentifier!.keyIdentifier)
+                    AuthorityKeyIdentifier(
+                        // IMPL-108: known-valid input; construction cannot fail.
+                        // swiftlint:disable:next force_try
+                        keyIdentifier: try! ca2.extensions.subjectKeyIdentifier!.keyIdentifier
+                    )
                     SubjectKeyIdentifier(
-                        keyIdentifier: ArraySlice(Insecure.SHA1.hash(data: ca1PrivateKey.publicKey.derRepresentation))
+                        keyIdentifier: ArraySlice(
+                            Insecure.SHA1.hash(data: ca1PrivateKey.publicKey.derRepresentation)
+                        )
                     )
                 },
                 issuerPrivateKey: .init(ca2PrivateKey)
@@ -102,6 +120,8 @@ import ISO_8825
         }()
         private static let ca1AlternativePrivateKey = P384.Signing.PrivateKey()
         private static let ca1WithAlternativePrivateKey: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -118,7 +138,9 @@ import ISO_8825
                     KeyUsage(keyCertSign: true)
                     SubjectKeyIdentifier(
                         keyIdentifier: ArraySlice(
-                            Insecure.SHA1.hash(data: ca1AlternativePrivateKey.publicKey.derRepresentation)
+                            Insecure.SHA1.hash(
+                                data: ca1AlternativePrivateKey.publicKey.derRepresentation
+                            )
                         )
                     )
                 },
@@ -127,12 +149,16 @@ import ISO_8825
         }()
 
         private static let ca2PrivateKey = P384.Signing.PrivateKey()
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         private static let ca2Name = try! DistinguishedName {
             CountryName("US")
             OrganizationName("Apple")
             CommonName("Swift Certificate Test CA 2")
         }
         private static let ca2: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -148,13 +174,17 @@ import ISO_8825
                     )
                     KeyUsage(keyCertSign: true)
                     SubjectKeyIdentifier(
-                        keyIdentifier: ArraySlice(Insecure.SHA1.hash(data: ca2PrivateKey.publicKey.derRepresentation))
+                        keyIdentifier: ArraySlice(
+                            Insecure.SHA1.hash(data: ca2PrivateKey.publicKey.derRepresentation)
+                        )
                     )
                 },
                 issuerPrivateKey: .init(ca2PrivateKey)
             )
         }()
         private static let ca2CrossSignedByCA1: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -169,9 +199,15 @@ import ISO_8825
                         BasicConstraints.isCertificateAuthority(maxPathLength: nil)
                     )
                     KeyUsage(keyCertSign: true)
-                    AuthorityKeyIdentifier(keyIdentifier: try! ca1.extensions.subjectKeyIdentifier!.keyIdentifier)
+                    AuthorityKeyIdentifier(
+                        // IMPL-108: known-valid input; construction cannot fail.
+                        // swiftlint:disable:next force_try
+                        keyIdentifier: try! ca1.extensions.subjectKeyIdentifier!.keyIdentifier
+                    )
                     SubjectKeyIdentifier(
-                        keyIdentifier: ArraySlice(Insecure.SHA1.hash(data: ca2PrivateKey.publicKey.derRepresentation))
+                        keyIdentifier: ArraySlice(
+                            Insecure.SHA1.hash(data: ca2PrivateKey.publicKey.derRepresentation)
+                        )
                     )
                 },
                 issuerPrivateKey: .init(ca1PrivateKey)
@@ -179,12 +215,16 @@ import ISO_8825
         }()
 
         private static let intermediate1PrivateKey = P256.Signing.PrivateKey()
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         private static let intermediate1Name = try! DistinguishedName {
             CountryName("US")
             OrganizationName("Apple")
             CommonName("Swift Certificate Test Intermediate CA 1")
         }
         private static let intermediate1: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -199,10 +239,16 @@ import ISO_8825
                         BasicConstraints.isCertificateAuthority(maxPathLength: 1)
                     )
                     KeyUsage(keyCertSign: true)
-                    AuthorityKeyIdentifier(keyIdentifier: try! ca1.extensions.subjectKeyIdentifier!.keyIdentifier)
+                    AuthorityKeyIdentifier(
+                        // IMPL-108: known-valid input; construction cannot fail.
+                        // swiftlint:disable:next force_try
+                        keyIdentifier: try! ca1.extensions.subjectKeyIdentifier!.keyIdentifier
+                    )
                     SubjectKeyIdentifier(
                         keyIdentifier: ArraySlice(
-                            Insecure.SHA1.hash(data: intermediate1PrivateKey.publicKey.derRepresentation)
+                            Insecure.SHA1.hash(
+                                data: intermediate1PrivateKey.publicKey.derRepresentation
+                            )
                         )
                     )
                 },
@@ -210,6 +256,8 @@ import ISO_8825
             )
         }()
         private static let intermediate1WithoutSKIAKI: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -229,6 +277,8 @@ import ISO_8825
             )
         }()
         private static let intermediate1WithIncorrectSKIAKI: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -243,9 +293,15 @@ import ISO_8825
                         BasicConstraints.isCertificateAuthority(maxPathLength: 1)
                     )
                     KeyUsage(keyCertSign: true)
-                    AuthorityKeyIdentifier(keyIdentifier: try! ca2.extensions.subjectKeyIdentifier!.keyIdentifier)
+                    AuthorityKeyIdentifier(
+                        // IMPL-108: known-valid input; construction cannot fail.
+                        // swiftlint:disable:next force_try
+                        keyIdentifier: try! ca2.extensions.subjectKeyIdentifier!.keyIdentifier
+                    )
                     SubjectKeyIdentifier(
-                        keyIdentifier: ArraySlice(Insecure.SHA1.hash(data: ca1PrivateKey.publicKey.derRepresentation))
+                        keyIdentifier: ArraySlice(
+                            Insecure.SHA1.hash(data: ca1PrivateKey.publicKey.derRepresentation)
+                        )
                     )
                 },
                 issuerPrivateKey: .init(ca1PrivateKey)
@@ -254,12 +310,16 @@ import ISO_8825
 
         private static let localhostLeafPrivateKey = P256.Signing.PrivateKey()
         private static let localhostLeaf: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             let localhostLeafName = try! DistinguishedName {
                 CountryName("US")
                 OrganizationName("Apple")
                 CommonName("localhost")
             }
 
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -274,7 +334,12 @@ import ISO_8825
                         BasicConstraints.notCertificateAuthority
                     )
                     KeyUsage(keyCertSign: true)
-                    AuthorityKeyIdentifier(keyIdentifier: try! intermediate1.extensions.subjectKeyIdentifier!.keyIdentifier)
+                    AuthorityKeyIdentifier(
+                        // IMPL-108: known-valid input; construction cannot fail.
+                        // swiftlint:disable:next force_try
+                        keyIdentifier: try! intermediate1.extensions.subjectKeyIdentifier!
+                            .keyIdentifier
+                    )
                 },
                 issuerPrivateKey: .init(intermediate1PrivateKey)
             )
@@ -282,12 +347,16 @@ import ISO_8825
 
         private static let isolatedSelfSignedCertKey = P256.Signing.PrivateKey()
         private static let isolatedSelfSignedCert: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             let isolatedSelfSignedCertName = try! DistinguishedName {
                 CountryName("US")
                 OrganizationName("Apple")
                 CommonName("Isolated Self-Signed Cert")
             }
 
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -308,12 +377,16 @@ import ISO_8825
         }()
 
         private static let isolatedSelfSignedCertWithWeirdCriticalExtension: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             let isolatedSelfSignedCertName = try! DistinguishedName {
                 CountryName("US")
                 OrganizationName("Apple")
                 CommonName("Isolated Self-Signed Cert")
             }
 
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -330,7 +403,11 @@ import ISO_8825
                     KeyUsage(keyCertSign: true)
 
                     // An opaque extension that just so happens to be critical
-                    Certificate.Extension(oid: [1, 2, 3, 4, 5], critical: true, value: [1, 2, 3, 4, 5])
+                    Certificate.Extension(
+                        oid: [1, 2, 3, 4, 5],
+                        critical: true,
+                        value: [1, 2, 3, 4, 5]
+                    )
                 },
                 issuerPrivateKey: .init(isolatedSelfSignedCertKey)
             )
@@ -347,15 +424,15 @@ import ISO_8825
         //             │         └────────────────┘          ┌─────────────────────────────────────────────────────────────────┐
         //             │                  ┌──────────────────┼───────────────────┐                                             │
         //             │                  │                  │                ┌──┼──────────────┐        ┌─────────┐           │
-        //┌ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─ ─ ─ ─ ┼ ─ ─ ─ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─     │  │   ┌ ─ ─ ─ ─ ─│─ ─ ─ ─ ┼ ─ ─ ─ ─ ┼ ─ ─ ─ ─ ┐ │
+        // ┌ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─ ─ ─ ─ ┼ ─ ─ ─ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─     │  │   ┌ ─ ─ ─ ─ ─│─ ─ ─ ─ ┼ ─ ─ ─ ─ ┼ ─ ─ ─ ─ ┐ │
         //             ▼                  ▼                  ▼           │    │  │              ▼        │         ▼           │
-        //│   ┌────────────────┐ ┌────────────────┐ ┌────────────────┐        │  │   │ ┌────────────────┐│┌────────────────┐ │ │
+        // │   ┌────────────────┐ ┌────────────────┐ ┌────────────────┐        │  │   │ ┌────────────────┐│┌────────────────┐ │ │
         //    │                │ │                │ │                │   │    │  │     │                │││                │   │
-        //│   │       T1       │ │       T2       │ │       T3       │        │  └───┼─│       X1       │││       X2       │─┼─┘
+        // │   │       T1       │ │       T2       │ │       T3       │        │  └───┼─│       X1       │││       X2       │─┼─┘
         //    │                │ │                │ │                │   │    │        │                │││                │
-        //│   └────────────────┘ └────────────────┘ └────────────────┘        │      │ └────────────────┘│└────────────────┘ │
+        // │   └────────────────┘ └────────────────┘ └────────────────┘        │      │ └────────────────┘│└────────────────┘ │
         //             │                  │                  │           │    │                          │
-        //└ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─ ─ ─ ─ ┼ ─ ─ ─ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─     │      └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┼ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+        // └ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─ ─ ─ ─ ┼ ─ ─ ─ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─     │      └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┼ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
         //             └──────────────────┼──────────────────┼────────────────┘                          │
         //                                └──────────────────┼───────────────────────────────────────────┘
         //                                                   │
@@ -396,21 +473,29 @@ import ISO_8825
         private static let t3Key = P256.Signing.PrivateKey()
         private static let xKey = P256.Signing.PrivateKey()
         private static let insaneLeafKey = P256.Signing.PrivateKey()
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         private static let tName = try! DistinguishedName {
             CountryName("US")
             OrganizationName("Apple")
             CommonName("T")
         }
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         private static let xName = try! DistinguishedName {
             CountryName("US")
             OrganizationName("Apple")
             CommonName("X")
         }
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         private static let leafName = try! DistinguishedName {
             CommonName("InsaneLeaf")
         }
 
         private static let t1: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -425,11 +510,17 @@ import ISO_8825
                         BasicConstraints.isCertificateAuthority(maxPathLength: nil)
                     )
                     KeyUsage(keyCertSign: true)
-                    AuthorityKeyIdentifier(keyIdentifier: try! ca1.extensions.subjectKeyIdentifier!.keyIdentifier)
+                    AuthorityKeyIdentifier(
+                        // IMPL-108: known-valid input; construction cannot fail.
+                        // swiftlint:disable:next force_try
+                        keyIdentifier: try! ca1.extensions.subjectKeyIdentifier!.keyIdentifier
+                    )
 
                     // Note this is the SKI for the _wrong key_.
                     SubjectKeyIdentifier(
-                        keyIdentifier: ArraySlice(Insecure.SHA1.hash(data: ca1PrivateKey.publicKey.derRepresentation))
+                        keyIdentifier: ArraySlice(
+                            Insecure.SHA1.hash(data: ca1PrivateKey.publicKey.derRepresentation)
+                        )
                     )
                     SubjectAlternativeNames([.dnsName("example.com")])
                 },
@@ -437,6 +528,8 @@ import ISO_8825
             )
         }()
         private static let t2: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -456,6 +549,8 @@ import ISO_8825
             )
         }()
         private static let t3: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -471,13 +566,17 @@ import ISO_8825
                     )
                     KeyUsage(keyCertSign: true)
                     SubjectKeyIdentifier(
-                        keyIdentifier: ArraySlice(Insecure.SHA1.hash(data: t3Key.publicKey.derRepresentation))
+                        keyIdentifier: ArraySlice(
+                            Insecure.SHA1.hash(data: t3Key.publicKey.derRepresentation)
+                        )
                     )
                 },
                 issuerPrivateKey: .init(xKey)
             )
         }()
         private static let x1: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -493,13 +592,17 @@ import ISO_8825
                     )
                     KeyUsage(keyCertSign: true)
                     AuthorityKeyIdentifier(
-                        keyIdentifier: ArraySlice(Insecure.SHA1.hash(data: t3Key.publicKey.derRepresentation))
+                        keyIdentifier: ArraySlice(
+                            Insecure.SHA1.hash(data: t3Key.publicKey.derRepresentation)
+                        )
                     )
                 },
                 issuerPrivateKey: .init(t1t2Key)
             )
         }()
         private static let x2: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -515,7 +618,9 @@ import ISO_8825
                     )
                     KeyUsage(keyCertSign: true)
                     AuthorityKeyIdentifier(
-                        keyIdentifier: ArraySlice(Insecure.SHA1.hash(data: t3Key.publicKey.derRepresentation))
+                        keyIdentifier: ArraySlice(
+                            Insecure.SHA1.hash(data: t3Key.publicKey.derRepresentation)
+                        )
                     )
                     SubjectAlternativeNames([.dnsName("foo.example.com")])
                 },
@@ -523,6 +628,8 @@ import ISO_8825
             )
         }()
         private static let insaneLeaf: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -537,7 +644,9 @@ import ISO_8825
                         BasicConstraints.notCertificateAuthority
                     )
                     AuthorityKeyIdentifier(
-                        keyIdentifier: ArraySlice(Insecure.SHA1.hash(data: t3Key.publicKey.derRepresentation))
+                        keyIdentifier: ArraySlice(
+                            Insecure.SHA1.hash(data: t3Key.publicKey.derRepresentation)
+                        )
                     )
                 },
                 issuerPrivateKey: .init(t3Key)
@@ -770,7 +879,11 @@ extension `Verifier Tests`.Integration {
             return
         }
 
-        #expect(Array(chain) == [Self.localhostLeaf, Self.intermediate1, Self.ca1CrossSignedByCA2, Self.ca2])
+        #expect(
+            Array(chain) == [
+                Self.localhostLeaf, Self.intermediate1, Self.ca1CrossSignedByCA2, Self.ca2,
+            ]
+        )
 
         #expect(
             log == [
@@ -784,7 +897,9 @@ extension `Verifier Tests`.Integration {
                     [Self.localhostLeaf, Self.intermediate1],
                     issuers: [Self.ca1CrossSignedByCA2]
                 ),
-                .searchingForIssuerOfPartialChain([Self.localhostLeaf, Self.intermediate1, Self.ca1CrossSignedByCA2]),
+                .searchingForIssuerOfPartialChain([
+                    Self.localhostLeaf, Self.intermediate1, Self.ca1CrossSignedByCA2,
+                ]),
                 .foundCandidateIssuersOfPartialChainInRootStore(
                     [Self.localhostLeaf, Self.intermediate1, Self.ca1CrossSignedByCA2],
                     issuers: [Self.ca2]
@@ -804,7 +919,9 @@ extension `Verifier Tests`.Integration {
         var verifier = Verifier(rootCertificates: roots) { Self.defaultPolicy }
         let result = await verifier.validate(
             leaf: Self.localhostLeaf,
-            intermediates: CertificateStore([Self.intermediate1, Self.ca2CrossSignedByCA1, Self.ca1CrossSignedByCA2]),
+            intermediates: CertificateStore([
+                Self.intermediate1, Self.ca2CrossSignedByCA1, Self.ca1CrossSignedByCA2,
+            ]),
             diagnosticCallback: log.append(_:)
         )
 
@@ -874,7 +991,9 @@ extension `Verifier Tests`.Integration {
         var verifier = Verifier(rootCertificates: roots) { Self.defaultPolicy }
         let result = await verifier.validate(
             leaf: Self.localhostLeaf,
-            intermediates: CertificateStore([Self.intermediate1WithIncorrectSKIAKI, Self.intermediate1WithoutSKIAKI]),
+            intermediates: CertificateStore([
+                Self.intermediate1WithIncorrectSKIAKI, Self.intermediate1WithoutSKIAKI,
+            ]),
             diagnosticCallback: log.append(_:)
         )
 
@@ -889,14 +1008,20 @@ extension `Verifier Tests`.Integration {
                 .searchingForIssuerOfPartialChain([Self.localhostLeaf]),
                 .foundCandidateIssuersOfPartialChainInIntermediateStore(
                     [Self.localhostLeaf],
-                    issuers: [Self.intermediate1WithoutSKIAKI, Self.intermediate1WithIncorrectSKIAKI]
+                    issuers: [
+                        Self.intermediate1WithoutSKIAKI, Self.intermediate1WithIncorrectSKIAKI,
+                    ]
                 ),
-                .searchingForIssuerOfPartialChain([Self.localhostLeaf, Self.intermediate1WithoutSKIAKI]),
+                .searchingForIssuerOfPartialChain([
+                    Self.localhostLeaf, Self.intermediate1WithoutSKIAKI,
+                ]),
                 .foundCandidateIssuersOfPartialChainInRootStore(
                     [Self.localhostLeaf, Self.intermediate1WithoutSKIAKI],
                     issuers: [Self.ca1]
                 ),
-                .foundValidCertificateChain([Self.localhostLeaf, Self.intermediate1WithoutSKIAKI, Self.ca1]),
+                .foundValidCertificateChain([
+                    Self.localhostLeaf, Self.intermediate1WithoutSKIAKI, Self.ca1,
+                ]),
             ]
         )
     }
@@ -909,7 +1034,9 @@ extension `Verifier Tests`.Integration {
         var verifier = Verifier(rootCertificates: roots) { Self.defaultPolicy }
         let result = await verifier.validate(
             leaf: Self.localhostLeaf,
-            intermediates: CertificateStore([Self.ca1CrossSignedByCA2, Self.ca2CrossSignedByCA1, Self.intermediate1]),
+            intermediates: CertificateStore([
+                Self.ca1CrossSignedByCA2, Self.ca2CrossSignedByCA1, Self.intermediate1,
+            ]),
             diagnosticCallback: log.append(_:)
         )
 
@@ -918,7 +1045,11 @@ extension `Verifier Tests`.Integration {
             return
         }
 
-        #expect(Array(chain) == [Self.localhostLeaf, Self.intermediate1, Self.ca1CrossSignedByCA2, Self.ca2])
+        #expect(
+            Array(chain) == [
+                Self.localhostLeaf, Self.intermediate1, Self.ca1CrossSignedByCA2, Self.ca2,
+            ]
+        )
         #expect(
             log == [
                 .searchingForIssuerOfPartialChain([Self.localhostLeaf]),
@@ -939,7 +1070,9 @@ extension `Verifier Tests`.Integration {
                     [Self.localhostLeaf, Self.intermediate1],
                     issuers: [Self.ca1CrossSignedByCA2]
                 ),
-                .searchingForIssuerOfPartialChain([Self.localhostLeaf, Self.intermediate1, Self.ca1CrossSignedByCA2]),
+                .searchingForIssuerOfPartialChain([
+                    Self.localhostLeaf, Self.intermediate1, Self.ca1CrossSignedByCA2,
+                ]),
                 .foundCandidateIssuersOfPartialChainInRootStore(
                     [Self.localhostLeaf, Self.intermediate1, Self.ca1CrossSignedByCA2],
                     issuers: [Self.ca2]
@@ -962,7 +1095,9 @@ extension `Verifier Tests`.Integration {
         }
         let result = await verifier.validate(
             leaf: Self.localhostLeaf,
-            intermediates: CertificateStore([Self.intermediate1, Self.ca2CrossSignedByCA1, Self.ca1CrossSignedByCA2]),
+            intermediates: CertificateStore([
+                Self.intermediate1, Self.ca2CrossSignedByCA1, Self.ca1CrossSignedByCA2,
+            ]),
             diagnosticCallback: log.append(_:)
         )
 
@@ -971,7 +1106,11 @@ extension `Verifier Tests`.Integration {
             return
         }
 
-        #expect(Array(chain) == [Self.localhostLeaf, Self.intermediate1, Self.ca1CrossSignedByCA2, Self.ca2])
+        #expect(
+            Array(chain) == [
+                Self.localhostLeaf, Self.intermediate1, Self.ca1CrossSignedByCA2, Self.ca2,
+            ]
+        )
 
         #expect(
             log == [
@@ -993,7 +1132,9 @@ extension `Verifier Tests`.Integration {
                     [Self.localhostLeaf, Self.intermediate1],
                     issuers: [Self.ca1CrossSignedByCA2]
                 ),
-                .searchingForIssuerOfPartialChain([Self.localhostLeaf, Self.intermediate1, Self.ca1CrossSignedByCA2]),
+                .searchingForIssuerOfPartialChain([
+                    Self.localhostLeaf, Self.intermediate1, Self.ca1CrossSignedByCA2,
+                ]),
                 .foundCandidateIssuersOfPartialChainInRootStore(
                     [Self.localhostLeaf, Self.intermediate1, Self.ca1CrossSignedByCA2],
                     issuers: [Self.ca2]
@@ -1023,7 +1164,11 @@ extension `Verifier Tests`.Integration {
             return
         }
 
-        #expect(Array(chain) == [Self.insaneLeaf, Self.t3, Self.x2, Self.t2, Self.x1, Self.t1, Self.ca1])
+        #expect(
+            Array(chain) == [
+                Self.insaneLeaf, Self.t3, Self.x2, Self.t2, Self.x1, Self.t1, Self.ca1,
+            ]
+        )
 
         #expect(
             log == [
@@ -1050,20 +1195,35 @@ extension `Verifier Tests`.Integration {
                     [Self.insaneLeaf, Self.t3, Self.x2, Self.t2],
                     issuers: [Self.x2, Self.x1]
                 ),
-                .issuerIsAlreadyInTheChain([Self.insaneLeaf, Self.t3, Self.x2, Self.t2], issuer: Self.x2),
-                .searchingForIssuerOfPartialChain([Self.insaneLeaf, Self.t3, Self.x2, Self.t2, Self.x1]),
+                .issuerIsAlreadyInTheChain(
+                    [Self.insaneLeaf, Self.t3, Self.x2, Self.t2],
+                    issuer: Self.x2
+                ),
+                .searchingForIssuerOfPartialChain([
+                    Self.insaneLeaf, Self.t3, Self.x2, Self.t2, Self.x1,
+                ]),
                 .foundCandidateIssuersOfPartialChainInIntermediateStore(
                     [Self.insaneLeaf, Self.t3, Self.x2, Self.t2, Self.x1],
                     issuers: [Self.t3, Self.t2, Self.t1]
                 ),
-                .issuerIsAlreadyInTheChain([Self.insaneLeaf, Self.t3, Self.x2, Self.t2, Self.x1], issuer: Self.t2),
-                .issuerIsAlreadyInTheChain([Self.insaneLeaf, Self.t3, Self.x2, Self.t2, Self.x1], issuer: Self.t3),
-                .searchingForIssuerOfPartialChain([Self.insaneLeaf, Self.t3, Self.x2, Self.t2, Self.x1, Self.t1]),
+                .issuerIsAlreadyInTheChain(
+                    [Self.insaneLeaf, Self.t3, Self.x2, Self.t2, Self.x1],
+                    issuer: Self.t2
+                ),
+                .issuerIsAlreadyInTheChain(
+                    [Self.insaneLeaf, Self.t3, Self.x2, Self.t2, Self.x1],
+                    issuer: Self.t3
+                ),
+                .searchingForIssuerOfPartialChain([
+                    Self.insaneLeaf, Self.t3, Self.x2, Self.t2, Self.x1, Self.t1,
+                ]),
                 .foundCandidateIssuersOfPartialChainInRootStore(
                     [Self.insaneLeaf, Self.t3, Self.x2, Self.t2, Self.x1, Self.t1],
                     issuers: [Self.ca1]
                 ),
-                .foundValidCertificateChain([Self.insaneLeaf, Self.t3, Self.x2, Self.t2, Self.x1, Self.t1, Self.ca1]),
+                .foundValidCertificateChain([
+                    Self.insaneLeaf, Self.t3, Self.x2, Self.t2, Self.x1, Self.t1, Self.ca1,
+                ]),
             ]
         )
     }
@@ -1122,9 +1282,13 @@ extension `Verifier Tests`.Integration {
     func `trust roots can be non self signed leaves`() async throws {
         // we use a custom policy here to ignore the fact that the basic constraints extension is critical.
         struct IgnoreBasicConstraintsPolicy: VerifierPolicy {
-            let verifyingCriticalExtensions: [ISO_8824.ObjectIdentifier] = [.X509ExtensionID.basicConstraints]
+            let verifyingCriticalExtensions: [ISO_8824.ObjectIdentifier] = [
+                .X509ExtensionID.basicConstraints
+            ]
 
-            func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) async -> PolicyEvaluationResult {
+            func chainMeetsPolicyRequirements(
+                chain: UnverifiedCertificateChain
+            ) async -> PolicyEvaluationResult {
                 return .meetsPolicy
             }
         }
@@ -1173,7 +1337,10 @@ extension `Verifier Tests`.Integration {
         #expect(
             log == [
                 .searchingForIssuerOfPartialChain([Self.localhostLeaf]),
-                .foundCandidateIssuersOfPartialChainInRootStore([Self.localhostLeaf], issuers: [Self.intermediate1]),
+                .foundCandidateIssuersOfPartialChainInRootStore(
+                    [Self.localhostLeaf],
+                    issuers: [Self.intermediate1]
+                ),
                 .foundValidCertificateChain([Self.localhostLeaf, Self.intermediate1]),
             ]
         )
@@ -1181,7 +1348,9 @@ extension `Verifier Tests`.Integration {
 
     @Test
     func `we police critical extensions on leaf certs`() async throws {
-        let roots = CertificateStore([Self.ca1, Self.isolatedSelfSignedCertWithWeirdCriticalExtension])
+        let roots = CertificateStore([
+            Self.ca1, Self.isolatedSelfSignedCertWithWeirdCriticalExtension,
+        ])
         let log = DiagnosticsLog()
 
         var verifier = Verifier(rootCertificates: roots) { Self.defaultPolicy }
@@ -1227,7 +1396,12 @@ extension `Verifier Tests`.Integration {
                     reason: .init("policy failure reason")
                 )
             ),
-            .init(storage: .issuerHasNotSignedCertificate(Self.intermediate1, partialChain: [Self.localhostLeaf])),
+            .init(
+                storage: .issuerHasNotSignedCertificate(
+                    Self.intermediate1,
+                    partialChain: [Self.localhostLeaf]
+                )
+            ),
             .init(
                 storage: .issuerHasUnhandledCriticalExtension(
                     issuer: Self.intermediate1,
@@ -1235,7 +1409,9 @@ extension `Verifier Tests`.Integration {
                     handledCriticalExtensions: [.cmsData, .cmsSignedData]
                 )
             ),
-            .init(storage: .searchingForIssuerOfPartialChain([Self.localhostLeaf, Self.intermediate1])),
+            .init(
+                storage: .searchingForIssuerOfPartialChain([Self.localhostLeaf, Self.intermediate1])
+            ),
             .init(
                 storage: .foundCandidateIssuersOfPartialChainInRootStore(
                     [Self.localhostLeaf, Self.intermediate1],
@@ -1248,9 +1424,18 @@ extension `Verifier Tests`.Integration {
                     issuers: [Self.x1, Self.x2]
                 )
             ),
-            .init(storage: .foundValidCertificateChain([Self.localhostLeaf, Self.intermediate1, Self.ca1])),
+            .init(
+                storage: .foundValidCertificateChain([
+                    Self.localhostLeaf, Self.intermediate1, Self.ca1,
+                ])
+            ),
             .init(storage: .couldNotValidateLeafCertificate(Self.localhostLeaf)),
-            .init(storage: .issuerIsAlreadyInTheChain([Self.insaneLeaf, Self.t3, Self.x2], issuer: Self.t3)),
+            .init(
+                storage: .issuerIsAlreadyInTheChain(
+                    [Self.insaneLeaf, Self.t3, Self.x2],
+                    issuer: Self.t3
+                )
+            ),
         ]
         for diagnostic in diagnostics {
             let description = diagnostic.description
@@ -1279,7 +1464,9 @@ private struct FailIfCertInChainPolicy: VerifierPolicy {
         self.forbiddenCert = forbiddenCert
     }
 
-    mutating func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) async -> PolicyEvaluationResult {
+    mutating func chainMeetsPolicyRequirements(
+        chain: UnverifiedCertificateChain
+    ) async -> PolicyEvaluationResult {
         guard chain.contains(self.forbiddenCert) else {
             return .meetsPolicy
         }

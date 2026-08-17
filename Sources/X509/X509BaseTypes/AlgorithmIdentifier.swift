@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,14 +10,16 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
 import Standard_Library_Extensions
 
 @usableFromInline
-package struct AlgorithmIdentifier: ISO_8825.DER.ImplicitlyTaggable, ISO_8825.BER.ImplicitlyTaggable, Hashable, Sendable {
+package struct AlgorithmIdentifier: ISO_8825.DER.ImplicitlyTaggable, ISO_8825.BER
+        .ImplicitlyTaggable, Hashable, Sendable
+{
     @inlinable
     package static var defaultIdentifier: ISO_8824.Identifier {
         .sequence
@@ -36,14 +38,20 @@ package struct AlgorithmIdentifier: ISO_8825.DER.ImplicitlyTaggable, ISO_8825.BE
     }
 
     @inlinable
-    package init(derEncoded rootNode: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
+    package init(
+        derEncoded rootNode: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
         // The AlgorithmIdentifier block looks like this.
         //
         // AlgorithmIdentifier  ::=  SEQUENCE  {
         //   algorithm   OBJECT IDENTIFIER,
         //   parameters  ANY DEFINED BY algorithm OPTIONAL
         // }
-        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) { (nodes: inout ISO_8825.Node.Collection.Iterator) throws(ISO_8824.Error) -> AlgorithmIdentifier in
+        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) {
+            (
+                nodes: inout ISO_8825.Node.Collection.Iterator
+            ) throws(ISO_8824.Error) -> AlgorithmIdentifier in
             let algorithmOID = try ISO_8824.ObjectIdentifier(derEncoded: &nodes)
 
             let parameters = nodes.next().map { ISO_8825.`Any`(derEncoded: $0) }
@@ -53,15 +61,22 @@ package struct AlgorithmIdentifier: ISO_8825.DER.ImplicitlyTaggable, ISO_8825.BE
     }
 
     @inlinable
-    package init(berEncoded rootNode: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
+    package init(
+        berEncoded rootNode: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
         self = try .init(derEncoded: rootNode, withIdentifier: identifier)
     }
 
     @inlinable
-    package func serialize(into coder: inout ISO_8825.DER.Serializer, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        try coder.appendConstructedNode(identifier: identifier) { (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) -> Void in
-            try coder.serialize(self.algorithm)
-            if let parameters = self.parameters {
+    package func serialize(
+        into coder: inout ISO_8825.DER.Serializer,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        try coder.appendConstructedNode(identifier: identifier) {
+            (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) in
+            try coder.serialize(algorithm)
+            if let parameters {
                 try coder.serialize(parameters)
             }
         }
@@ -73,18 +88,24 @@ extension AlgorithmIdentifier {
     @usableFromInline
     static let p256PublicKey = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.idEcPublicKey,
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         parameters: try! .init(erasing: ISO_8824.ObjectIdentifier.NamedCurves.secp256r1)
     )
 
     @usableFromInline
     static let p384PublicKey = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.idEcPublicKey,
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         parameters: try! .init(erasing: ISO_8824.ObjectIdentifier.NamedCurves.secp384r1)
     )
 
     @usableFromInline
     static let p521PublicKey = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.idEcPublicKey,
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         parameters: try! .init(erasing: ISO_8824.ObjectIdentifier.NamedCurves.secp521r1)
     )
 
@@ -111,6 +132,8 @@ extension AlgorithmIdentifier {
     @usableFromInline
     static let sha1WithRSAEncryption = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.sha1WithRSAEncryption,
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
     )
 
@@ -123,6 +146,8 @@ extension AlgorithmIdentifier {
     @usableFromInline
     static let sha256WithRSAEncryption = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.sha256WithRSAEncryption,
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
     )
 
@@ -135,6 +160,8 @@ extension AlgorithmIdentifier {
     @usableFromInline
     static let sha384WithRSAEncryption = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.sha384WithRSAEncryption,
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
     )
 
@@ -147,6 +174,8 @@ extension AlgorithmIdentifier {
     @usableFromInline
     static let sha512WithRSAEncryption = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.sha512WithRSAEncryption,
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
     )
 
@@ -159,6 +188,8 @@ extension AlgorithmIdentifier {
     @usableFromInline
     static let rsaKey = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.rsaEncryption,
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
     )
 
@@ -171,6 +202,8 @@ extension AlgorithmIdentifier {
     @usableFromInline
     static let sha1 = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.sha1,
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
     )
 
@@ -183,6 +216,8 @@ extension AlgorithmIdentifier {
     @usableFromInline
     static let sha256 = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.sha256,
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
     )
 
@@ -195,6 +230,8 @@ extension AlgorithmIdentifier {
     @usableFromInline
     static let sha384 = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.sha384,
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
     )
 
@@ -207,6 +244,8 @@ extension AlgorithmIdentifier {
     @usableFromInline
     static let sha512 = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.sha512,
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
     )
 
@@ -223,34 +262,49 @@ extension AlgorithmIdentifier: CustomStringConvertible {
         switch self {
         case .p256PublicKey:
             return "p256PublicKey"
+
         case .p384PublicKey:
             return "p384PublicKey"
+
         case .p521PublicKey:
             return "p521PublicKey"
+
         case .ecdsaWithSHA256:
             return "ecdsaWithSHA256"
+
         case .ecdsaWithSHA384:
             return "ecdsaWithSHA384"
+
         case .ecdsaWithSHA512:
             return "ecdsaWithSHA512"
+
         case .sha1WithRSAEncryption, .sha1WithRSAEncryptionUsingNil:
             return "sha1WithRSAEncryption"
+
         case .sha256WithRSAEncryption, .sha256WithRSAEncryptionUsingNil:
             return "sha256WithRSAEncryption"
+
         case .sha384WithRSAEncryption, .sha384WithRSAEncryptionUsingNil:
             return "sha384WithRSAEncryption"
+
         case .sha512WithRSAEncryption, .sha512WithRSAEncryptionUsingNil:
             return "sha512WithRSAEncryption"
+
         case .sha1, .sha1UsingNil:
             return "sha1"
+
         case .sha256, .sha256UsingNil:
             return "sha256"
+
         case .sha384, .sha384UsingNil:
             return "sha384"
+
         case .sha512, .sha512UsingNil:
             return "sha512"
+
         case .ed25519:
             return "ed25519"
+
         default:
             return "AlgorithmIdentifier(\(self.algorithm) - \(String(reflecting: self.parameters)))"
         }
@@ -284,16 +338,22 @@ extension AlgorithmIdentifier {
     @usableFromInline
     static let ecdsaP256 = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.idEcPublicKey,
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         parameters: try! .init(erasing: ISO_8824.ObjectIdentifier.NamedCurves.secp256r1)
     )
     @usableFromInline
     static let ecdsaP384 = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.idEcPublicKey,
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         parameters: try! .init(erasing: ISO_8824.ObjectIdentifier.NamedCurves.secp384r1)
     )
     @usableFromInline
     static let ecdsaP521 = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.idEcPublicKey,
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         parameters: try! .init(erasing: ISO_8824.ObjectIdentifier.NamedCurves.secp521r1)
     )
 }

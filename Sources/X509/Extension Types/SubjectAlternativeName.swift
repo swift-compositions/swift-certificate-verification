@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -75,7 +75,9 @@ extension SubjectAlternativeNames: CustomDebugStringConvertible {
     }
 }
 
-extension SubjectAlternativeNames: RandomAccessCollection, MutableCollection, RangeReplaceableCollection {
+extension SubjectAlternativeNames: RandomAccessCollection, MutableCollection,
+    RangeReplaceableCollection
+{
     @inlinable
     public var startIndex: Int {
         self.names.startIndex
@@ -97,7 +99,10 @@ extension SubjectAlternativeNames: RandomAccessCollection, MutableCollection, Ra
     }
 
     @inlinable
-    public mutating func replaceSubrange<NewElements>(_ subrange: Range<Int>, with newElements: NewElements)
+    public mutating func replaceSubrange<NewElements>(
+        _ subrange: Range<Int>,
+        with newElements: NewElements
+    )
     where NewElements: Collection, GeneralName == NewElements.Element {
         self.names.replaceSubrange(subrange, with: newElements)
     }

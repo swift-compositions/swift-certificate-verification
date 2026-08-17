@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 /// A validated certificate chain that traces the trust from a leaf to a root certificate. This type does not perform any validation
 /// itself. It is a container that gives information about the contained certificates. The safe method to acquire it goes through
@@ -61,7 +61,10 @@ public struct ValidatedCertificateChain: Sendable, Collection, RandomAccessColle
     /// - Precondition: The `validatedChain` must contain at least one certificate.
     @inlinable
     package init(_ validatedChain: [Certificate]) {
-        precondition(validatedChain.count > 0, "A valid certificate chain contains at least one certificate.")
+        precondition(
+            validatedChain.count > 0,
+            "A valid certificate chain contains at least one certificate."
+        )
         self.validatedChain = validatedChain
     }
 

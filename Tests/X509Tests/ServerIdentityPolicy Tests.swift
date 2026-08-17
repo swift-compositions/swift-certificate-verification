@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,17 +10,18 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
-#if canImport(FoundationEssentials)
-import FoundationEssentials
-#else
-import Foundation
-#endif
-import Testing
+@_spi(Testing) import Certificates
 import ISO_8824
 import ISO_8825
-@_spi(Testing) import Certificates
+import Testing
+
+#if canImport(FoundationEssentials)
+    import FoundationEssentials
+#else
+    import Foundation
+#endif
 
 // These certificates are bound from the frozen DER corpus rather than issued in-test
 // (issuance is an excluded surface in slice 1). Each was frozen to match the original
@@ -32,6 +33,8 @@ import ISO_8825
 // only ServerIdentityPolicy, so chain construction, expiry and signature validity are
 // not exercised; only the subject DN and SAN contents are load-bearing.
 
+// IMPL-108: known-valid fixture input; construction cannot fail.
+// swiftlint:disable force_try
 /// This cert contains the following SAN fields:
 /// DNS:*.WILDCARD.EXAMPLE.com - A straightforward wildcard, should be accepted
 /// DNS:FO*.EXAMPLE.com - A suffix wildcard, should be accepted
@@ -47,10 +50,19 @@ import ISO_8825
 ///
 /// This also contains a commonName of httpbin.org.
 private let weirdoSANCert = try! Fixture.certificate("leaf-weirdo-sans")
+// swiftlint:enable force_try
 
+// IMPL-108: known-valid input; construction cannot fail.
+// swiftlint:disable:next force_try
 private let multiSANCert = try! Fixture.certificate("leaf-multi-san-hosts")
+// IMPL-108: known-valid input; construction cannot fail.
+// swiftlint:disable:next force_try
 private let multiCNCert = try! Fixture.certificate("leaf-multi-cn")
+// IMPL-108: known-valid input; construction cannot fail.
+// swiftlint:disable:next force_try
 private let noCNCert = try! Fixture.certificate("leaf-no-cn")
+// IMPL-108: known-valid input; construction cannot fail.
+// swiftlint:disable:next force_try
 private let unicodeCNCert = try! Fixture.certificate("leaf-unicode-cn")
 
 extension ServerIdentityPolicy {
@@ -413,7 +425,10 @@ extension ServerIdentityPolicy.Test.`Edge Case` {
             rootCertificates: roots,
             verify: .crypto,
             policy: {
-                ServerIdentityPolicy(serverHostname: "xn--strae-oqa.unicode.example.com", serverIP: nil)
+                ServerIdentityPolicy(
+                    serverHostname: "xn--strae-oqa.unicode.example.com",
+                    serverIP: nil
+                )
             }
         )
         await assertValidCertificate(
@@ -431,7 +446,10 @@ extension ServerIdentityPolicy.Test.`Edge Case` {
             rootCertificates: roots,
             verify: .crypto,
             policy: {
-                ServerIdentityPolicy(serverHostname: "xn--xx-gia.unicode.example.com", serverIP: nil)
+                ServerIdentityPolicy(
+                    serverHostname: "xn--xx-gia.unicode.example.com",
+                    serverIP: nil
+                )
             }
         )
         await assertInvalidCertificate(
@@ -449,7 +467,10 @@ extension ServerIdentityPolicy.Test.`Edge Case` {
             rootCertificates: roots,
             verify: .crypto,
             policy: {
-                ServerIdentityPolicy(serverHostname: "weirdwildcard.nomatch.example.com", serverIP: nil)
+                ServerIdentityPolicy(
+                    serverHostname: "weirdwildcard.nomatch.example.com",
+                    serverIP: nil
+                )
             }
         )
         await assertInvalidCertificate(
@@ -589,7 +610,10 @@ private func assertValidCertificate(
 ) async rethrows {
     let result = try await verifier()
     if case .couldNotValidate(let reason) = result {
-        Issue.record("Could not validate certificate, reason: \(reason)", sourceLocation: sourceLocation)
+        Issue.record(
+            "Could not validate certificate, reason: \(reason)",
+            sourceLocation: sourceLocation
+        )
     }
 }
 

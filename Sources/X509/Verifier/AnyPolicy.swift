@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 import ISO_8824
 import ISO_8825
 
@@ -29,6 +29,8 @@ import ISO_8825
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 public struct AnyPolicy: VerifierPolicy {
     @usableFromInline
+    // Deliberate type-erasure surface (API-ERR-006 opt-out).
+    // swiftlint:disable:next no_any_protocol_existential
     var policy: any VerifierPolicy
 
     @inlinable
@@ -51,8 +53,9 @@ public struct AnyPolicy: VerifierPolicy {
     }
 
     @inlinable
-    public mutating func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) async -> PolicyEvaluationResult
-    {
+    public mutating func chainMeetsPolicyRequirements(
+        chain: UnverifiedCertificateChain
+    ) async -> PolicyEvaluationResult {
         await policy.chainMeetsPolicyRequirements(chain: chain)
     }
 }
@@ -64,13 +67,19 @@ extension AnyPolicy: Sendable {}
 struct LegacyPolicySet: VerifierPolicy {
     let verifyingCriticalExtensions: [ISO_8824.ObjectIdentifier]
 
+    // Deliberate type-erasure surface (API-ERR-006 opt-out).
+    // swiftlint:disable:next no_any_protocol_existential
     var policies: [any VerifierPolicy]
 
+    // Deliberate type-erasure surface (API-ERR-006 opt-out).
+    // swiftlint:disable:next no_any_protocol_existential
     init(policies: [any VerifierPolicy]) {
         self.policies = policies
 
         var extensions: [ISO_8824.ObjectIdentifier] = []
-        extensions.reserveCapacity(policies.reduce(into: 0, { $0 += $1.verifyingCriticalExtensions.count }))
+        extensions.reserveCapacity(
+            policies.reduce(into: 0, { $0 += $1.verifyingCriticalExtensions.count })
+        )
 
         for policy in policies {
             extensions.append(contentsOf: policy.verifyingCriticalExtensions)
@@ -79,14 +88,17 @@ struct LegacyPolicySet: VerifierPolicy {
         self.verifyingCriticalExtensions = extensions
     }
 
-    mutating func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) async -> PolicyEvaluationResult {
+    mutating func chainMeetsPolicyRequirements(
+        chain: UnverifiedCertificateChain
+    ) async -> PolicyEvaluationResult {
         var policyIndex = self.policies.startIndex
 
         while policyIndex < self.policies.endIndex {
             switch await self.policies[policyIndex].chainMeetsPolicyRequirements(chain: chain) {
             case .meetsPolicy:
                 ()
-            case .failsToMeetPolicy(reason: let reason):
+
+            case .failsToMeetPolicy(let reason):
                 return .failsToMeetPolicy(reason: reason)
             }
 

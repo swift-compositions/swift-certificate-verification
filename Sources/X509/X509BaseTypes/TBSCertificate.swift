@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -104,8 +104,14 @@ package struct TBSCertificate: ISO_8825.DER.ImplicitlyTaggable, Hashable, Sendab
     }
 
     @inlinable
-    package init(derEncoded rootNode: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) { (nodes: inout ISO_8825.Node.Collection.Iterator) throws(ISO_8824.Error) -> TBSCertificate in
+    package init(
+        derEncoded rootNode: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) {
+            (
+                nodes: inout ISO_8825.Node.Collection.Iterator
+            ) throws(ISO_8824.Error) -> TBSCertificate in
             let version = try ISO_8825.DER.decodeDefaultExplicitlyTagged(
                 &nodes,
                 tagNumber: 0,
@@ -122,17 +128,33 @@ package struct TBSCertificate: ISO_8825.DER.ImplicitlyTaggable, Hashable, Sendab
             let validity = try Validity(derEncoded: &nodes)
             let subject = try DistinguishedName.derEncoded(&nodes)
             let subjectPublicKeyInfo = try SubjectPublicKeyInfo(derEncoded: &nodes)
-            let issuerUniqueID = try ISO_8825.DER.optionalExplicitlyTagged(&nodes, tagNumber: 1, tagClass: .contextSpecific) {
+            let issuerUniqueID = try ISO_8825.DER.optionalExplicitlyTagged(
+                &nodes,
+                tagNumber: 1,
+                tagClass: .contextSpecific
+            ) {
                 (node: ISO_8825.Node) throws(ISO_8824.Error) -> UniqueIdentifier in
                 try UniqueIdentifier(derEncoded: node)
             }
-            let subjectUniqueID = try ISO_8825.DER.optionalExplicitlyTagged(&nodes, tagNumber: 2, tagClass: .contextSpecific) {
+            let subjectUniqueID = try ISO_8825.DER.optionalExplicitlyTagged(
+                &nodes,
+                tagNumber: 2,
+                tagClass: .contextSpecific
+            ) {
                 (node: ISO_8825.Node) throws(ISO_8824.Error) -> UniqueIdentifier in
                 try UniqueIdentifier(derEncoded: node)
             }
-            let extensions = try ISO_8825.DER.optionalExplicitlyTagged(&nodes, tagNumber: 3, tagClass: .contextSpecific) {
+            let extensions = try ISO_8825.DER.optionalExplicitlyTagged(
+                &nodes,
+                tagNumber: 3,
+                tagClass: .contextSpecific
+            ) {
                 (node: ISO_8825.Node) throws(ISO_8824.Error) -> [Certificate.Extension] in
-                try ISO_8825.DER.sequence(of: Certificate.Extension.self, identifier: .sequence, rootNode: node)
+                try ISO_8825.DER.sequence(
+                    of: Certificate.Extension.self,
+                    identifier: .sequence,
+                    rootNode: node
+                )
             }
 
             // Decode-boundary bridge (N5 Option A): the DER.ImplicitlyTaggable conformance
@@ -171,26 +193,42 @@ package struct TBSCertificate: ISO_8825.DER.ImplicitlyTaggable, Hashable, Sendab
     }
 
     @inlinable
-    package func serialize(into coder: inout ISO_8825.DER.Serializer, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        try coder.appendConstructedNode(identifier: identifier) { (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) -> Void in
-            if self.version != .v1 {
-                try coder.serialize(self.version.rawValue, explicitlyTaggedWithTagNumber: 0, tagClass: .contextSpecific)
+    package func serialize(
+        into coder: inout ISO_8825.DER.Serializer,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        try coder.appendConstructedNode(identifier: identifier) {
+            (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) in
+            if version != .v1 {
+                try coder.serialize(
+                    version.rawValue,
+                    explicitlyTaggedWithTagNumber: 0,
+                    tagClass: .contextSpecific
+                )
             }
-            try coder.serialize(self.serialNumber.bytes)
-            try coder.serialize(AlgorithmIdentifier(self.signature))
-            try coder.serialize(self.issuer)
-            try coder.serialize(self.validity)
-            try coder.serialize(self.subject)
-            try coder.serialize(SubjectPublicKeyInfo(self.publicKey))
-            if let issuerUniqueID = self.issuerUniqueID {
-                try coder.serialize(issuerUniqueID, explicitlyTaggedWithTagNumber: 1, tagClass: .contextSpecific)
+            try coder.serialize(serialNumber.bytes)
+            try coder.serialize(AlgorithmIdentifier(signature))
+            try coder.serialize(issuer)
+            try coder.serialize(validity)
+            try coder.serialize(subject)
+            try coder.serialize(SubjectPublicKeyInfo(publicKey))
+            if let issuerUniqueID {
+                try coder.serialize(
+                    issuerUniqueID,
+                    explicitlyTaggedWithTagNumber: 1,
+                    tagClass: .contextSpecific
+                )
             }
-            if let subjectUniqueID = self.subjectUniqueID {
-                try coder.serialize(subjectUniqueID, explicitlyTaggedWithTagNumber: 2, tagClass: .contextSpecific)
+            if let subjectUniqueID {
+                try coder.serialize(
+                    subjectUniqueID,
+                    explicitlyTaggedWithTagNumber: 2,
+                    tagClass: .contextSpecific
+                )
             }
-            if self.extensions.count > 0 {
+            if extensions.count > 0 {
                 try coder.serialize(explicitlyTaggedWithTagNumber: 3, tagClass: .contextSpecific) {
-                    (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) -> Void in
+                    (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) in
                     try coder.serializeSequenceOf(extensions)
                 }
             }

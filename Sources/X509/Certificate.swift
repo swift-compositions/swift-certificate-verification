@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -163,7 +163,10 @@ public struct Certificate {
         // and throws Certificate.Error. Map it to the ASN.1 error, preserving the detail.
         // The typed Certificate.Error remains on the direct Signature(_:) API and at verify time.
         do {
-            self.signature = try Signature(signatureAlgorithm: self.signatureAlgorithm, signatureBytes: signature)
+            self.signature = try Signature(
+                signatureAlgorithm: self.signatureAlgorithm,
+                signatureBytes: signature
+            )
         } catch {
             throw ISO_8824.Error.invalidASN1Object(reason: "\(error)")
         }
@@ -220,13 +223,22 @@ extension Certificate: ISO_8825.DER.ImplicitlyTaggable {
     }
 
     @inlinable
-    public init(derEncoded rootNode: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) { (nodes: inout ISO_8825.Node.Collection.Iterator) throws(ISO_8824.Error) -> Certificate in
+    public init(
+        derEncoded rootNode: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) {
+            (
+                nodes: inout ISO_8825.Node.Collection.Iterator
+            ) throws(ISO_8824.Error)
+                -> Certificate in
             guard let tbsCertificateNode = nodes.next(),
                 let signatureAlgorithmNode = nodes.next(),
                 let signatureNode = nodes.next()
             else {
-                throw ISO_8824.Error.invalidASN1Object(reason: "Invalid certificate object, insufficient ASN.1 nodes")
+                throw ISO_8824.Error.invalidASN1Object(
+                    reason: "Invalid certificate object, insufficient ASN.1 nodes"
+                )
             }
             let tbsCertificate = try TBSCertificate(derEncoded: tbsCertificateNode)
             let signatureAlgorithm = try AlgorithmIdentifier(derEncoded: signatureAlgorithmNode)
@@ -243,7 +255,10 @@ extension Certificate: ISO_8825.DER.ImplicitlyTaggable {
     }
 
     @inlinable
-    public func serialize(into coder: inout ISO_8825.DER.Serializer, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
+    public func serialize(
+        into coder: inout ISO_8825.DER.Serializer,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
         coder.appendConstructedNode(identifier: identifier) { coder in
             coder.serializeRawBytes(self.tbsCertificateBytes)
             coder.serializeRawBytes(self.signatureAlgorithmBytes)
@@ -254,11 +269,12 @@ extension Certificate: ISO_8825.DER.ImplicitlyTaggable {
 
 extension ISO_8825.DER.Serializer {
     @inlinable
-    package static func serialized<Element: ISO_8825.DER.Serializable>(element: Element) throws -> [UInt8] {
+    package static func serialized<Element: ISO_8825.DER.Serializable>(
+        element: Element
+    ) throws -> [UInt8] {
         var serializer = ISO_8825.DER.Serializer()
         try serializer.serialize(element)
         return serializer.serializedBytes
     }
 
 }
-

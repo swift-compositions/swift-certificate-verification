@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,13 +10,14 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
-import Testing
 import Crypto
-import _CryptoExtras
 import ISO_8824
 import ISO_8825
+import Testing
+import _CryptoExtras
+
 @testable import Certificates
 
 extension Certificate {
@@ -44,14 +45,19 @@ extension Certificate.Test.Unit {
         )
 
         #expect(
-            (0x00_01_02_03_04_05_06_07_08_09_0A_0B_0C_0D_0E_0F_10_11_12_13_14 as Certificate.SerialNumber).bytes
+            (0x00_01_02_03_04_05_06_07_08_09_0A_0B_0C_0D_0E_0F_10_11_12_13_14
+                as Certificate.SerialNumber).bytes
                 == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
         )
         #expect(Certificate.SerialNumber(123_456_789) == 123_456_789)
     }
 
     @Test func `serial number inits`() {
-        #expect(Certificate.SerialNumber(bytes: [0, 1, 2, 3, 4, 5, 6, 7, 8]).bytes == [1, 2, 3, 4, 5, 6, 7, 8])
+        #expect(
+            Certificate.SerialNumber(bytes: [0, 1, 2, 3, 4, 5, 6, 7, 8]).bytes == [
+                1, 2, 3, 4, 5, 6, 7, 8,
+            ]
+        )
         #expect(
             Certificate.SerialNumber(bytes: [0, 1, 2, 3, 4, 5, 6, 7, 8][...]).bytes
                 == [1, 2, 3, 4, 5, 6, 7, 8]
@@ -70,8 +76,14 @@ extension Certificate.Test.Unit {
 
     @Test func `printing general name`() throws {
         let testDN = try DistinguishedName([
-            RelativeDistinguishedName.Attribute(type: .RDNAttributeType.countryName, utf8String: "US"),
-            RelativeDistinguishedName.Attribute(type: .RDNAttributeType.organizationName, utf8String: "DigiCert Inc"),
+            RelativeDistinguishedName.Attribute(
+                type: .RDNAttributeType.countryName,
+                utf8String: "US"
+            ),
+            RelativeDistinguishedName.Attribute(
+                type: .RDNAttributeType.organizationName,
+                utf8String: "DigiCert Inc"
+            ),
             RelativeDistinguishedName.Attribute(
                 type: .RDNAttributeType.organizationalUnitName,
                 utf8String: "www.digicert.com"
@@ -91,11 +103,17 @@ extension Certificate.Test.Unit {
                 == #"DirectoryName("CN=DigiCert Global Root G3,OU=www.digicert.com,O=DigiCert Inc,C=US")"#
         )
         #expect(
-            try String(describing: GeneralName.ediPartyName(ISO_8825.`Any`(erasing: ISO_8824.Null())))
+            try String(
+                describing: GeneralName.ediPartyName(ISO_8825.`Any`(erasing: ISO_8824.Null()))
+            )
                 == "EDIPartyName([5, 0])"
         )
         #expect(
-            String(describing: GeneralName.ipAddress(ISO_8824.OctetString(contentBytes: [127, 0, 0, 1])))
+            String(
+                describing: GeneralName.ipAddress(
+                    ISO_8824.OctetString(contentBytes: [127, 0, 0, 1])
+                )
+            )
                 == "IPAddress([127, 0, 0, 1])"
         )
         #expect(
@@ -107,7 +125,9 @@ extension Certificate.Test.Unit {
                 == "RFC822Name(\"mail@example.com\")"
         )
         #expect(
-            try String(describing: GeneralName.x400Address(ISO_8825.`Any`(erasing: ISO_8824.Null())))
+            try String(
+                describing: GeneralName.x400Address(ISO_8825.`Any`(erasing: ISO_8824.Null()))
+            )
                 == "X400Address([5, 0])"
         )
         #expect(
@@ -118,9 +138,18 @@ extension Certificate.Test.Unit {
 
     @Test func `printing AIA extension`() throws {
         let ext = AuthorityInformationAccess([
-            .init(method: .issuingCA, location: .uniformResourceIdentifier("https://example.com/ca")),
-            .init(method: .ocspServer, location: .uniformResourceIdentifier("http://example.com/ocsp")),
-            .init(method: .init(.unknownType([1, 2, 3, 4])), location: .rfc822Name("mail@example.com")),
+            .init(
+                method: .issuingCA,
+                location: .uniformResourceIdentifier("https://example.com/ca")
+            ),
+            .init(
+                method: .ocspServer,
+                location: .uniformResourceIdentifier("http://example.com/ocsp")
+            ),
+            .init(
+                method: .init(.unknownType([1, 2, 3, 4])),
+                location: .rfc822Name("mail@example.com")
+            ),
         ])
         let s = String(describing: ext)
         #expect(
@@ -131,26 +160,53 @@ extension Certificate.Test.Unit {
 
     @Test func `range replaceable collection conformance`() throws {
         var ext = AuthorityInformationAccess([
-            .init(method: .issuingCA, location: .uniformResourceIdentifier("https://example.com/ca")),
-            .init(method: .ocspServer, location: .uniformResourceIdentifier("http://example.com/ocsp")),
-            .init(method: .init(.unknownType([1, 2, 3, 4])), location: .rfc822Name("mail@example.com")),
+            .init(
+                method: .issuingCA,
+                location: .uniformResourceIdentifier("https://example.com/ca")
+            ),
+            .init(
+                method: .ocspServer,
+                location: .uniformResourceIdentifier("http://example.com/ocsp")
+            ),
+            .init(
+                method: .init(.unknownType([1, 2, 3, 4])),
+                location: .rfc822Name("mail@example.com")
+            ),
         ])
 
         ext.replaceSubrange(
             1..<2,
             with: [
-                .init(method: .ocspServer, location: .uniformResourceIdentifier("http://example.com/ocsp/a")),
-                .init(method: .ocspServer, location: .uniformResourceIdentifier("http://example.com/ocsp/b")),
+                .init(
+                    method: .ocspServer,
+                    location: .uniformResourceIdentifier("http://example.com/ocsp/a")
+                ),
+                .init(
+                    method: .ocspServer,
+                    location: .uniformResourceIdentifier("http://example.com/ocsp/b")
+                ),
             ]
         )
 
         #expect(
             Array(ext)
                 == [
-                    .init(method: .issuingCA, location: .uniformResourceIdentifier("https://example.com/ca")),
-                    .init(method: .ocspServer, location: .uniformResourceIdentifier("http://example.com/ocsp/a")),
-                    .init(method: .ocspServer, location: .uniformResourceIdentifier("http://example.com/ocsp/b")),
-                    .init(method: .init(.unknownType([1, 2, 3, 4])), location: .rfc822Name("mail@example.com")),
+                    .init(
+                        method: .issuingCA,
+                        location: .uniformResourceIdentifier("https://example.com/ca")
+                    ),
+                    .init(
+                        method: .ocspServer,
+                        location: .uniformResourceIdentifier("http://example.com/ocsp/a")
+                    ),
+                    .init(
+                        method: .ocspServer,
+                        location: .uniformResourceIdentifier("http://example.com/ocsp/b")
+                    ),
+                    .init(
+                        method: .init(.unknownType([1, 2, 3, 4])),
+                        location: .rfc822Name("mail@example.com")
+                    ),
                 ]
         )
 
@@ -190,10 +246,7 @@ extension Certificate.Test.Unit {
 
         ext.authorityCertIssuer = nil
         s = String(describing: ext)
-        #expect(
-            s
-                == ""
-        )
+        #expect(s.isEmpty)
     }
 
     @Test func `printing SKI extension`() throws {
@@ -205,7 +258,7 @@ extension Certificate.Test.Unit {
     @Test func `printing key usage extension`() {
         var ext = KeyUsage()
         var s = String(describing: ext)
-        #expect(s == "")
+        #expect(s.isEmpty)
 
         ext.decipherOnly = true
         s = String(describing: ext)
@@ -296,7 +349,9 @@ extension Certificate.Test.Unit {
     @Test func `printing name constraints`() throws {
         // This test is again mostly redundant with general name, so we're just testing the composition
         var ext = NameConstraints(
-            permittedSubtrees: [.dnsName("example.com"), .uniformResourceIdentifier("http://example.com")],
+            permittedSubtrees: [
+                .dnsName("example.com"), .uniformResourceIdentifier("http://example.com"),
+            ],
             excludedSubtrees: [.dnsName("example.org"), .rfc822Name("mail@example.com")]
         )
         #expect(
@@ -427,11 +482,13 @@ extension Certificate.Test.Unit {
                     0x31, 0x11,  // SET, length 17 bytes
                     0x30, 0xf,  // SEQUENCE, length 15 bytes
                     0x6, 0x3, 0x55, 0x4, 0xa,  // OID, organizationName
-                    0xc, 0x8, 0x53, 0x6f, 0x6d, 0x65, 0x20, 0x4f, 0x72, 0x67,  // UTF-8 string, "Some Org"
+                    // UTF-8 string, "Some Org"
+                    0xc, 0x8, 0x53, 0x6f, 0x6d, 0x65, 0x20, 0x4f, 0x72, 0x67,
                     0x31, 0x15,  // SET, length 21 bytes
                     0x30, 0x13,  // SEQUENCE, length 19 bytes
                     0x6, 0x3, 0x55, 0x4, 0x6,  // OID, countryName
-                    0x13, 0xc, 0x53, 0x6f, 0x6d, 0x65, 0x20, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x72, 0x79,
+                    0x13, 0xc, 0x53, 0x6f, 0x6d, 0x65, 0x20, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x72,
+                    0x79,
                     // Printable string, "Some Country"
                 ]
         )
@@ -472,7 +529,10 @@ extension Certificate.Test.`Edge Case` {
                 defer { nextIndex += 1 }
 
                 let startOffset = nextIndex * MemoryLayout<UInt64>.size
-                precondition(numbers.indices.contains(startOffset), "static number generator is out of numbers")
+                precondition(
+                    numbers.indices.contains(startOffset),
+                    "static number generator is out of numbers"
+                )
 
                 // assemble UInt64 from eight UInt8s
                 var uint64 = UInt64()
@@ -529,6 +589,8 @@ extension Certificate.Test.Integration {
     @available(macOS 11.0, iOS 14, tvOS 14, watchOS 7, macCatalyst 14, visionOS 1.0, *)
     @Test func `certificate description`() throws {
         let caPrivateKey = P384.Signing.PrivateKey()
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         let certificateName1 = try! DistinguishedName {
             CountryName("US")
             OrganizationName("Apple")
@@ -552,7 +614,9 @@ extension Certificate.Test.Integration {
                 )
                 KeyUsage(keyCertSign: true)
                 SubjectKeyIdentifier(
-                    keyIdentifier: ArraySlice(Insecure.SHA1.hash(data: caPrivateKey.publicKey.derRepresentation))
+                    keyIdentifier: ArraySlice(
+                        Insecure.SHA1.hash(data: caPrivateKey.publicKey.derRepresentation)
+                    )
                 )
             },
             issuerPrivateKey: .init(caPrivateKey)
@@ -580,6 +644,8 @@ extension Certificate.Test.Integration {
         )
 
         let intermediatePrivateKey = P256.Signing.PrivateKey()
+        // IMPL-108: known-valid input; construction cannot fail.
+        // swiftlint:disable:next force_try
         let intermediateName = try! DistinguishedName {
             CountryName("US")
             OrganizationName("Apple")
@@ -589,6 +655,8 @@ extension Certificate.Test.Integration {
         let intermediateNotValidAfter = Self.referenceTime + .days(5 * 365)
 
         let intermediate: Certificate = {
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(bytes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
@@ -603,10 +671,16 @@ extension Certificate.Test.Integration {
                         BasicConstraints.isCertificateAuthority(maxPathLength: 1)
                     )
                     KeyUsage(keyCertSign: true)
-                    AuthorityKeyIdentifier(keyIdentifier: try! ca.extensions.subjectKeyIdentifier!.keyIdentifier)
+                    AuthorityKeyIdentifier(
+                        // IMPL-108: known-valid input; construction cannot fail.
+                        // swiftlint:disable:next force_try
+                        keyIdentifier: try! ca.extensions.subjectKeyIdentifier!.keyIdentifier
+                    )
                     SubjectKeyIdentifier(
                         keyIdentifier: ArraySlice(
-                            Insecure.SHA1.hash(data: intermediatePrivateKey.publicKey.derRepresentation)
+                            Insecure.SHA1.hash(
+                                data: intermediatePrivateKey.publicKey.derRepresentation
+                            )
                         )
                     )
                     NameConstraints(
@@ -672,7 +746,11 @@ extension Certificate.Test.Integration {
                     BasicConstraints.notCertificateAuthority
                 )
                 KeyUsage(keyCertSign: true)
-                AuthorityKeyIdentifier(keyIdentifier: try! intermediate.extensions.subjectKeyIdentifier!.keyIdentifier)
+                AuthorityKeyIdentifier(
+                    // IMPL-108: known-valid input; construction cannot fail.
+                    // swiftlint:disable:next force_try
+                    keyIdentifier: try! intermediate.extensions.subjectKeyIdentifier!.keyIdentifier
+                )
             },
             issuerPrivateKey: .init(localhostPrivateKey)
         )
@@ -722,7 +800,10 @@ extension Certificate.Test.Integration {
     @Test func `default RSA signature algorithm`() throws {
         let privateKey = try Certificate.PrivateKey(_RSA.Signing.PrivateKey(keySize: .bits2048))
         let certificate = try self.issueSelfSignedCertificate(privateKey: privateKey)
-        #expect(certificate.signatureAlgorithm.description == "SignatureAlgorithm.sha256WithRSAEncryption")
+        #expect(
+            certificate.signatureAlgorithm.description
+                == "SignatureAlgorithm.sha256WithRSAEncryption"
+        )
     }
 
     @Test func `default P256 signature algorithm`() throws {
@@ -749,7 +830,9 @@ extension Certificate.Test.Integration {
         #expect(certificate.signatureAlgorithm.description == "SignatureAlgorithm.ed25519")
     }
 
-    private func issueSelfSignedCertificate(privateKey: Certificate.PrivateKey) throws -> Certificate {
+    private func issueSelfSignedCertificate(
+        privateKey: Certificate.PrivateKey
+    ) throws -> Certificate {
         let name = try DistinguishedName { CommonName("test") }
         return try Certificate(
             version: .v3,
