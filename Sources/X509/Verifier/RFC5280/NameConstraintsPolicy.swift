@@ -247,12 +247,12 @@ extension Certificate {
         }
 
         @inlinable
-        func makeIterator() -> Iterator {
+        package func makeIterator() -> Iterator {
             return Iterator(self.subject, self.alternativeNames)
         }
 
         @usableFromInline
-        struct Iterator: IteratorProtocol, Sendable {
+        package struct Iterator: IteratorProtocol, Sendable {
             @usableFromInline
             var subject: DistinguishedName?
 
@@ -266,7 +266,7 @@ extension Certificate {
             }
 
             @inlinable
-            mutating func next() -> GeneralName? {
+            package mutating func next() -> GeneralName? {
                 guard let subject = self.subject else {
                     return self.alternativeNames.popFirst()
                 }
