@@ -42,10 +42,15 @@ extension Certificate {
         public init(
             signatureAlgorithm: SignatureAlgorithm,
             signatureBytes: ISO_8824.BitString
-        ) throws {
+        ) throws(Certificate.Error) {
             switch signatureAlgorithm {
             case .ecdsaWithSHA256, .ecdsaWithSHA384, .ecdsaWithSHA512:
-                let signature = try ECDSASignature(derEncoded: signatureBytes.bytes)
+                let signature: ECDSASignature
+                do {
+                    signature = try ECDSASignature(derEncoded: signatureBytes.bytes)
+                } catch {
+                    throw Certificate.Error.der(error)
+                }
                 self.backing = .ecdsa(signature)
 
             case .ed25519:

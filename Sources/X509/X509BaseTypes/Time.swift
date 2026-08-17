@@ -54,7 +54,7 @@ enum Time: ISO_8825.DER.Parseable, ISO_8825.DER.Serializable, Hashable, Sendable
     // transfers to the L2 swift-rfc-5280 owner at the no-duplication
     // reconciliation; it lives in-fork until that lane lands.
     @inlinable
-    static func makeTime(from instant: Instant) throws -> Time {
+    static func makeTime(from instant: Instant) throws(ISO_8824.Error) -> Time {
         let components = instant.utcDate
 
         guard ((1950)..<(2050)).contains(components.year) else {
@@ -141,7 +141,7 @@ extension ISO_8824.GeneralizedTime {
     @inlinable
     package init(
         _ components: (year: Int, month: Int, day: Int, hours: Int, minutes: Int, seconds: Int)
-    ) throws {
+    ) throws(ISO_8824.Error) {
         try self.init(
             year: components.year,
             month: components.month,
@@ -166,7 +166,7 @@ extension ISO_8824.UTCTime {
     @inlinable
     package init(
         _ components: (year: Int, month: Int, day: Int, hours: Int, minutes: Int, seconds: Int)
-    ) throws {
+    ) throws(ISO_8824.Error) {
         try self.init(
             year: components.year,
             month: components.month,

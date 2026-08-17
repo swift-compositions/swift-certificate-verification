@@ -264,7 +264,7 @@ struct NameConstraintsPolicy: VerifierPolicy, Sendable {
 extension Certificate {
     @inlinable
     package var names: NameSequence {
-        get throws {
+        get throws(Certificate.Error) {
             return try NameSequence(self)
         }
     }
@@ -278,7 +278,7 @@ extension Certificate {
         var alternativeNames: SubjectAlternativeNames
 
         @inlinable
-        init(_ certificate: Certificate) throws {
+        init(_ certificate: Certificate) throws(Certificate.Error) {
             self.subject = certificate.subject
             self.alternativeNames = try certificate.extensions.subjectAlternativeNames ?? .init()
         }

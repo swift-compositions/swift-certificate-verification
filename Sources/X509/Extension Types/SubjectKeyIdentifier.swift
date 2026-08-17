@@ -40,14 +40,19 @@ public struct SubjectKeyIdentifier {
     ///     `ISO_8824.ObjectIdentifier.X509ExtensionID.subjectKeyIdentifier`.
     @inlinable
     @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
-    public init(_ ext: Certificate.Extension) throws {
+    public init(_ ext: Certificate.Extension) throws(Certificate.Error) {
         guard ext.oid == .X509ExtensionID.subjectKeyIdentifier else {
             throw Certificate.Error.extension(
                 .incorrectOID(expected: .X509ExtensionID.subjectKeyIdentifier, found: ext.oid)
             )
         }
 
-        let asn1KeyIdentifier = try ISO_8824.OctetString(derEncoded: ext.value)
+        let asn1KeyIdentifier: ISO_8824.OctetString
+        do {
+            asn1KeyIdentifier = try ISO_8824.OctetString(derEncoded: ext.value)
+        } catch {
+            throw Certificate.Error.der(error)
+        }
         self.keyIdentifier = asn1KeyIdentifier.bytes
     }
 }
@@ -76,7 +81,7 @@ extension Certificate.Extension {
     ///   - ski: The extension to wrap
     ///   - critical: Whether this extension should have the critical bit set.
     @inlinable
-    public init(_ ski: SubjectKeyIdentifier, critical: Bool) throws {
+    public init(_ ski: SubjectKeyIdentifier, critical: Bool) throws(ISO_8824.Error) {
         let asn1Representation = ISO_8824.OctetString(contentBytes: ski.keyIdentifier)
         var serializer = ISO_8825.DER.Serializer()
         try serializer.serialize(asn1Representation)

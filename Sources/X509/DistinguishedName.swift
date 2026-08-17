@@ -88,7 +88,7 @@ public struct DistinguishedName {
     ///
     /// - Parameter attributes: The sequence of ``RelativeDistinguishedName/Attribute``s that make up the ``DistinguishedName``.
     @inlinable
-    public init<AttributeSequence: Sequence>(_ attributes: AttributeSequence) throws
+    public init<AttributeSequence: Sequence>(_ attributes: AttributeSequence) throws(Certificate.Error)
     where AttributeSequence.Element == RelativeDistinguishedName.Attribute {
         self.rdns = attributes.map { RelativeDistinguishedName($0) }
     }

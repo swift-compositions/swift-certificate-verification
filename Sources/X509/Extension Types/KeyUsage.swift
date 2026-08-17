@@ -89,15 +89,24 @@ public struct KeyUsage {
     ///     `ISO_8824.ObjectIdentifier.X509ExtensionID.keyUsage`.
     @inlinable
     @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
-    public init(_ ext: Certificate.Extension) throws {
+    public init(_ ext: Certificate.Extension) throws(Certificate.Error) {
         guard ext.oid == .X509ExtensionID.keyUsage else {
             throw Certificate.Error.extension(
                 .incorrectOID(expected: .X509ExtensionID.keyUsage, found: ext.oid)
             )
         }
 
-        let keyUsageValue = try ISO_8824.BitString(derEncoded: ext.value)
-        try Self.validateBitString(keyUsageValue)
+        let keyUsageValue: ISO_8824.BitString
+        do {
+            keyUsageValue = try ISO_8824.BitString(derEncoded: ext.value)
+        } catch {
+            throw Certificate.Error.der(error)
+        }
+        do {
+            try Self.validateBitString(keyUsageValue)
+        } catch {
+            throw Certificate.Error.der(error)
+        }
         self.rawValue = UInt16(keyUsageValue)
     }
 
@@ -250,7 +259,7 @@ public struct KeyUsage {
     }
 
     @inlinable
-    package static func validateBitString(_ bitstring: ISO_8824.BitString) throws {
+    package static func validateBitString(_ bitstring: ISO_8824.BitString) throws(ISO_8824.Error) {
         switch bitstring.bytes.count {
         case 0:
             // This is fine, no bits are set.
@@ -333,7 +342,7 @@ extension Certificate.Extension {
     ///   - keyUsage: The extension to wrap
     ///   - critical: Whether this extension should have the critical bit set.
     @inlinable
-    public init(_ keyUsage: KeyUsage, critical: Bool) throws {
+    public init(_ keyUsage: KeyUsage, critical: Bool) throws(ISO_8824.Error) {
         let asn1Representation = try ISO_8824.BitString(keyUsage)
         var serializer = ISO_8825.DER.Serializer()
         try serializer.serialize(asn1Representation)

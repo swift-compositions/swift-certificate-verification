@@ -81,7 +81,9 @@ extension _TinyArray {
     }
 
     @inlinable
-    public init(_ elements: some Sequence<Result<Element, some Swift.Error>>) throws {
+    public init<Failure: Swift.Error>(
+        _ elements: some Sequence<Result<Element, Failure>>
+    ) throws(Failure) {
         self.storage = try .init(elements)
     }
 
@@ -205,7 +207,9 @@ extension _TinyArray.Storage {
     }
 
     @inlinable
-    init(_ newElements: some Sequence<Result<Element, some Swift.Error>>) throws {
+    init<Failure: Swift.Error>(
+        _ newElements: some Sequence<Result<Element, Failure>>
+    ) throws(Failure) {
         var iterator = newElements.makeIterator()
         guard let firstElement = try iterator.next()?.get() else {
             self = .arbitrary([])

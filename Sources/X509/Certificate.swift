@@ -271,7 +271,7 @@ extension ISO_8825.DER.Serializer {
     @inlinable
     package static func serialized<Element: ISO_8825.DER.Serializable>(
         element: Element
-    ) throws -> [UInt8] {
+    ) throws(ISO_8824.Error) -> [UInt8] {
         var serializer = ISO_8825.DER.Serializer()
         try serializer.serialize(element)
         return serializer.serializedBytes

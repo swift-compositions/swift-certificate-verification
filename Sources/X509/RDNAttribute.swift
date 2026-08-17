@@ -115,7 +115,7 @@ extension RelativeDistinguishedName.Attribute.Value {
     /// A helper constructor to construct a ``RelativeDistinguishedName/Attribute/Value`` with an `ISO_8824.PrintableString`.
     /// - Parameter printableString: The value of the attribute.
     @inlinable
-    public init(printableString: String) throws {
+    public init(printableString: String) throws(ISO_8824.Error) {
         // verify that it is indeed a printable string
         _ = try ISO_8824.PrintableString(printableString)
         self.storage = .printable(printableString)
@@ -123,7 +123,7 @@ extension RelativeDistinguishedName.Attribute.Value {
 
     /// A helper constructor to construct a ``RelativeDistinguishedName/Attribute/Value`` with an `ISO_8824.IA5String`.
     @inlinable
-    public init(ia5String: String) throws {
+    public init(ia5String: String) throws(ISO_8824.Error) {
         // verify that it is indeed a ISO_8824.IA5String
         _ = try ISO_8824.IA5String(ia5String)
         self.storage = .ia5(ia5String)
@@ -342,13 +342,13 @@ extension RelativeDistinguishedName.Attribute {
     /// - Parameter type: The type of the attribute.
     /// - Parameter printableString: The value of the attribute.
     @inlinable
-    public init(type: ISO_8824.ObjectIdentifier, printableString: String) throws {
+    public init(type: ISO_8824.ObjectIdentifier, printableString: String) throws(ISO_8824.Error) {
         self.type = type
         self.value = try .init(printableString: printableString)
     }
 
     @inlinable
-    public init(type: ISO_8824.ObjectIdentifier, ia5String: String) throws {
+    public init(type: ISO_8824.ObjectIdentifier, ia5String: String) throws(ISO_8824.Error) {
         self.type = type
         self.value = try .init(ia5String: ia5String)
     }
