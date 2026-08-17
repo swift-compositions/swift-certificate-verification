@@ -189,6 +189,9 @@ extension Certificates.Time.Test.`Edge Case` {
     }
 }
 
+// The reference oracle is POSIX gmtime_r; Windows has no gmtime_r (its reentrant
+// spelling is gmtime_s with reversed arguments), so the comparison is POSIX-only.
+#if !os(Windows)
 extension Certificates.Time.Test.Integration {
     @Test func `compare random inputs for gm time`() throws {
         // These numbers are determined experimentally on macOS.
@@ -219,3 +222,4 @@ extension Certificates.Time.Test.Integration {
         }
     }
 }
+#endif
