@@ -331,7 +331,7 @@ extension Certificate.Extension {
     ///   - critical: Whether this extension should have the critical bit set.
     @inlinable
     public init(_ keyUsage: KeyUsage, critical: Bool) throws {
-        let asn1Representation = ISO_8824.BitString(keyUsage)
+        let asn1Representation = try ISO_8824.BitString(keyUsage)
         var serializer = ISO_8825.DER.Serializer()
         try serializer.serialize(asn1Representation)
         self.init(oid: .X509ExtensionID.keyUsage, critical: critical, value: serializer.serializedBytes[...])
@@ -357,15 +357,15 @@ extension UInt16 {
 
 extension ISO_8824.BitString {
     @inlinable
-    package init(_ ext: KeyUsage) {
+    package init(_ ext: KeyUsage) throws(ISO_8824.Error) {
         if ext.decipherOnly {
             // We need two bytes here.
             let bytes = [UInt8(truncatingIfNeeded: ext.rawValue >> 8), UInt8(truncatingIfNeeded: ext.rawValue)]
-            self = .init(bytes: bytes[...], paddingBits: 7)
+            self = try .init(bytes: bytes[...], paddingBits: 7)
         } else {
             // We only need one byte here.
             let byte = UInt8(truncatingIfNeeded: ext.rawValue >> 8)
-            self = .init(bytes: [byte], paddingBits: byte.trailingZeroBitCount)
+            self = try .init(bytes: [byte], paddingBits: byte.trailingZeroBitCount)
         }
     }
 }

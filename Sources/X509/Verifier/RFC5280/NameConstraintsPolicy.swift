@@ -233,7 +233,7 @@ extension Certificate {
     }
 
     @usableFromInline
-    struct NameSequence: Sequence, Sendable {
+    package struct NameSequence: Sequence, Sendable {
         @usableFromInline
         var subject: DistinguishedName
 

@@ -135,8 +135,8 @@ extension Certificate.Signature {
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension ISO_8824.BitString {
     @inlinable
-    package init(_ signature: Certificate.Signature) {
-        self.init(bytes: signature.rawRepresentation[...])
+    package init(_ signature: Certificate.Signature) throws(ISO_8824.Error) {
+        try self.init(bytes: signature.rawRepresentation[...])
     }
 }
 

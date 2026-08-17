@@ -15,6 +15,7 @@
 import ISO_8824
 import ISO_8825
 
+@usableFromInline
 package struct SubjectPublicKeyInfo: ISO_8825.DER.ImplicitlyTaggable, Hashable, Sendable {
     @inlinable
     package static var defaultIdentifier: ISO_8824.Identifier {
@@ -50,9 +51,9 @@ package struct SubjectPublicKeyInfo: ISO_8825.DER.ImplicitlyTaggable, Hashable, 
     }
 
     @inlinable
-    package init(algorithmIdentifier: AlgorithmIdentifier, key: [UInt8]) {
+    package init(algorithmIdentifier: AlgorithmIdentifier, key: [UInt8]) throws(ISO_8824.Error) {
         self.algorithmIdentifier = algorithmIdentifier
-        self.key = ISO_8824.BitString(bytes: key[...])
+        self.key = try ISO_8824.BitString(bytes: key[...])
     }
 
     @inlinable

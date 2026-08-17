@@ -17,7 +17,7 @@ import ISO_8825
 import Standard_Library_Extensions
 
 @usableFromInline
-struct AlgorithmIdentifier: ISO_8825.DER.ImplicitlyTaggable, ISO_8825.BER.ImplicitlyTaggable, Hashable, Sendable {
+package struct AlgorithmIdentifier: ISO_8825.DER.ImplicitlyTaggable, ISO_8825.BER.ImplicitlyTaggable, Hashable, Sendable {
     @inlinable
     static var defaultIdentifier: ISO_8824.Identifier {
         .sequence

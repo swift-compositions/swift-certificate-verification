@@ -156,23 +156,23 @@ extension Certificate.PublicKey {
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension SubjectPublicKeyInfo {
     @inlinable
-    package init(_ publicKey: Certificate.PublicKey) {
+    package init(_ publicKey: Certificate.PublicKey) throws(ISO_8824.Error) {
         let algorithmIdentifier: AlgorithmIdentifier
         let key: ISO_8824.BitString
 
         switch publicKey.backing {
         case .p256(let bytes):
             algorithmIdentifier = .p256PublicKey
-            key = .init(bytes: bytes[...])
+            key = try .init(bytes: bytes[...])
         case .p384(let bytes):
             algorithmIdentifier = .p384PublicKey
-            key = .init(bytes: bytes[...])
+            key = try .init(bytes: bytes[...])
         case .p521(let bytes):
             algorithmIdentifier = .p521PublicKey
-            key = .init(bytes: bytes[...])
+            key = try .init(bytes: bytes[...])
         case .ed25519(let bytes):
             algorithmIdentifier = .ed25519
-            key = .init(bytes: bytes[...])
+            key = try .init(bytes: bytes[...])
         }
 
         self.algorithmIdentifier = algorithmIdentifier
@@ -221,7 +221,7 @@ extension Certificate.PublicKey: ISO_8825.DER.ImplicitlyTaggable {
         into coder: inout ISO_8825.DER.Serializer,
         withIdentifier identifier: ISO_8824.Identifier
     ) throws(ISO_8824.Error) {
-        let spki = SubjectPublicKeyInfo(self)
+        let spki = try SubjectPublicKeyInfo(self)
         try spki.serialize(into: &coder, withIdentifier: identifier)
     }
 }

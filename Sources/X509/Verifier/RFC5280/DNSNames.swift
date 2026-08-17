@@ -297,7 +297,7 @@ extension String.UTF8View.SubSequence {
     }
 
     @usableFromInline
-    enum LabelContents: Sendable {
+    package enum LabelContents: Sendable {
         case allASCII(nonNumerics: Int)
         case nonASCII
     }
