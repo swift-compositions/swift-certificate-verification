@@ -394,9 +394,6 @@ private let asciiLowercase: ClosedRange<UInt8> =
     (UInt8(ascii: "a" as Unicode.Scalar)...UInt8(ascii: "z" as Unicode.Scalar))
 private let asciiNumbers: ClosedRange<UInt8> =
     (UInt8(ascii: "0" as Unicode.Scalar)...UInt8(ascii: "9" as Unicode.Scalar))
-private let asciiHyphen: UInt8 = UInt8(ascii: "-" as Unicode.Scalar)
-private let asciiPeriod: UInt8 = UInt8(ascii: "." as Unicode.Scalar)
-private let asciiAsterisk: UInt8 = UInt8(ascii: "*" as Unicode.Scalar)
 
 extension Collection {
     /// Splits a collection in two around a given index. This index may be nil, in which case the split
