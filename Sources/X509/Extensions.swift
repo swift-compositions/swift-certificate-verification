@@ -214,7 +214,8 @@ extension Certificate.Extensions {
     @inlinable
     public var authorityInformationAccess: AuthorityInformationAccess? {
         get throws(Certificate.Error) {
-            try self[oid: .X509ExtensionID.authorityInformationAccess].map { try .init($0) }
+            guard let ext = self[oid: .X509ExtensionID.authorityInformationAccess] else { return nil }
+            return try .init(ext)
         }
     }
 
@@ -225,7 +226,8 @@ extension Certificate.Extensions {
     @inlinable
     public var subjectKeyIdentifier: SubjectKeyIdentifier? {
         get throws(Certificate.Error) {
-            try self[oid: .X509ExtensionID.subjectKeyIdentifier].map { try .init($0) }
+            guard let ext = self[oid: .X509ExtensionID.subjectKeyIdentifier] else { return nil }
+            return try .init(ext)
         }
     }
 
@@ -236,7 +238,8 @@ extension Certificate.Extensions {
     @inlinable
     public var authorityKeyIdentifier: AuthorityKeyIdentifier? {
         get throws(Certificate.Error) {
-            try self[oid: .X509ExtensionID.authorityKeyIdentifier].map { try .init($0) }
+            guard let ext = self[oid: .X509ExtensionID.authorityKeyIdentifier] else { return nil }
+            return try .init(ext)
         }
     }
 
@@ -247,7 +250,8 @@ extension Certificate.Extensions {
     @inlinable
     public var extendedKeyUsage: ExtendedKeyUsage? {
         get throws(Certificate.Error) {
-            try self[oid: .X509ExtensionID.extendedKeyUsage].map { try .init($0) }
+            guard let ext = self[oid: .X509ExtensionID.extendedKeyUsage] else { return nil }
+            return try .init(ext)
         }
     }
 
@@ -258,7 +262,8 @@ extension Certificate.Extensions {
     @inlinable
     public var basicConstraints: BasicConstraints? {
         get throws(Certificate.Error) {
-            try self[oid: .X509ExtensionID.basicConstraints].map { try .init($0) }
+            guard let ext = self[oid: .X509ExtensionID.basicConstraints] else { return nil }
+            return try .init(ext)
         }
     }
 
@@ -269,7 +274,8 @@ extension Certificate.Extensions {
     @inlinable
     public var keyUsage: KeyUsage? {
         get throws(Certificate.Error) {
-            try self[oid: .X509ExtensionID.keyUsage].map { try .init($0) }
+            guard let ext = self[oid: .X509ExtensionID.keyUsage] else { return nil }
+            return try .init(ext)
         }
     }
 
@@ -280,7 +286,8 @@ extension Certificate.Extensions {
     @inlinable
     public var nameConstraints: NameConstraints? {
         get throws(Certificate.Error) {
-            try self[oid: .X509ExtensionID.nameConstraints].map { try .init($0) }
+            guard let ext = self[oid: .X509ExtensionID.nameConstraints] else { return nil }
+            return try .init(ext)
         }
     }
 
@@ -291,7 +298,8 @@ extension Certificate.Extensions {
     @inlinable
     public var subjectAlternativeNames: SubjectAlternativeNames? {
         get throws(Certificate.Error) {
-            try self[oid: .X509ExtensionID.subjectAlternativeName].map { try .init($0) }
+            guard let ext = self[oid: .X509ExtensionID.subjectAlternativeName] else { return nil }
+            return try .init(ext)
         }
     }
 }
