@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 /// Implement the ``CustomCertificateStore`` if you want to perform dynamic
 /// certificate lookup, or if you need custom logic when matching the
@@ -39,6 +39,8 @@ public protocol CustomCertificateStore: Sendable, Hashable {
 @usableFromInline
 struct AnyCustomCertificateStore: CustomCertificateStore {
     @usableFromInline
+    // Deliberate type-erasure surface (API-ERR-006 opt-out).
+    // swiftlint:disable:next no_any_protocol_existential
     var value: any DynCustomCertificateStore
 
     @usableFromInline
@@ -70,10 +72,6 @@ extension AnyCustomCertificateStore: Hashable {
         return lhs.value.isEqual(rhs.value, recurse: true)
     }
 
-    public var hashValue: Int {
-        return value.hashValue
-    }
-
     public func hash(into hasher: inout Hasher) {
         value.hash(into: &hasher)
     }
@@ -83,6 +81,8 @@ extension AnyCustomCertificateStore: Hashable {
 extension AnyCustomCertificateStore {
     @usableFromInline
     protocol DynCustomCertificateStore: CustomCertificateStore {
+        // Deliberate type-erasure surface (API-ERR-006 opt-out).
+        // swiftlint:disable:next no_any_protocol_existential
         func isEqual(_ rhs: any DynCustomCertificateStore, recurse: Bool) -> Bool
     }
 }
@@ -111,6 +111,8 @@ extension AnyCustomCertificateStore {
             value.append(contentsOf: certificates)
         }
 
+        // Deliberate type-erasure surface (API-ERR-006 opt-out).
+        // swiftlint:disable:next no_any_protocol_existential
         func isEqual(_ rhs: any DynCustomCertificateStore, recurse: Bool) -> Bool {
             guard let rhs = rhs as? Self else {
                 guard recurse else {

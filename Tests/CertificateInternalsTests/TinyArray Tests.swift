@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,9 +10,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import Testing
+
 @testable import Certificate_Internals
 
 private func _assertEqual(
@@ -45,7 +46,12 @@ private func assertEqual(
 ) {
     _assertEqual(expected, initial: initial(), mutate, sourceLocation: sourceLocation)
     // get a sequence that is not an `Array` to hit the slow path as well
-    _assertEqual(expected.lazy.map { $0 }, initial: initial(), mutate, sourceLocation: sourceLocation)
+    _assertEqual(
+        expected.lazy.map { $0 },
+        initial: initial(),
+        mutate,
+        sourceLocation: sourceLocation
+    )
 }
 
 @Suite struct `TinyArray Tests` {
@@ -316,45 +322,82 @@ private func assertEqual(
 
     @Suite struct Integration {
         @Test func `throwing init from result`() throws {
-            #expect(Array(try _TinyArray<Int>(CollectionOfOne(Result<_, Error>.success(1)))) == [1])
-            #expect(Array(try _TinyArray([Result<_, Error>.success(1)])) == [1])
-            #expect(Array(try _TinyArray([Result<_, Error>.success(1), .success(2)])) == [1, 2])
-            #expect(Array(try _TinyArray([Result<_, Error>.success(1), .success(2), .success(3)])) == [1, 2, 3])
             #expect(
-                Array(try _TinyArray([Result<_, Error>.success(1), .success(2), .success(3), .success(4)]))
+                Array(try _TinyArray<Int>(CollectionOfOne(Result<_, any Swift.Error>.success(1))))
+                    == [1]
+            )
+            #expect(Array(try _TinyArray([Result<_, any Swift.Error>.success(1)])) == [1])
+            #expect(
+                Array(try _TinyArray([Result<_, any Swift.Error>.success(1), .success(2)])) == [
+                    1, 2,
+                ]
+            )
+            #expect(
+                Array(
+                    try _TinyArray([
+                        Result<_, any Swift.Error>.success(1), .success(2), .success(3),
+                    ])
+                ) == [
+                    1, 2, 3,
+                ]
+            )
+            #expect(
+                Array(
+                    try _TinyArray([
+                        Result<_, any Swift.Error>.success(1), .success(2), .success(3),
+                        .success(4),
+                    ])
+                )
                     == [1, 2, 3, 4]
             )
             #expect(
-                Array(try _TinyArray([Result<_, Error>.success(1), .success(2), .success(3), .success(4), .success(5)]))
+                Array(
+                    try _TinyArray([
+                        Result<_, any Swift.Error>.success(1), .success(2), .success(3),
+                        .success(4),
+                        .success(5),
+                    ])
+                )
                     == [1, 2, 3, 4, 5]
             )
 
-            struct MyError: Error {}
+            struct MyError: Swift.Error {}
 
-            #expect(throws: (any Error).self) {
+            #expect(throws: (any Swift.Error).self) {
                 Array(try _TinyArray<Int>([Result.failure(MyError())]))
             }
-            #expect(throws: (any Error).self) {
+            #expect(throws: (any Swift.Error).self) {
                 Array(try _TinyArray<Int>([Result.failure(MyError()), Result.failure(MyError())]))
             }
-            #expect(throws: (any Error).self) {
+            #expect(throws: (any Swift.Error).self) {
                 Array(try _TinyArray<Int>([.success(1), Result.failure(MyError())]))
             }
-            #expect(throws: (any Error).self) {
+            #expect(throws: (any Swift.Error).self) {
                 Array(try _TinyArray<Int>([.success(1), Result.failure(MyError()), .success(2)]))
             }
-            #expect(throws: (any Error).self) {
+            #expect(throws: (any Swift.Error).self) {
                 Array(try _TinyArray<Int>([.success(1), .success(2), Result.failure(MyError())]))
             }
-            #expect(throws: (any Error).self) {
-                Array(try _TinyArray<Int>([.success(1), .success(2), Result.failure(MyError()), .success(4)]))
-            }
-            #expect(throws: (any Error).self) {
-                Array(try _TinyArray<Int>([.success(1), .success(2), .success(3), Result.failure(MyError())]))
-            }
-            #expect(throws: (any Error).self) {
+            #expect(throws: (any Swift.Error).self) {
                 Array(
-                    try _TinyArray<Int>([.success(1), .success(2), .success(3), .success(4), Result.failure(MyError())])
+                    try _TinyArray<Int>([
+                        .success(1), .success(2), Result.failure(MyError()), .success(4),
+                    ])
+                )
+            }
+            #expect(throws: (any Swift.Error).self) {
+                Array(
+                    try _TinyArray<Int>([
+                        .success(1), .success(2), .success(3), Result.failure(MyError()),
+                    ])
+                )
+            }
+            #expect(throws: (any Swift.Error).self) {
+                Array(
+                    try _TinyArray<Int>([
+                        .success(1), .success(2), .success(3), .success(4),
+                        Result.failure(MyError()),
+                    ])
                 )
             }
         }

@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -15,11 +15,12 @@
 // file is excluded from this target, so without these two the rendering they assert would
 // be changeable with nothing compiled to notice.
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
 import Testing
+
 @testable import Certificates
 
 extension GeneralName {

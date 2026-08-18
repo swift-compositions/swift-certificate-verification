@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,10 +10,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
+
 /// A DirectoryString is defined as:
 ///
 /// ```
@@ -40,14 +41,19 @@ enum DirectoryString: ISO_8825.DER.Parseable, ISO_8825.DER.Serializable, Hashabl
         switch rootNode.identifier {
         case .teletexString:
             self = .teletexString(try ISO_8824.TeletexString(derEncoded: rootNode))
+
         case .printableString:
             self = .printableString(try ISO_8824.PrintableString(derEncoded: rootNode))
+
         case .universalString:
             self = .universalString(try ISO_8824.UniversalString(derEncoded: rootNode))
+
         case .utf8String:
             self = .utf8String(try ISO_8824.UTF8String(derEncoded: rootNode))
+
         case .bmpString:
             self = .bmpString(try ISO_8824.BMPString(derEncoded: rootNode))
+
         default:
             throw ISO_8824.Error.unexpectedFieldType(rootNode.identifier)
         }
@@ -58,12 +64,16 @@ enum DirectoryString: ISO_8825.DER.Parseable, ISO_8825.DER.Serializable, Hashabl
         switch self {
         case .teletexString(let string):
             try string.serialize(into: &coder)
+
         case .printableString(let string):
             try string.serialize(into: &coder)
+
         case .universalString(let string):
             try string.serialize(into: &coder)
+
         case .utf8String(let string):
             try string.serialize(into: &coder)
+
         case .bmpString(let string):
             try string.serialize(into: &coder)
         }

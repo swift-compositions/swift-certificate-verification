@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 import ISO_8824
 import ISO_8825
 
@@ -57,7 +57,9 @@ public struct Verifier<Policy: VerifierPolicy> {
 
         // First check: does this leaf certificate contain critical extensions that are not satisfied by the PolicySet?
         // If so, reject the chain.
-        if leaf.hasUnhandledCriticalExtensions(handledExtensions: self.policy.verifyingCriticalExtensions) {
+        if leaf.hasUnhandledCriticalExtensions(
+            handledExtensions: self.policy.verifyingCriticalExtensions
+        ) {
 
             diagnosticCallback?(
                 .leafCertificateHasUnhandledCriticalExtension(
@@ -68,7 +70,9 @@ public struct Verifier<Policy: VerifierPolicy> {
             return .couldNotValidate([])
         }
 
-        let rootCertificates = await self.rootCertificates.resolve(diagnosticsCallback: diagnosticCallback)
+        let rootCertificates = await self.rootCertificates.resolve(
+            diagnosticsCallback: diagnosticCallback
+        )
         // Second check: is this leaf _already in_ the certificate store? If it is, we can just trust it directly.
         //
         // Note that this requires an _exact match_: if there isn't an exact match, we'll fall back to chain building,
@@ -84,12 +88,15 @@ public struct Verifier<Policy: VerifierPolicy> {
                 diagnosticCallback?(.foundValidCertificateChain(unverifiedChain.certificates))
                 return .validCertificate(.init(unverifiedChain.certificates))
 
-            case .failsToMeetPolicy(reason: let reason):
+            case .failsToMeetPolicy(let reason):
                 diagnosticCallback?(
                     .leafCertificateIsInTheRootStoreButDoesNotMeetPolicy(leaf, reason: reason)
                 )
                 policyFailures.append(
-                    CertificateValidationResult.PolicyFailure(chain: unverifiedChain, policyFailureReason: reason)
+                    CertificateValidationResult.PolicyFailure(
+                        chain: unverifiedChain,
+                        policyFailureReason: reason
+                    )
                 )
             }
         }
@@ -103,9 +110,14 @@ public struct Verifier<Policy: VerifierPolicy> {
             // produce smaller chains.
             if var rootParents = await rootCertificates[nextPartialCandidate.currentTip.issuer] {
                 // We then want to sort by suitability.
-                rootParents.sortBySuitabilityForIssuing(certificate: nextPartialCandidate.currentTip)
+                rootParents.sortBySuitabilityForIssuing(
+                    certificate: nextPartialCandidate.currentTip
+                )
                 diagnosticCallback?(
-                    .foundCandidateIssuersOfPartialChainInRootStore(nextPartialCandidate, issuers: rootParents)
+                    .foundCandidateIssuersOfPartialChainInRootStore(
+                        nextPartialCandidate,
+                        issuers: rootParents
+                    )
                 )
 
                 // Each of these is now potentially a valid unverified chain.
@@ -118,16 +130,23 @@ public struct Verifier<Policy: VerifierPolicy> {
                         continue
                     }
 
-                    let unverifiedChain = UnverifiedCertificateChain(chain: nextPartialCandidate, root: root)
+                    let unverifiedChain = UnverifiedCertificateChain(
+                        chain: nextPartialCandidate,
+                        root: root
+                    )
 
                     switch await self.policy.chainMeetsPolicyRequirements(chain: unverifiedChain) {
                     case .meetsPolicy:
                         // We're good!
-                        diagnosticCallback?(.foundValidCertificateChain(unverifiedChain.certificates))
+                        diagnosticCallback?(
+                            .foundValidCertificateChain(unverifiedChain.certificates)
+                        )
                         return .validCertificate(.init(unverifiedChain.certificates))
 
-                    case .failsToMeetPolicy(reason: let reason):
-                        diagnosticCallback?(.chainFailsToMeetPolicy(unverifiedChain, reason: reason))
+                    case .failsToMeetPolicy(let reason):
+                        diagnosticCallback?(
+                            .chainFailsToMeetPolicy(unverifiedChain, reason: reason)
+                        )
                         policyFailures.append(
                             CertificateValidationResult.PolicyFailure(
                                 chain: unverifiedChain,
@@ -138,9 +157,12 @@ public struct Verifier<Policy: VerifierPolicy> {
                 }
             }
 
-            if var intermediateParents = await intermediates[nextPartialCandidate.currentTip.issuer] {
+            if var intermediateParents = await intermediates[nextPartialCandidate.currentTip.issuer]
+            {
                 // We then want to sort by suitability.
-                intermediateParents.sortBySuitabilityForIssuing(certificate: nextPartialCandidate.currentTip)
+                intermediateParents.sortBySuitabilityForIssuing(
+                    certificate: nextPartialCandidate.currentTip
+                )
                 diagnosticCallback?(
                     .foundCandidateIssuersOfPartialChainInIntermediateStore(
                         nextPartialCandidate,
@@ -177,7 +199,9 @@ public struct Verifier<Policy: VerifierPolicy> {
         diagnosticCallback: ((VerificationDiagnostic) -> Void)?
     ) -> Bool {
         // We want to confirm that the certificate has no unhandled critical extensions. If it does, we can't build the chain.
-        if nextCertificate.hasUnhandledCriticalExtensions(handledExtensions: self.policy.verifyingCriticalExtensions) {
+        if nextCertificate.hasUnhandledCriticalExtensions(
+            handledExtensions: self.policy.verifyingCriticalExtensions
+        ) {
             diagnosticCallback?(
                 .issuerHasUnhandledCriticalExtension(
                     issuer: nextCertificate,
@@ -207,7 +231,9 @@ public struct Verifier<Policy: VerifierPolicy> {
                 signedCertificate.tbsCertificateBytes
             )
         else {
-            diagnosticCallback?(.issuerHasNotSignedCertificate(nextCertificate, chain: partialChain))
+            diagnosticCallback?(
+                .issuerHasNotSignedCertificate(nextCertificate, chain: partialChain)
+            )
             return true
         }
 
@@ -267,10 +293,13 @@ struct CandidatePartialChain: Hashable {
         // This criteria is motivated by RFC 4158 § 5.2 (loop detection)
         func match(_ left: Certificate, _ right: Certificate) -> Bool {
             (left.subject == right.subject && left.publicKey == right.publicKey
-                && left.extensions.subjectAlternativeNameBytes == right.extensions.subjectAlternativeNameBytes)
+                && left.extensions.subjectAlternativeNameBytes
+                    == right.extensions.subjectAlternativeNameBytes)
         }
 
-        return (self.chain.contains(where: { match($0, certificate) }) || match(self.currentTip, certificate))
+        return
+            (self.chain.contains(where: { match($0, certificate) })
+            || match(self.currentTip, certificate))
     }
 
     func appending(_ newElement: Certificate) -> CandidatePartialChain {
@@ -296,7 +325,9 @@ extension Array where Element == Certificate {
             return
         }
 
-        self.sort(by: { $0.issuerPreference(subjectAKI: aki) > $1.issuerPreference(subjectAKI: aki) })
+        self.sort(by: {
+            $0.issuerPreference(subjectAKI: aki) > $1.issuerPreference(subjectAKI: aki)
+        })
     }
 }
 

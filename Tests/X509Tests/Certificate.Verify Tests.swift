@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,11 +10,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 @preconcurrency import Crypto
 import ISO_8825
 import Testing
+
 @testable import Certificates
 
 // Exercises the injected signature-verification witness directly, against the frozen

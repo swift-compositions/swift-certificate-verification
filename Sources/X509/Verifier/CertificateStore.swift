@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import Certificate_Internals
 
@@ -68,7 +68,9 @@ public struct CertificateStore: Sendable, Hashable {
     func resolve(diagnosticsCallback: ((VerificationDiagnostic) -> Void)?) async -> Resolved {
         switch self.backing {
         case .custom(let inner): .custom(inner)
-        case .concrete(let inner): .concrete(await ConcreteResolved(inner, diagnosticsCallback: diagnosticsCallback))
+
+        case .concrete(let inner):
+            .concrete(await ConcreteResolved(inner, diagnosticsCallback: diagnosticsCallback))
         }
     }
 }
@@ -104,6 +106,7 @@ extension CertificateStore {
             case .custom(var inner):
                 inner.append(contentsOf: certificates)
                 self = .custom(inner)
+
             case .concrete(var inner):
                 inner.append(contentsOf: certificates)
                 self = .concrete(inner)
@@ -150,7 +153,10 @@ extension CertificateStore {
         @usableFromInline
         var additionalTrustRoots: [DistinguishedName: [Certificate]]
 
-        init(_ store: ConcreteBacking, diagnosticsCallback: ((VerificationDiagnostic) -> Void)?) async {
+        init(
+            _ store: ConcreteBacking,
+            diagnosticsCallback: ((VerificationDiagnostic) -> Void)?
+        ) async {
             additionalTrustRoots = store.additionalTrustRoots
         }
     }
@@ -160,9 +166,7 @@ extension CertificateStore {
 extension CertificateStore.ConcreteResolved {
     @inlinable
     subscript(subject: DistinguishedName) -> [Certificate]? {
-        get {
-            additionalTrustRoots[subject]
-        }
+        additionalTrustRoots[subject]
     }
 
     @inlinable

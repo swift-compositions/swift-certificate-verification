@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 import ISO_8824
 import ISO_8825
 import Time_Primitive
@@ -70,20 +70,29 @@ public struct RFC5280Policy: VerifierPolicy, Sendable {
     }
 
     @inlinable
-    public func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) -> PolicyEvaluationResult {
-        if case .failsToMeetPolicy(let reason) = self.versionPolicy.chainMeetsPolicyRequirements(chain: chain) {
+    public func chainMeetsPolicyRequirements(
+        chain: UnverifiedCertificateChain
+    ) -> PolicyEvaluationResult {
+        if case .failsToMeetPolicy(let reason) = self.versionPolicy.chainMeetsPolicyRequirements(
+            chain: chain
+        ) {
             return .failsToMeetPolicy(reason: reason)
         }
-        if case .failsToMeetPolicy(let reason) = self.expiryPolicy.chainMeetsPolicyRequirements(chain: chain) {
+        if case .failsToMeetPolicy(let reason) = self.expiryPolicy.chainMeetsPolicyRequirements(
+            chain: chain
+        ) {
             return .failsToMeetPolicy(reason: reason)
         }
 
-        if case .failsToMeetPolicy(let reason) = self.basicConstraintsPolicy.chainMeetsPolicyRequirements(chain: chain)
+        if case .failsToMeetPolicy(let reason) = self.basicConstraintsPolicy
+            .chainMeetsPolicyRequirements(chain: chain)
         {
             return .failsToMeetPolicy(reason: reason)
         }
 
-        if case .failsToMeetPolicy(let reason) = self.nameConstraintsPolicy.chainMeetsPolicyRequirements(chain: chain) {
+        if case .failsToMeetPolicy(let reason) = self.nameConstraintsPolicy
+            .chainMeetsPolicyRequirements(chain: chain)
+        {
             return .failsToMeetPolicy(reason: reason)
         }
 

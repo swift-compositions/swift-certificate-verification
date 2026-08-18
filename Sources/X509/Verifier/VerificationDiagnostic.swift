@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 import ISO_8824
 import ISO_8825
 
@@ -72,7 +72,9 @@ public struct VerificationDiagnostic: Sendable {
     /// - Note: all ``LoadingTrustRootsFailed`` are considered equal,
     /// best we can because the underlying storage type ``Error`` doesn't conform to Eqautable
     struct LoadingTrustRootsFailed: Hashable, Sendable {
-        var error: any Error
+        // Deliberate type-erasure surface (API-ERR-006 opt-out).
+        // swiftlint:disable:next no_any_protocol_existential
+        var error: any Swift.Error
 
         static func == (lhs: Self, rhs: Self) -> Bool {
             true
@@ -81,13 +83,19 @@ public struct VerificationDiagnostic: Sendable {
     }
 
     enum Storage: Hashable, Sendable {
-        case leafCertificateHasUnhandledCriticalExtension(LeafCertificateHasUnhandledCriticalExtensions)
-        case leafCertificateIsInTheRootStoreButDoesNotMeetPolicy(LeafCertificateIsInTheRootStoreButDoesNotMeetPolicy)
+        case leafCertificateHasUnhandledCriticalExtension(
+            LeafCertificateHasUnhandledCriticalExtensions
+        )
+        case leafCertificateIsInTheRootStoreButDoesNotMeetPolicy(
+            LeafCertificateIsInTheRootStoreButDoesNotMeetPolicy
+        )
         case chainFailsToMeetPolicy(ChainFailsToMeetPolicy)
         case issuerHashUnhandledCriticalExtension(IssuerHasUnhandledCriticalExtension)
         case issuerHasNotSignedCertificate(IssuerHasNotSignedCertificate)
         case searchingForIssuerOfPartialChain(SearchingForIssuerOfPartialChain)
-        case foundCandidateIssuersOfPartialChainInRootStore(FoundCandidateIssuersOfPartialChainInRootStore)
+        case foundCandidateIssuersOfPartialChainInRootStore(
+            FoundCandidateIssuersOfPartialChainInRootStore
+        )
         case foundCandidateIssuersOfPartialChainInIntermediateStore(
             FoundCandidateIssuersOfPartialChainInIntermediateStore
         )
@@ -167,7 +175,11 @@ extension VerificationDiagnostic {
     static func searchingForIssuerOfPartialChain(
         _ partialChain: CandidatePartialChain
     ) -> Self {
-        .init(storage: .searchingForIssuerOfPartialChain(partialChain.chain + CollectionOfOne(partialChain.currentTip)))
+        .init(
+            storage: .searchingForIssuerOfPartialChain(
+                partialChain.chain + CollectionOfOne(partialChain.currentTip)
+            )
+        )
     }
 
     static func foundCandidateIssuersOfPartialChainInRootStore(
@@ -220,7 +232,9 @@ extension VerificationDiagnostic {
 
     @usableFromInline
     static func loadingTrustRootsFailed(
-        _ error: any Error
+        // Deliberate type-erasure surface (API-ERR-006 opt-out).
+        // swiftlint:disable:next no_any_protocol_existential
+        _ error: any Swift.Error
     ) -> Self {
         .init(storage: .loadingTrustRootsFailed(error))
     }
@@ -340,7 +354,9 @@ extension VerificationDiagnostic.Storage {
     }
 
     static func loadingTrustRootsFailed(
-        _ error: any Error
+        // Deliberate type-erasure surface (API-ERR-006 opt-out).
+        // swiftlint:disable:next no_any_protocol_existential
+        _ error: any Swift.Error
     ) -> Self {
         .loadingTrustRootsFailed(.init(error: error))
     }
@@ -372,15 +388,28 @@ extension VerificationDiagnostic: CustomStringConvertible {
 extension VerificationDiagnostic.Storage: CustomStringConvertible {
     var description: String {
         switch self {
-        case .leafCertificateHasUnhandledCriticalExtension(let diagnostic): return String(describing: diagnostic)
-        case .leafCertificateIsInTheRootStoreButDoesNotMeetPolicy(let diagnostic): return String(describing: diagnostic)
+        case .leafCertificateHasUnhandledCriticalExtension(let diagnostic):
+            return String(describing: diagnostic)
+
+        case .leafCertificateIsInTheRootStoreButDoesNotMeetPolicy(let diagnostic):
+            return String(describing: diagnostic)
+
         case .chainFailsToMeetPolicy(let diagnostic): return String(describing: diagnostic)
-        case .issuerHashUnhandledCriticalExtension(let diagnostic): return String(describing: diagnostic)
+
+        case .issuerHashUnhandledCriticalExtension(let diagnostic):
+            return String(describing: diagnostic)
+
         case .issuerHasNotSignedCertificate(let diagnostic): return String(describing: diagnostic)
-        case .searchingForIssuerOfPartialChain(let diagnostic): return String(describing: diagnostic)
-        case .foundCandidateIssuersOfPartialChainInRootStore(let diagnostic): return String(describing: diagnostic)
+
+        case .searchingForIssuerOfPartialChain(let diagnostic):
+            return String(describing: diagnostic)
+
+        case .foundCandidateIssuersOfPartialChainInRootStore(let diagnostic):
+            return String(describing: diagnostic)
+
         case .foundCandidateIssuersOfPartialChainInIntermediateStore(let diagnostic):
             return String(describing: diagnostic)
+
         case .foundValidCertificateChain(let diagnostic): return String(describing: diagnostic)
         case .couldNotValidateLeafCertificate(let diagnostic): return String(describing: diagnostic)
         case .issuerIsAlreadyInTheChain(let diagnostic): return String(describing: diagnostic)
@@ -390,7 +419,9 @@ extension VerificationDiagnostic.Storage: CustomStringConvertible {
 }
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
-extension VerificationDiagnostic.LeafCertificateHasUnhandledCriticalExtensions: CustomStringConvertible {
+extension VerificationDiagnostic.LeafCertificateHasUnhandledCriticalExtensions:
+    CustomStringConvertible
+{
     var description: String {
         """
         The leaf certificate has critical extensions that the policy does not understand and therefore can't enforce. \
@@ -405,7 +436,9 @@ extension VerificationDiagnostic.LeafCertificateHasUnhandledCriticalExtensions: 
 }
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
-extension VerificationDiagnostic.LeafCertificateIsInTheRootStoreButDoesNotMeetPolicy: CustomStringConvertible {
+extension VerificationDiagnostic.LeafCertificateIsInTheRootStoreButDoesNotMeetPolicy:
+    CustomStringConvertible
+{
     var description: String {
         """
         Leaf certificate is in the root store of the verifier but it does by itself not meet the policy. \
@@ -470,7 +503,9 @@ extension VerificationDiagnostic.SearchingForIssuerOfPartialChain: CustomStringC
 }
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
-extension VerificationDiagnostic.FoundCandidateIssuersOfPartialChainInRootStore: CustomStringConvertible {
+extension VerificationDiagnostic.FoundCandidateIssuersOfPartialChainInRootStore:
+    CustomStringConvertible
+{
     var description: String {
         """
         Found candidate issuers in the root store of the partial chain. \
@@ -483,7 +518,9 @@ extension VerificationDiagnostic.FoundCandidateIssuersOfPartialChainInRootStore:
 }
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
-extension VerificationDiagnostic.FoundCandidateIssuersOfPartialChainInIntermediateStore: CustomStringConvertible {
+extension VerificationDiagnostic.FoundCandidateIssuersOfPartialChainInIntermediateStore:
+    CustomStringConvertible
+{
     var description: String {
         """
         Found candidate issuers in the intermediate store of the partial chain. \
@@ -563,18 +600,33 @@ extension VerificationDiagnostic {
 extension VerificationDiagnostic.Storage {
     var multilineDescription: String {
         switch self {
-        case .leafCertificateHasUnhandledCriticalExtension(let diagnostic): return diagnostic.multilineDescription
+        case .leafCertificateHasUnhandledCriticalExtension(let diagnostic):
+            return diagnostic.multilineDescription
+
         case .leafCertificateIsInTheRootStoreButDoesNotMeetPolicy(let diagnostic):
             return diagnostic.multilineDescription
+
         case .chainFailsToMeetPolicy(let diagnostic): return diagnostic.multilineDescription
-        case .issuerHashUnhandledCriticalExtension(let diagnostic): return diagnostic.multilineDescription
+
+        case .issuerHashUnhandledCriticalExtension(let diagnostic):
+            return diagnostic.multilineDescription
+
         case .issuerHasNotSignedCertificate(let diagnostic): return diagnostic.multilineDescription
-        case .searchingForIssuerOfPartialChain(let diagnostic): return diagnostic.multilineDescription
-        case .foundCandidateIssuersOfPartialChainInRootStore(let diagnostic): return diagnostic.multilineDescription
+
+        case .searchingForIssuerOfPartialChain(let diagnostic):
+            return diagnostic.multilineDescription
+
+        case .foundCandidateIssuersOfPartialChainInRootStore(let diagnostic):
+            return diagnostic.multilineDescription
+
         case .foundCandidateIssuersOfPartialChainInIntermediateStore(let diagnostic):
             return diagnostic.multilineDescription
+
         case .foundValidCertificateChain(let diagnostic): return diagnostic.multilineDescription
-        case .couldNotValidateLeafCertificate(let diagnostic): return diagnostic.multilineDescription
+
+        case .couldNotValidateLeafCertificate(let diagnostic):
+            return diagnostic.multilineDescription
+
         case .issuerIsAlreadyInTheChain(let diagnostic): return diagnostic.multilineDescription
         case .loadingTrustRootsFailed(let diagnostic): return diagnostic.multilineDescription
         }
@@ -734,7 +786,7 @@ extension VerificationDiagnostic.IssuerIsAlreadyInTheChain {
 extension VerificationDiagnostic.LoadingTrustRootsFailed {
     var multilineDescription: String {
         """
-        Loading system trust roots has failed: 
+        Loading system trust roots has failed:
         \(String(reflecting: self.error))
         """
     }

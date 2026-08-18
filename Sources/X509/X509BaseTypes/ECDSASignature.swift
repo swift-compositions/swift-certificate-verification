@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 import ISO_8824
 import ISO_8825
 
@@ -44,8 +44,14 @@ struct ECDSASignature: ISO_8825.DER.ImplicitlyTaggable, Hashable, Sendable {
     }
 
     @inlinable
-    init(derEncoded rootNode: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) { (nodes: inout ISO_8825.Node.Collection.Iterator) throws(ISO_8824.Error) -> ECDSASignature in
+    init(
+        derEncoded rootNode: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) {
+            (
+                nodes: inout ISO_8825.Node.Collection.Iterator
+            ) throws(ISO_8824.Error) -> ECDSASignature in
             let r = try ArraySlice<UInt8>(derEncoded: &nodes)
             let s = try ArraySlice<UInt8>(derEncoded: &nodes)
 
@@ -54,10 +60,14 @@ struct ECDSASignature: ISO_8825.DER.ImplicitlyTaggable, Hashable, Sendable {
     }
 
     @inlinable
-    func serialize(into coder: inout ISO_8825.DER.Serializer, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        try coder.appendConstructedNode(identifier: identifier) { (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) -> Void in
-            try coder.serialize(self.r)
-            try coder.serialize(self.s)
+    func serialize(
+        into coder: inout ISO_8825.DER.Serializer,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        try coder.appendConstructedNode(identifier: identifier) {
+            (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) in
+            try coder.serialize(r)
+            try coder.serialize(s)
         }
     }
 
@@ -79,7 +89,8 @@ extension ArraySlice where Element == UInt8 {
     ///
     /// This means we strip leading zero bytes.
     @inlinable
-    package init<Bytes: Collection>(normalisingToASN1IntegerForm bigEndianRawInteger: Bytes) where Bytes.Element == UInt8 {
+    package init<Bytes: Collection>(normalisingToASN1IntegerForm bigEndianRawInteger: Bytes)
+    where Bytes.Element == UInt8 {
         let realBytes = bigEndianRawInteger.drop(while: { $0 == 0 })
         self = ArraySlice(realBytes)
     }

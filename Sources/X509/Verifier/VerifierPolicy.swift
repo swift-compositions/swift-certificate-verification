@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 import ISO_8824
 import ISO_8825
 
@@ -53,14 +53,18 @@ public protocol VerifierPolicy: _X509SendableMetatype {
     ///
     /// Each of these candidate chains is then handed to a ``VerifierPolicy`` to be checked against the certificate policy.
     /// The checking is done in this method.
-    mutating func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) async -> PolicyEvaluationResult
+    mutating func chainMeetsPolicyRequirements(
+        chain: UnverifiedCertificateChain
+    ) async -> PolicyEvaluationResult
 }
 
 public enum PolicyEvaluationResult: Sendable {
     case meetsPolicy
     case failsToMeetPolicy(PolicyFailureReason)
 
-    public static func failsToMeetPolicy(reason makeReason: @autoclosure @Sendable @escaping () -> String) -> Self {
+    public static func failsToMeetPolicy(
+        reason makeReason: @autoclosure @Sendable @escaping () -> String
+    ) -> Self {
         return .failsToMeetPolicy(.init(makeReason()))
     }
 

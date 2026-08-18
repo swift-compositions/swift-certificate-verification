@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,11 +10,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
 
+@usableFromInline
 package struct SubjectPublicKeyInfo: ISO_8825.DER.ImplicitlyTaggable, Hashable, Sendable {
     @inlinable
     package static var defaultIdentifier: ISO_8824.Identifier {
@@ -28,14 +29,20 @@ package struct SubjectPublicKeyInfo: ISO_8825.DER.ImplicitlyTaggable, Hashable, 
     var key: ISO_8824.BitString
 
     @inlinable
-    package init(derEncoded rootNode: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
+    package init(
+        derEncoded rootNode: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
         // The SPKI block looks like this:
         //
         // SubjectPublicKeyInfo  ::=  SEQUENCE  {
         //   algorithm         AlgorithmIdentifier,
         //   subjectPublicKey  BIT STRING
         // }
-        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) { (nodes: inout ISO_8825.Node.Collection.Iterator) throws(ISO_8824.Error) -> SubjectPublicKeyInfo in
+        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) {
+            (
+                nodes: inout ISO_8825.Node.Collection.Iterator
+            ) throws(ISO_8824.Error) -> SubjectPublicKeyInfo in
             let algorithmIdentifier = try AlgorithmIdentifier(derEncoded: &nodes)
             let key = try ISO_8824.BitString(derEncoded: &nodes)
 
@@ -50,16 +57,20 @@ package struct SubjectPublicKeyInfo: ISO_8825.DER.ImplicitlyTaggable, Hashable, 
     }
 
     @inlinable
-    package init(algorithmIdentifier: AlgorithmIdentifier, key: [UInt8]) {
+    package init(algorithmIdentifier: AlgorithmIdentifier, key: [UInt8]) throws(ISO_8824.Error) {
         self.algorithmIdentifier = algorithmIdentifier
-        self.key = ISO_8824.BitString(bytes: key[...])
+        self.key = try ISO_8824.BitString(bytes: key[...])
     }
 
     @inlinable
-    package func serialize(into coder: inout ISO_8825.DER.Serializer, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        try coder.appendConstructedNode(identifier: identifier) { (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) -> Void in
-            try coder.serialize(self.algorithmIdentifier)
-            try coder.serialize(self.key)
+    package func serialize(
+        into coder: inout ISO_8825.DER.Serializer,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        try coder.appendConstructedNode(identifier: identifier) {
+            (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) in
+            try coder.serialize(algorithmIdentifier)
+            try coder.serialize(key)
         }
     }
 }

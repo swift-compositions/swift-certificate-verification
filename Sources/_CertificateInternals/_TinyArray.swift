@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 /// ``_TinyArray`` is a ``RandomAccessCollection`` optimised to store zero or one ``Element``.
 /// It supports arbitrary many elements but if only up to one ``Element`` is stored it does **not** allocate separate storage on the heap
@@ -38,8 +38,10 @@ extension _TinyArray: ExpressibleByArrayLiteral {
         switch elements.count {
         case 0:
             self = .init()
+
         case 1:
             self = .init(CollectionOfOne(elements[0]))
+
         default:
             self = .init(elements)
         }
@@ -79,7 +81,9 @@ extension _TinyArray {
     }
 
     @inlinable
-    public init(_ elements: some Sequence<Result<Element, some Error>>) throws {
+    public init<Failure: Swift.Error>(
+        _ elements: some Sequence<Result<Element, Failure>>
+    ) throws(Failure) {
         self.storage = try .init(elements)
     }
 
@@ -123,6 +127,7 @@ extension _TinyArray.Storage: Equatable where Element: Equatable {
         switch (lhs, rhs) {
         case (.one(let lhs), .one(let rhs)):
             return lhs == rhs
+
         case (.arbitrary(let lhs), .arbitrary(let rhs)):
             // we don't use lhs.elementsEqual(rhs) so we can hit the fast path from Array
             // if both arrays share the same underlying storage: https://github.com/apple/swift/blob/b42019005988b2d13398025883e285a81d323efa/stdlib/public/core/Array.swift#L1775
@@ -160,6 +165,7 @@ extension _TinyArray.Storage: RandomAccessCollection {
                     fatalError("index \(position) out of bounds")
                 }
                 return element
+
             case .arbitrary(let elements):
                 return elements[position]
             }
@@ -171,6 +177,7 @@ extension _TinyArray.Storage: RandomAccessCollection {
                     fatalError("index \(position) out of bounds")
                 }
                 self = .one(newValue)
+
             case .arbitrary(var elements):
                 elements[position] = newValue
                 self = .arbitrary(elements)
@@ -200,7 +207,9 @@ extension _TinyArray.Storage {
     }
 
     @inlinable
-    init(_ newElements: some Sequence<Result<Element, some Error>>) throws {
+    init<Failure: Swift.Error>(
+        _ newElements: some Sequence<Result<Element, Failure>>
+    ) throws(Failure) {
         var iterator = newElements.makeIterator()
         guard let firstElement = try iterator.next()?.get() else {
             self = .arbitrary([])
@@ -321,6 +330,7 @@ extension _TinyArray.Storage {
         case .one:
             // a collection of just one element is always sorted, nothing to do
             break
+
         case .arbitrary(var elements):
             defer {
                 self = .arbitrary(elements)
@@ -333,7 +343,9 @@ extension _TinyArray.Storage {
 
 extension Array {
     @inlinable
-    package mutating func appendRemainingElements(from iterator: inout some IteratorProtocol<Element>) {
+    package mutating func appendRemainingElements(
+        from iterator: inout some IteratorProtocol<Element>
+    ) {
         while let nextElement = iterator.next() {
             append(nextElement)
         }

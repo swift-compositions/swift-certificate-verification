@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,9 +10,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 @preconcurrency import Crypto
+
 @testable import Certificates
 
 /// The Crypto-backed `Certificate.Verify` witness, bound in the TEST target.
@@ -36,7 +37,11 @@ extension Certificate.Verify {
     /// failure — an unsupported algorithm, a key/signature/algorithm combination that
     /// does not agree, malformed bytes, or a thrown backend error — returns `false`
     /// rather than trapping or propagating.
-    static let crypto = Certificate.Verify { signatureAlgorithm, publicKey, signature, signedBytes in
+    static let crypto = Certificate.Verify {
+        signatureAlgorithm,
+        publicKey,
+        signature,
+        signedBytes in
         switch publicKey.backing {
         case .p256(let keyBytes):
             guard case .ecdsa(let sig) = signature.backing,
@@ -49,10 +54,13 @@ extension Certificate.Verify {
             switch signatureAlgorithm {
             case .ecdsaWithSHA256:
                 return key.isValidSignature(inner, for: SHA256.hash(data: signedBytes))
+
             case .ecdsaWithSHA384:
                 return key.isValidSignature(inner, for: SHA384.hash(data: signedBytes))
+
             case .ecdsaWithSHA512:
                 return key.isValidSignature(inner, for: SHA512.hash(data: signedBytes))
+
             default:
                 return false
             }
@@ -68,10 +76,13 @@ extension Certificate.Verify {
             switch signatureAlgorithm {
             case .ecdsaWithSHA256:
                 return key.isValidSignature(inner, for: SHA256.hash(data: signedBytes))
+
             case .ecdsaWithSHA384:
                 return key.isValidSignature(inner, for: SHA384.hash(data: signedBytes))
+
             case .ecdsaWithSHA512:
                 return key.isValidSignature(inner, for: SHA512.hash(data: signedBytes))
+
             default:
                 return false
             }
@@ -87,10 +98,13 @@ extension Certificate.Verify {
             switch signatureAlgorithm {
             case .ecdsaWithSHA256:
                 return key.isValidSignature(inner, for: SHA256.hash(data: signedBytes))
+
             case .ecdsaWithSHA384:
                 return key.isValidSignature(inner, for: SHA384.hash(data: signedBytes))
+
             case .ecdsaWithSHA512:
                 return key.isValidSignature(inner, for: SHA512.hash(data: signedBytes))
+
             default:
                 return false
             }

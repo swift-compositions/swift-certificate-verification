@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -30,7 +30,8 @@ struct VersionPolicy: VerifierPolicy, Sendable {
         for certificate in chain {
             if certificate.version == .v1 && certificate.extensions.isEmpty == false {
                 return .failsToMeetPolicy(
-                    reason: "version 1 certificate contains extensions but should not: \(certificate)"
+                    reason:
+                        "version 1 certificate contains extensions but should not: \(certificate)"
                 )
             }
         }

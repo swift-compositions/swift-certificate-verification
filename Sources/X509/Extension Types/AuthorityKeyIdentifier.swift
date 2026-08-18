@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -56,14 +56,19 @@ public struct AuthorityKeyIdentifier {
     /// - Throws: if the ``Certificate/Extension/oid`` is not equal to
     ///     `ISO_8824.ObjectIdentifier.X509ExtensionID.authorityKeyIdentifier`.
     @inlinable
-    public init(_ ext: Certificate.Extension) throws {
+    public init(_ ext: Certificate.Extension) throws(Certificate.Error) {
         guard ext.oid == .X509ExtensionID.authorityKeyIdentifier else {
             throw Certificate.Error.extension(
                 .incorrectOID(expected: .X509ExtensionID.authorityKeyIdentifier, found: ext.oid)
             )
         }
 
-        let asn1KeyIdentifier = try AuthorityKeyIdentifierValue(derEncoded: ext.value)
+        let asn1KeyIdentifier: AuthorityKeyIdentifierValue
+        do {
+            asn1KeyIdentifier = try AuthorityKeyIdentifierValue(derEncoded: ext.value)
+        } catch {
+            throw Certificate.Error.der(error)
+        }
         self.keyIdentifier = asn1KeyIdentifier.keyIdentifier.map { $0.bytes }
         self.authorityCertIssuer = asn1KeyIdentifier.authorityCertIssuer
         self.authorityCertSerialNumber = asn1KeyIdentifier.authorityCertSerialNumber.map {
@@ -114,7 +119,7 @@ extension Certificate.Extension {
     ///   - aki: The extension to wrap
     ///   - critical: Whether this extension should have the critical bit set.
     @inlinable
-    public init(_ aki: AuthorityKeyIdentifier, critical: Bool) throws {
+    public init(_ aki: AuthorityKeyIdentifier, critical: Bool) throws(ISO_8824.Error) {
         let asn1Representation = AuthorityKeyIdentifierValue(aki)
         var serializer = ISO_8825.DER.Serializer()
         try serializer.serialize(asn1Representation)
@@ -163,8 +168,14 @@ struct AuthorityKeyIdentifierValue: ISO_8825.DER.ImplicitlyTaggable, Sendable {
     }
 
     @inlinable
-    init(derEncoded rootNode: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) { (nodes: inout ISO_8825.Node.Collection.Iterator) throws(ISO_8824.Error) -> AuthorityKeyIdentifierValue in
+    init(
+        derEncoded rootNode: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) {
+            (
+                nodes: inout ISO_8825.Node.Collection.Iterator
+            ) throws(ISO_8824.Error) -> AuthorityKeyIdentifierValue in
             let keyIdentifier: ISO_8824.OctetString? = try ISO_8825.DER.optionalImplicitlyTagged(
                 &nodes,
                 tag: .init(tagWithNumber: 0, tagClass: .contextSpecific)
@@ -173,10 +184,11 @@ struct AuthorityKeyIdentifierValue: ISO_8825.DER.ImplicitlyTaggable, Sendable {
                 &nodes,
                 tag: .init(tagWithNumber: 1, tagClass: .contextSpecific)
             )
-            let authorityCertSerialNumber: ArraySlice<UInt8>? = try ISO_8825.DER.optionalImplicitlyTagged(
-                &nodes,
-                tag: .init(tagWithNumber: 2, tagClass: .contextSpecific)
-            )
+            let authorityCertSerialNumber: ArraySlice<UInt8>? = try ISO_8825.DER
+                .optionalImplicitlyTagged(
+                    &nodes,
+                    tag: .init(tagWithNumber: 2, tagClass: .contextSpecific)
+                )
 
             return AuthorityKeyIdentifierValue(
                 keyIdentifier: keyIdentifier,
@@ -187,18 +199,22 @@ struct AuthorityKeyIdentifierValue: ISO_8825.DER.ImplicitlyTaggable, Sendable {
     }
 
     @inlinable
-    func serialize(into coder: inout ISO_8825.DER.Serializer, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        try coder.appendConstructedNode(identifier: identifier) { (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) -> Void in
+    func serialize(
+        into coder: inout ISO_8825.DER.Serializer,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        try coder.appendConstructedNode(identifier: identifier) {
+            (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) in
             try coder.serializeOptionalImplicitlyTagged(
-                self.keyIdentifier,
+                keyIdentifier,
                 withIdentifier: .init(tagWithNumber: 0, tagClass: .contextSpecific)
             )
             try coder.serializeOptionalImplicitlyTagged(
-                self.authorityCertIssuer.map { GeneralNames($0) },
+                authorityCertIssuer.map { GeneralNames($0) },
                 withIdentifier: .init(tagWithNumber: 1, tagClass: .contextSpecific)
             )
             try coder.serializeOptionalImplicitlyTagged(
-                self.authorityCertSerialNumber,
+                authorityCertSerialNumber,
                 withIdentifier: .init(tagWithNumber: 2, tagClass: .contextSpecific)
             )
         }

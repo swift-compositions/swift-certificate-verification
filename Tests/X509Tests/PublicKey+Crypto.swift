@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,9 +10,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 @preconcurrency import Crypto
+
 @testable import Certificates
 
 /// The Crypto-typed ``Certificate/PublicKey`` initialisers, parked in the TEST target.
