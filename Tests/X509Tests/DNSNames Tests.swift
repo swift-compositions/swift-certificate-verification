@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,11 +10,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
-import Testing
 import ISO_8824
 import ISO_8825
+import Testing
+
 @testable import Certificates
 
 @Suite struct `DNSNames Tests` {
@@ -209,8 +210,14 @@ import ISO_8825
         //
         // We want to hit 254 bytes, so when "example" is the string (7 bytes) we end up at 31 repetitions, for:
         // (7 * 31) + 30 + 7 == 254.
-        (Array(repeating: "example", count: 31).joined(separator: ".") + ".com.au", ".example.com.au", false),
-        ("example.com.au", Array(repeating: "example", count: 31).joined(separator: ".") + ".com.au", false),
+        (
+            Array(repeating: "example", count: 31).joined(separator: ".") + ".com.au",
+            ".example.com.au", false
+        ),
+        (
+            "example.com.au",
+            Array(repeating: "example", count: 31).joined(separator: ".") + ".com.au", false
+        ),
 
         // No hyphens beginning or ending labels
         ("-.example.com", "example.com", false),
@@ -225,8 +232,14 @@ import ISO_8825
         // Long labels
         ("\(String(repeating: "a", count: 63)).example.com", "example.com", true),
         ("\(String(repeating: "a", count: 64)).example.com", "example.com", false),
-        ("\(String(repeating: "a", count: 63)).example.com", "\(String(repeating: "a", count: 63)).example.com", true),
-        ("\(String(repeating: "a", count: 64)).example.com", "\(String(repeating: "a", count: 64)).example.com", false),
+        (
+            "\(String(repeating: "a", count: 63)).example.com",
+            "\(String(repeating: "a", count: 63)).example.com", true
+        ),
+        (
+            "\(String(repeating: "a", count: 64)).example.com",
+            "\(String(repeating: "a", count: 64)).example.com", false
+        ),
 
         // All numeric labels
         ("1234567.example.com", "example.com", true),
@@ -304,23 +317,33 @@ import ISO_8825
             for (dnsName, constraint, match) in `DNSNames Tests`.fixtures {
                 for uri in `DNSNames Tests`.urisThatMatch(dnsName) {
                     #expect(
-                        match == NameConstraintsPolicy.uriNameMatchesConstraint(uriName: uri, constraint: constraint)
+                        match
+                            == NameConstraintsPolicy.uriNameMatchesConstraint(
+                                uriName: uri,
+                                constraint: constraint
+                            )
                     )
 
                     // Never works inverted
                     #expect(
-                        !NameConstraintsPolicy.uriNameMatchesConstraint(uriName: constraint, constraint: uri)
+                        !NameConstraintsPolicy.uriNameMatchesConstraint(
+                            uriName: constraint,
+                            constraint: uri
+                        )
                     )
                 }
 
-                if constraint == "" {
+                if constraint.isEmpty {
                     // We don't test the "don't match" case on the empty constraint, because everything matches the empty constraint
                     continue
                 }
 
                 for uri in `DNSNames Tests`.urisThatDontMatch(dnsName) {
                     #expect(
-                        !NameConstraintsPolicy.uriNameMatchesConstraint(uriName: uri, constraint: constraint)
+                        !NameConstraintsPolicy.uriNameMatchesConstraint(
+                            uriName: uri,
+                            constraint: constraint
+                        )
                     )
                 }
             }

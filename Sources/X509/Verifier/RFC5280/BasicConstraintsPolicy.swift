@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 import ISO_8824
 import ISO_8825
 
@@ -53,12 +53,16 @@ struct BasicConstraintsPolicy: VerifierPolicy, Sendable {
                 switch try leaf.extensions.basicConstraints {
                 case .some(.isCertificateAuthority):
                     return .meetsPolicy
+
                 case .some(.notCertificateAuthority), .none:
-                    return .failsToMeetPolicy(reason: "RFC5280Policy: Self-signed cert \(leaf) is not marked as a CA")
+                    return .failsToMeetPolicy(
+                        reason: "RFC5280Policy: Self-signed cert \(leaf) is not marked as a CA"
+                    )
                 }
             } catch {
                 return .failsToMeetPolicy(
-                    reason: "RFC5280Policy: Error processing basic constraints for \(leaf): \(error)"
+                    reason:
+                        "RFC5280Policy: Error processing basic constraints for \(leaf): \(error)"
                 )
             }
         }
@@ -74,7 +78,9 @@ struct BasicConstraintsPolicy: VerifierPolicy, Sendable {
                     // Note that we _do_ include this in the path length, in case there are basic constraints further along
                     // the path.
                     ()
-                case (.some(.isCertificateAuthority(.some(let maxPathLength))), _) where maxPathLength < subCACount:
+
+                case (.some(.isCertificateAuthority(.some(let maxPathLength))), _)
+                where maxPathLength < subCACount:
                     // Is a CA, but the max path length is smaller than the number of sub CAs we have.
                     let subCACount = subCACount
                     return .failsToMeetPolicy(
@@ -88,11 +94,14 @@ struct BasicConstraintsPolicy: VerifierPolicy, Sendable {
                     ()
 
                 case (.some(.notCertificateAuthority), _), (.none, _):
-                    return .failsToMeetPolicy(reason: "RFC5280Policy: Certificate \(cert) is not marked as a CA")
+                    return .failsToMeetPolicy(
+                        reason: "RFC5280Policy: Certificate \(cert) is not marked as a CA"
+                    )
                 }
             } catch {
                 return .failsToMeetPolicy(
-                    reason: "RFC5280Policy: Error processing basic constraints for \(cert): \(error)"
+                    reason:
+                        "RFC5280Policy: Error processing basic constraints for \(cert): \(error)"
                 )
             }
 

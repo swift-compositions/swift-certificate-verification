@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,24 +10,28 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
-#if canImport(FoundationEssentials)
-import FoundationEssentials
-#else
-import Foundation
-#endif
-import Testing
 import ISO_8824
 import ISO_8825
+import Testing
 import Time_Primitive
+
 @testable import Certificates
+
+#if canImport(FoundationEssentials)
+    import FoundationEssentials
+#else
+    import Foundation
+#endif
 
 private struct Policy: VerifierPolicy {
     var result: PolicyEvaluationResult = .meetsPolicy
     var verifyingCriticalExtensions: [ISO_8824.ObjectIdentifier] = []
 
-    mutating func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) async -> PolicyEvaluationResult {
+    mutating func chainMeetsPolicyRequirements(
+        chain: UnverifiedCertificateChain
+    ) async -> PolicyEvaluationResult {
         result
     }
 }
@@ -46,6 +50,8 @@ extension PolicyBuilder {
     // certificate, so it is only a vehicle for building a chain. Bound to a frozen
     // DER fixture rather than issued in-test — issuance is an excluded surface in
     // slice 1, and this preserves every assertion in the file unchanged.
+    // IMPL-108: known-valid input; construction cannot fail.
+    // swiftlint:disable:next force_try
     fileprivate static let certificate = try! Fixture.certificate("root-ca")
 
     fileprivate static let chain = UnverifiedCertificateChain([
@@ -298,7 +304,8 @@ extension PolicyBuilder.Test.Unit {
         // RFC5280Policy takes the validation instant by injection (Q4 ruling: the
         // verifier never reads a system clock), so this compile-time composition
         // check supplies the corpus's frozen 2026-01-01 instant.
-        let _: Verifier<AnyPolicy> = Verifier(rootCertificates: CertificateStore(), verify: .crypto) {
+        let _: Verifier<AnyPolicy> = Verifier(rootCertificates: CertificateStore(), verify: .crypto)
+        {
             AnyPolicy {
                 RFC5280Policy(validationTime: Instant(secondsSinceUnixEpoch: 1_767_225_600))
             }
@@ -366,7 +373,7 @@ extension PolicyBuilder.Test.`Edge Case` {
 
     @Test func `all of policies throwing`() {
         // Creating a AllOfPolicies which throws an error inside will itself throw
-        struct TestError: Error {}
+        struct TestError: Swift.Error {}
         func throwingPolicyBuilder() throws -> Policy {
             throw TestError()
         }
@@ -380,7 +387,7 @@ extension PolicyBuilder.Test.`Edge Case` {
 
     @Test func `one of policies throwing`() {
         // Creating a OneOfPolicies which throws an error inside will itself throw
-        struct TestError: Error {}
+        struct TestError: Swift.Error {}
         func throwingPolicyBuilder() throws -> Policy {
             throw TestError()
         }

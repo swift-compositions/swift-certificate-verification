@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -32,7 +32,9 @@ public struct PolicyBuilder: Sendable {}
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension PolicyBuilder {
     @inlinable
-    public static func buildLimitedAvailability<Policy: VerifierPolicy>(_ component: Policy) -> Policy {
+    public static func buildLimitedAvailability<Policy: VerifierPolicy>(
+        _ component: Policy
+    ) -> Policy {
         component
     }
 }
@@ -49,7 +51,9 @@ extension PolicyBuilder {
         init() {}
 
         @inlinable
-        mutating func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) async -> PolicyEvaluationResult {
+        mutating func chainMeetsPolicyRequirements(
+            chain: UnverifiedCertificateChain
+        ) async -> PolicyEvaluationResult {
             .meetsPolicy
         }
     }
@@ -83,10 +87,13 @@ extension PolicyBuilder {
         }
 
         @inlinable
-        mutating func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) async -> PolicyEvaluationResult {
+        mutating func chainMeetsPolicyRequirements(
+            chain: UnverifiedCertificateChain
+        ) async -> PolicyEvaluationResult {
             switch await first.chainMeetsPolicyRequirements(chain: chain) {
             case .meetsPolicy:
                 break
+
             case .failsToMeetPolicy(let reason):
                 return .failsToMeetPolicy(reason: reason)
             }
@@ -131,7 +138,9 @@ extension PolicyBuilder {
         }
 
         @inlinable
-        mutating func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) async -> PolicyEvaluationResult {
+        mutating func chainMeetsPolicyRequirements(
+            chain: UnverifiedCertificateChain
+        ) async -> PolicyEvaluationResult {
             await self.wrapped?.chainMeetsPolicyRequirements(chain: chain) ?? .meetsPolicy
         }
     }
@@ -180,6 +189,7 @@ extension PolicyBuilder {
             case .first(var first):
                 defer { self.storage = .first(first) }
                 return await first.chainMeetsPolicyRequirements(chain: chain)
+
             case .second(var second):
                 defer { self.storage = .second(second) }
                 return await second.chainMeetsPolicyRequirements(chain: chain)
@@ -225,7 +235,9 @@ extension PolicyBuilder {
         }
 
         @inlinable
-        mutating func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) async -> PolicyEvaluationResult {
+        mutating func chainMeetsPolicyRequirements(
+            chain: UnverifiedCertificateChain
+        ) async -> PolicyEvaluationResult {
             await wrapped.chainMeetsPolicyRequirements(chain: chain)
         }
     }

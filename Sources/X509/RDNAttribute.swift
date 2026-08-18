@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -75,13 +75,22 @@ extension ISO_8825.`Any` {
         switch storage {
         case .printable(let printableString):
             // force try is safe because we verify in the initialiser that it is valid
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             self = try! .init(erasing: ISO_8824.PrintableString(printableString))
+
         case .utf8(let utf8String):
             // force try is safe because we verify in the initialiser that it is valid
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             self = try! .init(erasing: ISO_8824.UTF8String(utf8String))
+
         case .ia5(let ia5String):
             // force try is safe because we verify in the initialiser that it is valid
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             self = try! .init(erasing: ISO_8824.IA5String(ia5String))
+
         case .any(let any):
             self = any
         }
@@ -106,7 +115,7 @@ extension RelativeDistinguishedName.Attribute.Value {
     /// A helper constructor to construct a ``RelativeDistinguishedName/Attribute/Value`` with an `ISO_8824.PrintableString`.
     /// - Parameter printableString: The value of the attribute.
     @inlinable
-    public init(printableString: String) throws {
+    public init(printableString: String) throws(ISO_8824.Error) {
         // verify that it is indeed a printable string
         _ = try ISO_8824.PrintableString(printableString)
         self.storage = .printable(printableString)
@@ -114,7 +123,7 @@ extension RelativeDistinguishedName.Attribute.Value {
 
     /// A helper constructor to construct a ``RelativeDistinguishedName/Attribute/Value`` with an `ISO_8824.IA5String`.
     @inlinable
-    public init(ia5String: String) throws {
+    public init(ia5String: String) throws(ISO_8824.Error) {
         // verify that it is indeed a ISO_8824.IA5String
         _ = try ISO_8824.IA5String(ia5String)
         self.storage = .ia5(ia5String)
@@ -130,17 +139,22 @@ extension RelativeDistinguishedName.Attribute.Value {
     }
 }
 
-extension RelativeDistinguishedName.Attribute.Value.Storage: ISO_8825.DER.Parseable, ISO_8825.DER.Serializable {
+extension RelativeDistinguishedName.Attribute.Value.Storage: ISO_8825.DER.Parseable, ISO_8825.DER
+        .Serializable
+{
     @inlinable
     init(derEncoded node: ISO_8825.Node) throws(ISO_8824.Error) {
         do {
             switch node.identifier {
             case ISO_8824.UTF8String.defaultIdentifier:
                 self = .utf8(String(try ISO_8824.UTF8String(derEncoded: node)))
+
             case ISO_8824.PrintableString.defaultIdentifier:
                 self = .printable(String(try ISO_8824.PrintableString(derEncoded: node)))
+
             case ISO_8824.IA5String.defaultIdentifier:
                 self = .ia5(String(try ISO_8824.IA5String(derEncoded: node)))
+
             default:
                 self = .any(ISO_8825.`Any`(derEncoded: node))
             }
@@ -154,15 +168,22 @@ extension RelativeDistinguishedName.Attribute.Value.Storage: ISO_8825.DER.Parsea
         switch self {
         case .printable(let printableString):
             // force try is safe because we verify in the initialiser that it is valid
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             let printableString = try! ISO_8824.PrintableString(printableString)
             try printableString.serialize(into: &coder)
+
         case .utf8(let utf8String):
             let string = ISO_8824.UTF8String(utf8String)
             try string.serialize(into: &coder)
+
         case .ia5(let ia5String):
             // force try is safe because we verify in the initialiser that it is valid
+            // IMPL-108: known-valid input; construction cannot fail.
+            // swiftlint:disable:next force_try
             let string = try! ISO_8824.IA5String(ia5String)
             try string.serialize(into: &coder)
+
         case .any(let any):
             try any.serialize(into: &coder)
         }
@@ -183,8 +204,10 @@ extension RelativeDistinguishedName.Attribute.Value: CustomStringConvertible {
         // this is hot code I'm happy to do it slowly.
         let unescapedBytes = Array(text.utf8)
         let charsToEscape: [UInt8] = [
-            UInt8(ascii: "," as Unicode.Scalar), UInt8(ascii: "+" as Unicode.Scalar), UInt8(ascii: "\"" as Unicode.Scalar), UInt8(ascii: "\\" as Unicode.Scalar),
-            UInt8(ascii: "<" as Unicode.Scalar), UInt8(ascii: ">" as Unicode.Scalar), UInt8(ascii: ";" as Unicode.Scalar),
+            UInt8(ascii: "," as Unicode.Scalar), UInt8(ascii: "+" as Unicode.Scalar),
+            UInt8(ascii: "\"" as Unicode.Scalar), UInt8(ascii: "\\" as Unicode.Scalar),
+            UInt8(ascii: "<" as Unicode.Scalar), UInt8(ascii: ">" as Unicode.Scalar),
+            UInt8(ascii: ";" as Unicode.Scalar),
         ]
 
         let leadingBytesToEscape = unescapedBytes.prefix(while: {
@@ -192,22 +215,28 @@ extension RelativeDistinguishedName.Attribute.Value: CustomStringConvertible {
         })
 
         // We don't want these ranges to overlap.
-        let trailingBytesToEscape = unescapedBytes.dropFirst(leadingBytesToEscape.count).suffix(while: {
-            $0 == UInt8(ascii: " " as Unicode.Scalar)
-        })
-        let middleBytes = unescapedBytes[leadingBytesToEscape.endIndex..<trailingBytesToEscape.startIndex]
+        let trailingBytesToEscape = unescapedBytes.dropFirst(leadingBytesToEscape.count).suffix(
+            while: {
+                $0 == UInt8(ascii: " " as Unicode.Scalar)
+            })
+        let middleBytes = unescapedBytes[
+            leadingBytesToEscape.endIndex..<trailingBytesToEscape.startIndex
+        ]
 
-        var escapedBytes = leadingBytesToEscape.flatMap { [UInt8(ascii: "\\" as Unicode.Scalar), $0] }
+        var escapedBytes = leadingBytesToEscape.flatMap {
+            [UInt8(ascii: "\\" as Unicode.Scalar), $0]
+        }
         escapedBytes += middleBytes.flatMap {
             guard charsToEscape.contains($0) else {
                 return [$0]
             }
             return [UInt8(ascii: "\\" as Unicode.Scalar), $0]
         }
-        escapedBytes += trailingBytesToEscape.flatMap { [UInt8(ascii: "\\" as Unicode.Scalar), $0] }
+        escapedBytes += trailingBytesToEscape.flatMap {
+            [UInt8(ascii: "\\" as Unicode.Scalar), $0]
+        }
 
-        let escapedString = String(decoding: escapedBytes, as: UTF8.self)
-        return escapedString
+        return String(decoding: escapedBytes, as: UTF8.self)
     }
 }
 
@@ -228,22 +257,31 @@ extension RelativeDistinguishedName.Attribute: CustomStringConvertible {
         switch self.type {
         case .RDNAttributeType.commonName:
             attributeKey = "CN"
+
         case .RDNAttributeType.countryName:
             attributeKey = "C"
+
         case .RDNAttributeType.localityName:
             attributeKey = "L"
+
         case .RDNAttributeType.stateOrProvinceName:
             attributeKey = "ST"
+
         case .RDNAttributeType.organizationName:
             attributeKey = "O"
+
         case .RDNAttributeType.organizationalUnitName:
             attributeKey = "OU"
+
         case .RDNAttributeType.streetAddress:
             attributeKey = "STREET"
+
         case .RDNAttributeType.domainComponent:
             attributeKey = "DC"
+
         case .RDNAttributeType.emailAddress:
             attributeKey = "E"
+
         case let type:
             attributeKey = String(describing: type)
         }
@@ -259,8 +297,14 @@ extension RelativeDistinguishedName.Attribute: ISO_8825.DER.ImplicitlyTaggable {
     }
 
     @inlinable
-    public init(derEncoded rootNode: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) { (nodes: inout ISO_8825.Node.Collection.Iterator) throws(ISO_8824.Error) -> RelativeDistinguishedName.Attribute in
+    public init(
+        derEncoded rootNode: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) {
+            (
+                nodes: inout ISO_8825.Node.Collection.Iterator
+            ) throws(ISO_8824.Error) -> RelativeDistinguishedName.Attribute in
             let type = try ISO_8824.ObjectIdentifier(derEncoded: &nodes)
             let value = try Value(storage: .init(derEncoded: &nodes))
             return .init(type: type, value: value)
@@ -268,8 +312,12 @@ extension RelativeDistinguishedName.Attribute: ISO_8825.DER.ImplicitlyTaggable {
     }
 
     @inlinable
-    public func serialize(into coder: inout ISO_8825.DER.Serializer, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        try coder.appendConstructedNode(identifier: identifier) { (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) -> Void in
+    public func serialize(
+        into coder: inout ISO_8825.DER.Serializer,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        try coder.appendConstructedNode(identifier: identifier) {
+            (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) in
             try coder.serialize(self.type)
             try coder.serialize(self.value.storage)
         }
@@ -294,13 +342,13 @@ extension RelativeDistinguishedName.Attribute {
     /// - Parameter type: The type of the attribute.
     /// - Parameter printableString: The value of the attribute.
     @inlinable
-    public init(type: ISO_8824.ObjectIdentifier, printableString: String) throws {
+    public init(type: ISO_8824.ObjectIdentifier, printableString: String) throws(ISO_8824.Error) {
         self.type = type
         self.value = try .init(printableString: printableString)
     }
 
     @inlinable
-    public init(type: ISO_8824.ObjectIdentifier, ia5String: String) throws {
+    public init(type: ISO_8824.ObjectIdentifier, ia5String: String) throws(ISO_8824.Error) {
         self.type = type
         self.value = try .init(ia5String: ia5String)
     }
@@ -350,7 +398,9 @@ extension ISO_8824.ObjectIdentifier {
         public static let streetAddress: ISO_8824.ObjectIdentifier = [2, 5, 4, 9]
 
         /// The `domainComponent` attribute type contains parts (labels) of a DNS domain name
-        public static let domainComponent: ISO_8824.ObjectIdentifier = [0, 9, 2342, 19_200_300, 100, 1, 25]
+        public static let domainComponent: ISO_8824.ObjectIdentifier = [
+            0, 9, 2342, 19_200_300, 100, 1, 25,
+        ]
 
         /// The `emailAddress` attribute type contains email address defined in PCKS#9 (RFC2985).
         /// Be aware that, modern best practices (e.g., RFC 5280) discourage embedding email addresses in the `Subject DN` instead it should be in  `Subject Alternative Name (SAN)
@@ -366,10 +416,13 @@ extension String {
         switch value.storage {
         case .printable(let printable):
             self = printable
+
         case .utf8(let utf8):
             self = utf8
+
         case .ia5(let ia5):
             self = ia5
+
         case .any:
             return nil
         }

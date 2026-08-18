@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension Certificate {
@@ -56,8 +56,10 @@ extension Certificate.Version: CustomStringConvertible {
         switch self {
         case .v1:
             return "X509v1"
+
         case .v3:
             return "X509v3"
+
         case let unknown:
             return "X509v\(unknown.rawValue + 1)"
         }

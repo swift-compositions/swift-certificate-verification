@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension Certificate {
@@ -48,12 +48,13 @@ extension Certificate {
 
         @inlinable
         public init(
-            signature: @escaping @Sendable (
-                _ signatureAlgorithm: Certificate.SignatureAlgorithm,
-                _ publicKey: Certificate.PublicKey,
-                _ signature: Certificate.Signature,
-                _ signedBytes: ArraySlice<UInt8>
-            ) -> Bool
+            signature:
+                @escaping @Sendable (
+                    _ signatureAlgorithm: Certificate.SignatureAlgorithm,
+                    _ publicKey: Certificate.PublicKey,
+                    _ signature: Certificate.Signature,
+                    _ signedBytes: ArraySlice<UInt8>
+                ) -> Bool
         ) {
             self.signature = signature
         }

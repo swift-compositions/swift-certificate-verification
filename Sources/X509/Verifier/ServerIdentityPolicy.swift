@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,12 +10,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
-import RFC_791
 import RFC_4291
+import RFC_791
 
 /// A ``VerifierPolicy`` that validates that the leaf certificate is authoritative
 /// for a given hostname or IP address.
@@ -58,7 +58,9 @@ extension ServerIdentityPolicy: VerifierPolicy {
     }
 
     @inlinable
-    public mutating func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) -> PolicyEvaluationResult {
+    public mutating func chainMeetsPolicyRequirements(
+        chain: UnverifiedCertificateChain
+    ) -> PolicyEvaluationResult {
         let targetIP = self.serverIP.convert()
         let targetHostname = self.serverHostname.convert()
 
@@ -145,13 +147,21 @@ extension ServerIdentityPolicy {
     // This should really be an init, but weird compiler issues have prevented it from being one.
     @_spi(Testing)
     public static func parsingIPv4Address(_ string: String) -> RFC_791.IPv4.Address? {
-        try? RFC_791.IPv4.Address(string)
+        do {
+            return try RFC_791.IPv4.Address(string)
+        } catch {
+            return nil
+        }
     }
 
     // This should really be an init, but weird compiler issues have prevented it from being one.
     @_spi(Testing)
     public static func parsingIPv6Address(_ string: String) -> RFC_4291.IPv6.Address? {
-        try? RFC_4291.IPv6.Address(ascii: string.utf8.map(Byte.init))
+        do {
+            return try RFC_4291.IPv6.Address(ascii: string.utf8.map(Byte.init))
+        } catch {
+            return nil
+        }
     }
 }
 
@@ -165,6 +175,7 @@ extension Optional where Wrapped == ServerIdentityPolicy.LazyIPAddress {
         switch self {
         case .some(.ipAddress(let address)):
             return address
+
         case .some(.string(let value)):
             if let v4 = ServerIdentityPolicy.parsingIPv4Address(value) {
                 self = .some(.ipAddress(.v4(v4)))
@@ -178,6 +189,7 @@ extension Optional where Wrapped == ServerIdentityPolicy.LazyIPAddress {
                 self = .none
                 return nil
             }
+
         case .none:
             return nil
         }
@@ -194,8 +206,13 @@ extension Optional where Wrapped == ServerIdentityPolicy.LazyServerHostname {
         switch self {
         case .none:
             return nil
+
         case .some(.string(let string)):
-            guard let prepared = ServerIdentityPolicy.PreparedServerHostname(lowercaseASCIIBytes: string) else {
+            guard
+                let prepared = ServerIdentityPolicy.PreparedServerHostname(
+                    lowercaseASCIIBytes: string
+                )
+            else {
                 // failed to convert, don't try.
                 self = .none
                 return nil
@@ -203,6 +220,7 @@ extension Optional where Wrapped == ServerIdentityPolicy.LazyServerHostname {
 
             self = .some(.prepared(prepared))
             return prepared
+
         case .some(.prepared(let prepared)):
             return prepared
         }
@@ -213,15 +231,19 @@ extension ServerIdentityPolicy.IPAddress {
     init?(sanField: ISO_8824.OctetString) {
         switch sanField.bytes.count {
         case 4:
-            guard let addr = try? RFC_791.IPv4.Address(binary: sanField.bytes.map(Byte.init)) else {
+            do {
+                self = .v4(try RFC_791.IPv4.Address(binary: sanField.bytes.map(Byte.init)))
+            } catch {
                 return nil
             }
-            self = .v4(addr)
+
         case 16:
-            guard let addr = try? RFC_4291.IPv6.Address(binary: sanField.bytes.map(Byte.init)) else {
+            do {
+                self = .v6(try RFC_4291.IPv6.Address(binary: sanField.bytes.map(Byte.init)))
+            } catch {
                 return nil
             }
-            self = .v6(addr)
+
         default:
             return nil
         }
@@ -252,9 +274,12 @@ extension Certificate {
         // If the SAN field is invalid and we can't parse it, we fail.
         let subjectAlternativeNames: SubjectAlternativeNames
         do {
-            subjectAlternativeNames = try self.extensions.subjectAlternativeNames ?? SubjectAlternativeNames()
+            subjectAlternativeNames =
+                try self.extensions.subjectAlternativeNames ?? SubjectAlternativeNames()
         } catch {
-            return .failsToMeetPolicy(reason: "Error parsing SAN field, cert cannot be trusted: \(error)")
+            return .failsToMeetPolicy(
+                reason: "Error parsing SAN field, cert cannot be trusted: \(error)"
+            )
         }
 
         var checkedMatch = false
@@ -266,13 +291,15 @@ extension Certificate {
                 if Self.matchHostname(serverHostname: serverHostname, dnsName: dnsName) {
                     return .meetsPolicy
                 }
+
             case .ipAddress(let ipAddressBytes):
-                if let serverIP = serverIP,
+                if let serverIP,
                     let certificateIP = ServerIdentityPolicy.IPAddress(sanField: ipAddressBytes),
                     Self.matchIpAddress(serverIP: serverIP, certificateIP: certificateIP)
                 {
                     return .meetsPolicy
                 }
+
             default:
                 continue
             }
@@ -280,7 +307,9 @@ extension Certificate {
 
         guard !checkedMatch else {
             // We had some subject alternative names, but none matched. We failed here.
-            return .failsToMeetPolicy(reason: "None of the names in SAN extension matched: \(subjectAlternativeNames)")
+            return .failsToMeetPolicy(
+                reason: "None of the names in SAN extension matched: \(subjectAlternativeNames)"
+            )
         }
 
         // In the absence of any matchable subjectAlternativeNames, we can fall back to checking
@@ -296,8 +325,12 @@ extension Certificate {
 
         // We have a common name. Let's check it against the provided hostname. We never check
         // the common name against the IP address.
-        guard let cn = String(commonName), Self.matchHostname(serverHostname: serverHostname, dnsName: cn) else {
-            return .failsToMeetPolicy(reason: "Common name \(commonName) does not match expected hostname")
+        guard let cn = String(commonName),
+            Self.matchHostname(serverHostname: serverHostname, dnsName: cn)
+        else {
+            return .failsToMeetPolicy(
+                reason: "Common name \(commonName) does not match expected hostname"
+            )
         }
 
         return .meetsPolicy
@@ -328,8 +361,10 @@ extension Certificate {
         switch (serverIP, certificateIP) {
         case (.v4(let addr1), .v4(let addr2)):
             return addr1 == addr2
+
         case (.v6(let addr1), .v6(let addr2)):
             return addr1 == addr2
+
         default:
             // Different protocol families, no match.
             return false
@@ -353,18 +388,18 @@ extension DistinguishedName {
 }
 
 private let asciiIDNAIdentifier: ArraySlice<UInt8> = Array("xn--".utf8)[...]
-private let asciiCapitals: ClosedRange<UInt8> = (UInt8(ascii: "A" as Unicode.Scalar)...UInt8(ascii: "Z" as Unicode.Scalar))
-private let asciiLowercase: ClosedRange<UInt8> = (UInt8(ascii: "a" as Unicode.Scalar)...UInt8(ascii: "z" as Unicode.Scalar))
-private let asciiNumbers: ClosedRange<UInt8> = (UInt8(ascii: "0" as Unicode.Scalar)...UInt8(ascii: "9" as Unicode.Scalar))
-private let asciiHyphen: UInt8 = UInt8(ascii: "-" as Unicode.Scalar)
-private let asciiPeriod: UInt8 = UInt8(ascii: "." as Unicode.Scalar)
-private let asciiAsterisk: UInt8 = UInt8(ascii: "*" as Unicode.Scalar)
+private let asciiCapitals: ClosedRange<UInt8> =
+    (UInt8(ascii: "A" as Unicode.Scalar)...UInt8(ascii: "Z" as Unicode.Scalar))
+private let asciiLowercase: ClosedRange<UInt8> =
+    (UInt8(ascii: "a" as Unicode.Scalar)...UInt8(ascii: "z" as Unicode.Scalar))
+private let asciiNumbers: ClosedRange<UInt8> =
+    (UInt8(ascii: "0" as Unicode.Scalar)...UInt8(ascii: "9" as Unicode.Scalar))
 
 extension Collection {
     /// Splits a collection in two around a given index. This index may be nil, in which case the split
     /// will occur around the end.
     fileprivate func splitAroundIndex(_ index: Index?) -> (SubSequence, SubSequence) {
-        guard let index = index else {
+        guard let index else {
             return (self[...], self[self.endIndex...])
         }
 
@@ -386,6 +421,7 @@ extension UInt8 {
         switch self {
         case asciiCapitals, asciiLowercase, asciiNumbers, asciiHyphen, asciiPeriod:
             return true
+
         default:
             return false
         }
@@ -455,13 +491,17 @@ private struct AnalysedCertificateHostname<
         }
 
         // Now we can finally initialize ourself.
-        if let asteriskIndex = asteriskIndex {
+        if let asteriskIndex {
             // One final check: if we found a wildcard, we need to confirm that the first label isn't an IDNA A label.
             if baseName.prefix(4).caseInsensitiveElementsEqual(asciiIDNAIdentifier) {
                 return nil
             }
 
-            self.name = .wildcard(baseName, asteriskIndex: asteriskIndex, firstPeriodIndex: firstPeriodIndex)
+            self.name = .wildcard(
+                baseName,
+                asteriskIndex: asteriskIndex,
+                firstPeriodIndex: firstPeriodIndex
+            )
         } else {
             self.name = .singleName(baseName)
         }
@@ -476,7 +516,7 @@ private struct AnalysedCertificateHostname<
             // For non-wildcard names, we just do a straightforward comparison.
             return baseName.caseInsensitiveElementsEqual(target.bytes)
 
-        case .wildcard(let baseName, asteriskIndex: let asteriskIndex, firstPeriodIndex: let firstPeriodIndex):
+        case .wildcard(let baseName, let asteriskIndex, let firstPeriodIndex):
             // The wildcard can appear more-or-less anywhere in the first label. The wildcard
             // character itself can match any number of characters, though it must match at least
             // one.
@@ -488,7 +528,9 @@ private struct AnalysedCertificateHostname<
             // characters *after* the wildcard are the suffix of the target first label. This works well because
             // the empty string is a prefix and suffix of all strings.
             let (wildcardLabel, remainingComponents) = baseName.splitAroundIndex(firstPeriodIndex)
-            let (targetFirstLabel, targetRemainingComponents) = target.bytes.splitAroundIndex(target.firstPeriodIndex)
+            let (targetFirstLabel, targetRemainingComponents) = target.bytes.splitAroundIndex(
+                target.firstPeriodIndex
+            )
 
             guard remainingComponents.caseInsensitiveElementsEqual(targetRemainingComponents) else {
                 // Wildcard is irrelevant, the remaining components don't match.
@@ -500,12 +542,18 @@ private struct AnalysedCertificateHostname<
                 return false
             }
 
-            let (wildcardLabelPrefix, wildcardLabelSuffix) = wildcardLabel.splitAroundIndex(asteriskIndex)
+            let (wildcardLabelPrefix, wildcardLabelSuffix) = wildcardLabel.splitAroundIndex(
+                asteriskIndex
+            )
             let targetBeforeWildcard = targetFirstLabel.prefix(wildcardLabelPrefix.count)
             let targetAfterWildcard = targetFirstLabel.suffix(wildcardLabelSuffix.count)
 
-            let leadingBytesMatch = targetBeforeWildcard.caseInsensitiveElementsEqual(wildcardLabelPrefix)
-            let trailingBytesMatch = targetAfterWildcard.caseInsensitiveElementsEqual(wildcardLabelSuffix)
+            let leadingBytesMatch = targetBeforeWildcard.caseInsensitiveElementsEqual(
+                wildcardLabelPrefix
+            )
+            let trailingBytesMatch = targetAfterWildcard.caseInsensitiveElementsEqual(
+                wildcardLabelSuffix
+            )
 
             return leadingBytesMatch && trailingBytesMatch
         }

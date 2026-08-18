@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 import ISO_8824
 import ISO_8825
 
@@ -46,7 +46,10 @@ struct NameConstraintsPolicy: VerifierPolicy, Sendable {
 
         var issuedCerts = chain[...]
         while let issuer = issuedCerts.popLast(), issuedCerts.count > 0 {
-            if case .failsToMeetPolicy(let reason) = Self._validateNameConstraints(issuedCerts, issuer: issuer) {
+            if case .failsToMeetPolicy(let reason) = Self._validateNameConstraints(
+                issuedCerts,
+                issuer: issuer
+            ) {
                 return .failsToMeetPolicy(reason: reason)
             }
         }
@@ -65,7 +68,9 @@ struct NameConstraintsPolicy: VerifierPolicy, Sendable {
             maybeConstraints = try issuer.extensions.nameConstraints
         } catch {
             // We couldn't decode these! Fail validation.
-            return .failsToMeetPolicy(reason: "RFC5280Policy: Unable to decode name constraints from \(issuer)")
+            return .failsToMeetPolicy(
+                reason: "RFC5280Policy: Unable to decode name constraints from \(issuer)"
+            )
         }
 
         guard let constraints = maybeConstraints else {
@@ -79,7 +84,9 @@ struct NameConstraintsPolicy: VerifierPolicy, Sendable {
             do {
                 names = try cert.names
             } catch {
-                return .failsToMeetPolicy(reason: "RFC5280Policy: Unable to decode SAN field of \(cert): \(error)")
+                return .failsToMeetPolicy(
+                    reason: "RFC5280Policy: Unable to decode SAN field of \(cert): \(error)"
+                )
             }
 
             for name in names {
@@ -111,19 +118,27 @@ struct NameConstraintsPolicy: VerifierPolicy, Sendable {
         for excludedSubtree in excludedSubtrees {
             switch (excludedSubtree, name) {
             case (.directoryName(let constraint), .directoryName(let presentedName)):
-                if directoryNameMatchesConstraint(directoryName: presentedName, constraint: constraint) {
+                if directoryNameMatchesConstraint(
+                    directoryName: presentedName,
+                    constraint: constraint
+                ) {
                     return .failsToMeetPolicy(
                         reason:
                             "RFC5280Policy: directoryName \(presentedName) is excluded by \(excludedSubtree) in name constraints"
                     )
                 }
+
             case (.dnsName(let constraint), .dnsName(let presentedName)):
-                if dnsNameMatchesConstraint(dnsName: presentedName.utf8, constraint: constraint.utf8) {
+                if dnsNameMatchesConstraint(
+                    dnsName: presentedName.utf8,
+                    constraint: constraint.utf8
+                ) {
                     return .failsToMeetPolicy(
                         reason:
                             "RFC5280Policy: dnsName \(presentedName) is excluded by \(excludedSubtree) in name constraints"
                     )
                 }
+
             case (.ipAddress(let constraint), .ipAddress(let presentedName)):
                 if ipAddressMatchesConstraint(ipAddress: presentedName, constraint: constraint) {
                     return .failsToMeetPolicy(
@@ -131,16 +146,23 @@ struct NameConstraintsPolicy: VerifierPolicy, Sendable {
                             "RFC5280Policy: ipAddress \(presentedName) is excluded by \(excludedSubtree) in name constraints"
                     )
                 }
-            case (.uniformResourceIdentifier(let constraint), .uniformResourceIdentifier(let presentedName)):
+
+            case (
+                .uniformResourceIdentifier(let constraint),
+                .uniformResourceIdentifier(let presentedName)
+            ):
                 if uriNameMatchesConstraint(uriName: presentedName, constraint: constraint) {
                     return .failsToMeetPolicy(
                         reason:
                             "RFC5280Policy: URI \(presentedName) is excluded by \(excludedSubtree) in name constraints"
                     )
                 }
-            case (.directoryName, _), (.dnsName, _), (.ipAddress, _), (.uniformResourceIdentifier, _):
+
+            case (.directoryName, _), (.dnsName, _), (.ipAddress, _),
+                (.uniformResourceIdentifier, _):
                 // We support these, but the current name isn't of that type.
                 continue
+
             default:
                 // We don't support constraints on these!
                 //
@@ -170,7 +192,10 @@ struct NameConstraintsPolicy: VerifierPolicy, Sendable {
             case (.directoryName(let constraint), .directoryName(let presentedName)):
                 evaluatedAtLeastOneConstraint = true
 
-                if directoryNameMatchesConstraint(directoryName: presentedName, constraint: constraint) {
+                if directoryNameMatchesConstraint(
+                    directoryName: presentedName,
+                    constraint: constraint
+                ) {
                     // This is a match, we're good.
                     return .meetsPolicy
                 }
@@ -178,10 +203,14 @@ struct NameConstraintsPolicy: VerifierPolicy, Sendable {
             case (.dnsName(let constraint), .dnsName(let presentedName)):
                 evaluatedAtLeastOneConstraint = true
 
-                if dnsNameMatchesConstraint(dnsName: presentedName.utf8, constraint: constraint.utf8) {
+                if dnsNameMatchesConstraint(
+                    dnsName: presentedName.utf8,
+                    constraint: constraint.utf8
+                ) {
                     // This is a match, we're good.
                     return .meetsPolicy
                 }
+
             case (.ipAddress(let constraint), .ipAddress(let presentedName)):
                 evaluatedAtLeastOneConstraint = true
 
@@ -189,17 +218,24 @@ struct NameConstraintsPolicy: VerifierPolicy, Sendable {
                     // This is a match, we're good.
                     return .meetsPolicy
                 }
-            case (.uniformResourceIdentifier(let constraint), .uniformResourceIdentifier(let presentedName)):
+
+            case (
+                .uniformResourceIdentifier(let constraint),
+                .uniformResourceIdentifier(let presentedName)
+            ):
                 evaluatedAtLeastOneConstraint = true
 
                 if uriNameMatchesConstraint(uriName: presentedName, constraint: constraint) {
                     // This is a match, we're good.
                     return .meetsPolicy
                 }
-            case (.directoryName, _), (.dnsName, _), (.ipAddress, _), (.uniformResourceIdentifier, _):
+
+            case (.directoryName, _), (.dnsName, _), (.ipAddress, _),
+                (.uniformResourceIdentifier, _):
                 // We support these, but the current name isn't of that type. This means we didn't evaluate
                 // this constraint.
                 continue
+
             default:
                 // We don't support constraints on these!
                 //
@@ -218,7 +254,8 @@ struct NameConstraintsPolicy: VerifierPolicy, Sendable {
             return .meetsPolicy
         }
         return .failsToMeetPolicy(
-            reason: "RFC5280Policy: Unable to validate permitted subtree for \(permittedSubtrees), no matches!"
+            reason:
+                "RFC5280Policy: Unable to validate permitted subtree for \(permittedSubtrees), no matches!"
         )
     }
 }
@@ -227,13 +264,13 @@ struct NameConstraintsPolicy: VerifierPolicy, Sendable {
 extension Certificate {
     @inlinable
     package var names: NameSequence {
-        get throws {
+        get throws(Certificate.Error) {
             return try NameSequence(self)
         }
     }
 
     @usableFromInline
-    struct NameSequence: Sequence, Sendable {
+    package struct NameSequence: Sequence, Sendable {
         @usableFromInline
         var subject: DistinguishedName
 
@@ -241,18 +278,18 @@ extension Certificate {
         var alternativeNames: SubjectAlternativeNames
 
         @inlinable
-        init(_ certificate: Certificate) throws {
+        init(_ certificate: Certificate) throws(Certificate.Error) {
             self.subject = certificate.subject
             self.alternativeNames = try certificate.extensions.subjectAlternativeNames ?? .init()
         }
 
         @inlinable
-        func makeIterator() -> Iterator {
+        package func makeIterator() -> Iterator {
             return Iterator(self.subject, self.alternativeNames)
         }
 
         @usableFromInline
-        struct Iterator: IteratorProtocol, Sendable {
+        package struct Iterator: IteratorProtocol, Sendable {
             @usableFromInline
             var subject: DistinguishedName?
 
@@ -266,7 +303,7 @@ extension Certificate {
             }
 
             @inlinable
-            mutating func next() -> GeneralName? {
+            package mutating func next() -> GeneralName? {
                 guard let subject = self.subject else {
                     return self.alternativeNames.popFirst()
                 }

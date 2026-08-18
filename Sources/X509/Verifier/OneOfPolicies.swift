@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -33,7 +33,9 @@ public struct OneOfPolicyBuilder: Sendable {}
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension OneOfPolicyBuilder {
     @inlinable
-    public static func buildLimitedAvailability<Policy: VerifierPolicy>(_ component: Policy) -> Policy {
+    public static func buildLimitedAvailability<Policy: VerifierPolicy>(
+        _ component: Policy
+    ) -> Policy {
         component
     }
 }
@@ -50,7 +52,9 @@ extension OneOfPolicyBuilder {
         init() {}
 
         @inlinable
-        mutating func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) async -> PolicyEvaluationResult {
+        mutating func chainMeetsPolicyRequirements(
+            chain: UnverifiedCertificateChain
+        ) async -> PolicyEvaluationResult {
             .failsToMeetPolicy(reason: "No policies specified in OneOfPolicies block")
         }
     }
@@ -86,16 +90,20 @@ extension OneOfPolicyBuilder {
         }
 
         @inlinable
-        mutating func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) async -> PolicyEvaluationResult {
+        mutating func chainMeetsPolicyRequirements(
+            chain: UnverifiedCertificateChain
+        ) async -> PolicyEvaluationResult {
             let firstResult = await self.first.chainMeetsPolicyRequirements(chain: chain)
             switch firstResult {
             case .meetsPolicy:
                 return .meetsPolicy
+
             case .failsToMeetPolicy(let firstReason):
                 let secondResult = await self.second.chainMeetsPolicyRequirements(chain: chain)
                 switch secondResult {
                 case .meetsPolicy:
                     return .meetsPolicy
+
                 case .failsToMeetPolicy(let secondReason):
                     return .failsToMeetPolicy(reason: "\(firstReason) and \(secondReason)")
                 }
@@ -139,7 +147,9 @@ extension OneOfPolicyBuilder {
         }
 
         @inlinable
-        mutating func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) async -> PolicyEvaluationResult {
+        mutating func chainMeetsPolicyRequirements(
+            chain: UnverifiedCertificateChain
+        ) async -> PolicyEvaluationResult {
             await self.wrapped?.chainMeetsPolicyRequirements(chain: chain)
                 ?? .failsToMeetPolicy(reason: "\(Wrapped.self) in OneOfPolicy is disabled")
         }
@@ -205,8 +215,9 @@ public struct OneOfPolicies<Policy: VerifierPolicy>: VerifierPolicy {
     }
 
     @inlinable
-    public mutating func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) async -> PolicyEvaluationResult
-    {
+    public mutating func chainMeetsPolicyRequirements(
+        chain: UnverifiedCertificateChain
+    ) async -> PolicyEvaluationResult {
         await self.policy.chainMeetsPolicyRequirements(chain: chain)
     }
 }

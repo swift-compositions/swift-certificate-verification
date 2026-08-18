@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension Certificate {
@@ -34,12 +34,16 @@ extension Certificate {
             // normalise the signature algorithm here.
             case .sha1WithRSAEncryptionUsingNil:
                 self._algorithmIdentifier = .sha1WithRSAEncryption
+
             case .sha256WithRSAEncryptionUsingNil:
                 self._algorithmIdentifier = .sha256WithRSAEncryption
+
             case .sha384WithRSAEncryptionUsingNil:
                 self._algorithmIdentifier = .sha384WithRSAEncryption
+
             case .sha512WithRSAEncryptionUsingNil:
                 self._algorithmIdentifier = .sha512WithRSAEncryption
+
             case let identifier:
                 self._algorithmIdentifier = identifier
             }
@@ -58,13 +62,19 @@ extension Certificate {
         public static let sha1WithRSAEncryption = Self(algorithmIdentifier: .sha1WithRSAEncryption)
 
         /// This value represents an RSA signature with PKCS1v1.5 padding and SHA256 as the hash function.
-        public static let sha256WithRSAEncryption = Self(algorithmIdentifier: .sha256WithRSAEncryption)
+        public static let sha256WithRSAEncryption = Self(
+            algorithmIdentifier: .sha256WithRSAEncryption
+        )
 
         /// This value represents an RSA signature with PKCS1v1.5 padding and SHA384 as the hash function.
-        public static let sha384WithRSAEncryption = Self(algorithmIdentifier: .sha384WithRSAEncryption)
+        public static let sha384WithRSAEncryption = Self(
+            algorithmIdentifier: .sha384WithRSAEncryption
+        )
 
         /// This value represents an RSA signature with PKCS1v1.5 padding and SHA512 as the hash function.
-        public static let sha512WithRSAEncryption = Self(algorithmIdentifier: .sha512WithRSAEncryption)
+        public static let sha512WithRSAEncryption = Self(
+            algorithmIdentifier: .sha512WithRSAEncryption
+        )
 
         /// This value represents an EdDSA signature using Curve25519.
         public static let ed25519 = Self(algorithmIdentifier: .ed25519)
@@ -75,6 +85,7 @@ extension Certificate {
             switch self {
             case .ecdsaWithSHA256, .ecdsaWithSHA384, .ecdsaWithSHA512:
                 return true
+
             default:
                 return false
             }
@@ -83,8 +94,10 @@ extension Certificate {
         @inlinable
         package var isRSA: Bool {
             switch self {
-            case .sha1WithRSAEncryption, .sha256WithRSAEncryption, .sha384WithRSAEncryption, .sha512WithRSAEncryption:
+            case .sha1WithRSAEncryption, .sha256WithRSAEncryption, .sha384WithRSAEncryption,
+                .sha512WithRSAEncryption:
                 return true
+
             default:
                 return false
             }
@@ -104,20 +117,28 @@ extension Certificate.SignatureAlgorithm: CustomStringConvertible {
         switch self {
         case .ecdsaWithSHA256:
             return "SignatureAlgorithm.ecdsaWithSHA256"
+
         case .ecdsaWithSHA384:
             return "SignatureAlgorithm.ecdsaWithSHA384"
+
         case .ecdsaWithSHA512:
             return "SignatureAlgorithm.ecdsaWithSHA512"
+
         case .sha1WithRSAEncryption:
             return "SignatureAlgorithm.sha1WithRSAEncryption"
+
         case .sha256WithRSAEncryption:
             return "SignatureAlgorithm.sha256WithRSAEncryption"
+
         case .sha384WithRSAEncryption:
             return "SignatureAlgorithm.sha384WithRSAEncryption"
+
         case .sha512WithRSAEncryption:
             return "SignatureAlgorithm.sha512WithRSAEncryption"
+
         case .ed25519:
             return "SignatureAlgorithm.ed25519"
+
         default:
             return "SignatureAlgorithm(\(self._algorithmIdentifier))"
         }
@@ -133,18 +154,24 @@ extension AlgorithmIdentifier {
     }
 
     @inlinable
-    package init(digestAlgorithmFor signatureAlgorithm: Certificate.SignatureAlgorithm) throws(Certificate.Error) {
+    package init(
+        digestAlgorithmFor signatureAlgorithm: Certificate.SignatureAlgorithm
+    ) throws(Certificate.Error) {
         // Per RFC 5754 § 2, we must produce digest algorithm identifiers with
         // absent parameters, so we do.
         switch signatureAlgorithm {
         case .ecdsaWithSHA256, .sha256WithRSAEncryption:
             self = .sha256UsingNil
+
         case .ecdsaWithSHA384, .sha384WithRSAEncryption:
             self = .sha384UsingNil
+
         case .ecdsaWithSHA512, .sha512WithRSAEncryption, .ed25519:
             self = .sha512UsingNil
+
         case .sha1WithRSAEncryption:
             self = .sha1
+
         default:
             throw Certificate.Error.algorithm(
                 .unsupportedSignature(AlgorithmIdentifier(signatureAlgorithm).algorithm)
@@ -161,20 +188,28 @@ extension Certificate.SignatureAlgorithm {
             switch self {
             case .ecdsaWithSHA256:
                 return 0x0403
+
             case .ecdsaWithSHA384:
                 return 0x0503
+
             case .ecdsaWithSHA512:
                 return 0x0603
+
             case .sha1WithRSAEncryption:
                 return 0x0201
+
             case .sha256WithRSAEncryption:
                 return 0x0401
+
             case .sha384WithRSAEncryption:
                 return 0x0501
+
             case .sha512WithRSAEncryption:
                 return 0x0601
+
             case .ed25519:
                 return 0x0807
+
             default:
                 throw Certificate.Error.algorithm(
                     .unsupportedSignature(AlgorithmIdentifier(self).algorithm)
@@ -194,20 +229,28 @@ extension Certificate.SignatureAlgorithm {
         switch value {
         case 0x0403:
             self = .ecdsaWithSHA256
+
         case 0x0503:
             self = .ecdsaWithSHA384
+
         case 0x0603:
             self = .ecdsaWithSHA512
+
         case 0x0201:
             self = .sha1WithRSAEncryption
+
         case 0x0401:
             self = .sha256WithRSAEncryption
+
         case 0x0501:
             self = .sha384WithRSAEncryption
+
         case 0x0601:
             self = .sha512WithRSAEncryption
+
         case 0x0807:
             self = .ed25519
+
         default:
             return nil
         }

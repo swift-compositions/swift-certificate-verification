@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,37 +10,37 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 @usableFromInline
-let ASCII_PERIOD = UInt8(ascii: "." as Unicode.Scalar)
+let asciiPeriod = UInt8(ascii: "." as Unicode.Scalar)
 
 @usableFromInline
-let ASCII_ASTERISK = UInt8(ascii: "*" as Unicode.Scalar)
+let asciiAsterisk = UInt8(ascii: "*" as Unicode.Scalar)
 
 @usableFromInline
-let ASCII_HYPHEN = UInt8(ascii: "-" as Unicode.Scalar)
+let asciiHyphen = UInt8(ascii: "-" as Unicode.Scalar)
 
 @usableFromInline
-let ASCII_LOWERCASE_A = UInt8(ascii: "a" as Unicode.Scalar)
+let asciiLowercaseA = UInt8(ascii: "a" as Unicode.Scalar)
 
 @usableFromInline
-let ASCII_LOWERCASE_Z = UInt8(ascii: "z" as Unicode.Scalar)
+let asciiLowercaseZ = UInt8(ascii: "z" as Unicode.Scalar)
 
 @usableFromInline
-let ASCII_UPPERCASE_A = UInt8(ascii: "A" as Unicode.Scalar)
+let asciiUppercaseA = UInt8(ascii: "A" as Unicode.Scalar)
 
 @usableFromInline
-let ASCII_UPPERCASE_Z = UInt8(ascii: "Z" as Unicode.Scalar)
+let asciiUppercaseZ = UInt8(ascii: "Z" as Unicode.Scalar)
 
 @usableFromInline
-let ASCII_ZERO = UInt8(ascii: "0" as Unicode.Scalar)
+let asciiZero = UInt8(ascii: "0" as Unicode.Scalar)
 
 @usableFromInline
-let ASCII_NINE = UInt8(ascii: "9" as Unicode.Scalar)
+let asciiNine = UInt8(ascii: "9" as Unicode.Scalar)
 
 @usableFromInline
-let ASCII_UNDERSCORE = UInt8(ascii: "_" as Unicode.Scalar)
+let asciiUnderscore = UInt8(ascii: "_" as Unicode.Scalar)
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension NameConstraintsPolicy {
@@ -58,9 +58,15 @@ extension NameConstraintsPolicy {
     /// We have a number of other caveats in play, that will be commented within
     /// the body of the function as we go.
     @inlinable
-    package static func dnsNameMatchesConstraint(dnsName: String.UTF8View, constraint: String.UTF8View) -> Bool {
+    package static func dnsNameMatchesConstraint(
+        dnsName: String.UTF8View,
+        constraint: String.UTF8View
+    ) -> Bool {
         // Before any validation: confirm that these are both valid DNS names.
-        guard dnsName.isValidDNSName(isConstraint: false) && constraint.isValidDNSName(isConstraint: true) else {
+        guard
+            dnsName.isValidDNSName(isConstraint: false)
+                && constraint.isValidDNSName(isConstraint: true)
+        else {
             return false
         }
 
@@ -76,7 +82,7 @@ extension NameConstraintsPolicy {
         var constraint = constraint[...]
 
         // Step 2: If the constraint ends in a period, drop it.
-        if constraint.last == ASCII_PERIOD {
+        if constraint.last == asciiPeriod {
             constraint = constraint.dropLast()
         }
 
@@ -97,17 +103,21 @@ extension NameConstraintsPolicy {
             case (.none, .none):
                 // Both sequences are empty, this is a perfect match.
                 return true
+
             case (.some, .none):
                 // We've run out of constraint labels to match. This is a match!
                 return true
+
             case (.none, .some):
                 // We've run out of DNS name labels, but there is still
                 // a constraint label! Even if the constraint label is empty
                 // (that is, there was a leading period), we don't match.
                 return false
+
             case (.some(let dnsLabel), _) where dnsLabel.count == 0:
                 // Empty DNS label. This is always forbidden.
                 return false
+
             case (.some, .some(let constraintLabel)) where constraintLabel.count == 0:
                 // We have an empty constraint label. This must be last, so confirm that.
                 guard reverseConstraintLabels.hasMoreLabels else {
@@ -116,10 +126,12 @@ extension NameConstraintsPolicy {
                 }
                 // This label is empty, and not last, which is unacceptable.
                 return false
+
             case (.some(let dnsLabel), .some(let constraintLabel))
             where dnsLabel.caseInsensitiveASCIIMatch(constraintLabel):
                 // The two labels match, continue.
                 continue
+
             case (.some, .some):
                 // Two labels don't match!
                 return false
@@ -146,9 +158,9 @@ extension String.UTF8View {
 
         // We're going to allow a wildcard, but it must be first, and must be the whole
         // label.
-        if bytes.first == ASCII_ASTERISK {
+        if bytes.first == asciiAsterisk {
             bytes = bytes.dropFirst()
-            guard let next = bytes.popFirst(), next == ASCII_PERIOD else {
+            guard let next = bytes.popFirst(), next == asciiPeriod else {
                 // Either there was no next byte, or it wasn't a period. Not a valid name.
                 return false
             }
@@ -162,7 +174,7 @@ extension String.UTF8View {
         // rewrite it.
         while bytes.count > 0 {
             let label: String.UTF8View.SubSequence
-            if let nextPeriod = bytes.firstIndex(of: ASCII_PERIOD) {
+            if let nextPeriod = bytes.firstIndex(of: asciiPeriod) {
                 label = bytes[..<nextPeriod]
 
                 let indexAfterPeriod = bytes.index(after: nextPeriod)
@@ -181,7 +193,7 @@ extension String.UTF8View {
             }
 
             // We don't allow labels to start or end with a hyphen.
-            if label.first == ASCII_HYPHEN || label.last == ASCII_HYPHEN {
+            if label.first == asciiHyphen || label.last == asciiHyphen {
                 return false
             }
 
@@ -197,16 +209,19 @@ extension String.UTF8View {
             // numeric. We can detect whether this is the last label because, if it is,
             // there are no more bytes left in the name.
             switch label.labelContents {
-            case .allASCII(nonNumerics: let nonNumerics) where nonNumerics > 0:
+            case .allASCII(let nonNumerics) where nonNumerics > 0:
                 // All ASCII, and at least one non-numeric, we're good. On to the next label.
                 continue
+
             case .allASCII where bytes.count > 0:
                 // Label is all numeric, but this isn't the last label. Allowed.
                 continue
+
             case .allASCII:
                 // Last label is all numeric. Not allowed.
                 assert(bytes.count == 0)
                 return false
+
             case .nonASCII:
                 // Either non-ASCII, or all numeric. Not allowed.
                 return false
@@ -257,7 +272,7 @@ struct ReverseDNSLabelSequence: Sequence, Sendable {
 
             // We walk backwards from the end until we find a period, then
             // we slice out that section and return it.
-            guard let periodIndex = base.lastIndex(of: ASCII_PERIOD) else {
+            guard let periodIndex = base.lastIndex(of: asciiPeriod) else {
                 // No period left! Return the entirety of what is left as the label,
                 // and then store nil.
                 let label = base
@@ -291,13 +306,14 @@ extension String.UTF8View.SubSequence {
         return self.elementsEqual(
             other,
             by: { selfByte, otherByte in
-                (selfByte & Self.asciiCaseInsensitiveMask) == (otherByte & Self.asciiCaseInsensitiveMask)
+                (selfByte & Self.asciiCaseInsensitiveMask)
+                    == (otherByte & Self.asciiCaseInsensitiveMask)
             }
         )
     }
 
     @usableFromInline
-    enum LabelContents: Sendable {
+    package enum LabelContents: Sendable {
         case allASCII(nonNumerics: Int)
         case nonASCII
     }
@@ -308,12 +324,14 @@ extension String.UTF8View.SubSequence {
 
         for byte in self {
             switch byte {
-            case ASCII_ZERO...ASCII_NINE:
+            case asciiZero...asciiNine:
                 ()
-            case ASCII_LOWERCASE_A...ASCII_LOWERCASE_Z,
-                ASCII_UPPERCASE_A...ASCII_UPPERCASE_Z,
-                ASCII_HYPHEN, ASCII_UNDERSCORE:
+
+            case asciiLowercaseA...asciiLowercaseZ,
+                asciiUppercaseA...asciiUppercaseZ,
+                asciiHyphen, asciiUnderscore:
                 nonNumerics += 1
+
             default:
                 return .nonASCII
             }

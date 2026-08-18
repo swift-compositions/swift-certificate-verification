@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -55,7 +55,9 @@ struct ExpiryPolicy: VerifierPolicy, Sendable {
             }
 
             if validationTime < notValidBefore {
-                return .failsToMeetPolicy(reason: "RFC5280Policy: Certificate \(cert) is not yet valid")
+                return .failsToMeetPolicy(
+                    reason: "RFC5280Policy: Certificate \(cert) is not yet valid"
+                )
             }
 
             if validationTime > notValidAfter {

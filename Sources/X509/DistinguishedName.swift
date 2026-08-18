@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -76,7 +76,8 @@ public struct DistinguishedName {
     ///
     /// - Parameter rdns: The elements of this ``DistinguishedName``.
     @inlinable
-    public init<RDNSequence: Sequence>(_ rdns: RDNSequence) where RDNSequence.Element == RelativeDistinguishedName {
+    public init<RDNSequence: Sequence>(_ rdns: RDNSequence)
+    where RDNSequence.Element == RelativeDistinguishedName {
         self.rdns = Array(rdns)
     }
 
@@ -87,7 +88,9 @@ public struct DistinguishedName {
     ///
     /// - Parameter attributes: The sequence of ``RelativeDistinguishedName/Attribute``s that make up the ``DistinguishedName``.
     @inlinable
-    public init<AttributeSequence: Sequence>(_ attributes: AttributeSequence) throws
+    public init<AttributeSequence: Sequence>(
+        _ attributes: AttributeSequence
+    ) throws(Certificate.Error)
     where AttributeSequence.Element == RelativeDistinguishedName.Attribute {
         self.rdns = attributes.map { RelativeDistinguishedName($0) }
     }
@@ -125,7 +128,10 @@ extension DistinguishedName: RandomAccessCollection, MutableCollection, RangeRep
     }
 
     @inlinable
-    public mutating func replaceSubrange<NewElements>(_ subrange: Range<Int>, with newElements: NewElements)
+    public mutating func replaceSubrange<NewElements>(
+        _ subrange: Range<Int>,
+        with newElements: NewElements
+    )
     where NewElements: Collection, RelativeDistinguishedName == NewElements.Element {
         self.rdns.replaceSubrange(subrange, with: newElements)
     }
@@ -147,7 +153,8 @@ extension DistinguishedName: CustomDebugStringConvertible {
 extension DistinguishedName: ISO_8825.DER.Serializable {
     @inlinable
     public func serialize(into coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) {
-        try coder.appendConstructedNode(identifier: .sequence) { (rootCoder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) -> Void in
+        try coder.appendConstructedNode(identifier: .sequence) {
+            (rootCoder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) in
             for element in self.rdns {
                 try element.serialize(into: &rootCoder)
             }
@@ -158,7 +165,11 @@ extension DistinguishedName: ISO_8825.DER.Serializable {
 extension DistinguishedName: ISO_8825.DER.Parseable {
     @inlinable
     public init(derEncoded rootNode: ISO_8825.Node) throws(ISO_8824.Error) {
-        self.rdns = try ISO_8825.DER.sequence(of: RelativeDistinguishedName.self, identifier: .sequence, rootNode: rootNode)
+        self.rdns = try ISO_8825.DER.sequence(
+            of: RelativeDistinguishedName.self,
+            identifier: .sequence,
+            rootNode: rootNode
+        )
     }
 
     @inlinable
@@ -167,8 +178,9 @@ extension DistinguishedName: ISO_8825.DER.Parseable {
     ) throws(ISO_8824.Error) -> DistinguishedName {
         // This is a workaround for the fact that, even though the conformance to ISO_8825.DER.ImplicitlyTaggable is
         // deprecated, Swift still prefers calling init(derEncoded:withIdentifier:) instead of this one.
-        let dnFactory: (inout ISO_8825.Node.Collection.Iterator) throws(ISO_8824.Error) -> DistinguishedName =
-            DistinguishedName.init(derEncoded:)
+        let dnFactory:
+            (inout ISO_8825.Node.Collection.Iterator) throws(ISO_8824.Error) -> DistinguishedName =
+                DistinguishedName.init(derEncoded:)
         return try dnFactory(&sequenceNodeIterator)
     }
 }
@@ -181,13 +193,24 @@ extension DistinguishedName: ISO_8825.DER.ImplicitlyTaggable {
     }
 
     @inlinable
-    public init(derEncoded rootNode: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        self.rdns = try ISO_8825.DER.sequence(of: RelativeDistinguishedName.self, identifier: identifier, rootNode: rootNode)
+    public init(
+        derEncoded rootNode: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        self.rdns = try ISO_8825.DER.sequence(
+            of: RelativeDistinguishedName.self,
+            identifier: identifier,
+            rootNode: rootNode
+        )
     }
 
     @inlinable
-    public func serialize(into coder: inout ISO_8825.DER.Serializer, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        try coder.appendConstructedNode(identifier: identifier) { (rootCoder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) -> Void in
+    public func serialize(
+        into coder: inout ISO_8825.DER.Serializer,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        try coder.appendConstructedNode(identifier: identifier) {
+            (rootCoder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) in
             for element in self.rdns {
                 try element.serialize(into: &rootCoder)
             }

@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -64,7 +64,8 @@ extension Certificate {
         /// - Parameter extensions: The base extensions.
         /// - Throws: if multiple extensions have the same OID
         @inlinable
-        public init<Elements>(_ extensions: Elements) throws where Elements: Sequence, Elements.Element == Extension {
+        public init<Elements>(_ extensions: Elements) throws(Certificate.Error)
+        where Elements: Sequence, Elements.Element == Extension {
             self._extensions = Array(extensions)
 
             // This limit is somewhat arbitrary. Linear search for under 32 elements
@@ -74,9 +75,11 @@ extension Certificate {
             // This can be used for DoS attacks so we have added this limit.
             let maxExtensions = 32
             guard self._extensions.count <= maxExtensions else {
-                throw ISO_8824.Error.invalidASN1Object(
-                    reason:
-                        "Too many extensions. Found \(self._extensions.count) but only \(maxExtensions) are allowed."
+                throw Certificate.Error.der(
+                    .invalidASN1Object(
+                        reason:
+                            "Too many extensions. Found \(self._extensions.count) but only \(maxExtensions) are allowed."
+                    )
                 )
             }
 
@@ -113,9 +116,7 @@ extension Certificate.Extensions: RandomAccessCollection {
 
     @inlinable
     public subscript(position: Int) -> Certificate.Extension {
-        get {
-            self._extensions[position]
-        }
+        self._extensions[position]
     }
 }
 
@@ -197,7 +198,7 @@ extension Certificate.Extensions {
             self._extensions.first(where: { $0.oid == oid })
         }
         set {
-            if let newValue = newValue {
+            if let newValue {
                 precondition(oid == newValue.oid)
                 self.update(newValue)
             } else {
@@ -212,8 +213,11 @@ extension Certificate.Extensions {
     /// Throws if it is not possible to decode the AIA extension.
     @inlinable
     public var authorityInformationAccess: AuthorityInformationAccess? {
-        get throws {
-            try self[oid: .X509ExtensionID.authorityInformationAccess].map { try .init($0) }
+        get throws(Certificate.Error) {
+            guard let ext = self[oid: .X509ExtensionID.authorityInformationAccess] else {
+                return nil
+            }
+            return try .init(ext)
         }
     }
 
@@ -223,8 +227,9 @@ extension Certificate.Extensions {
     /// Throws if it is not possible to decode the SKI extension.
     @inlinable
     public var subjectKeyIdentifier: SubjectKeyIdentifier? {
-        get throws {
-            try self[oid: .X509ExtensionID.subjectKeyIdentifier].map { try .init($0) }
+        get throws(Certificate.Error) {
+            guard let ext = self[oid: .X509ExtensionID.subjectKeyIdentifier] else { return nil }
+            return try .init(ext)
         }
     }
 
@@ -234,8 +239,9 @@ extension Certificate.Extensions {
     /// Throws if it is not possible to decode the AKI extension.
     @inlinable
     public var authorityKeyIdentifier: AuthorityKeyIdentifier? {
-        get throws {
-            try self[oid: .X509ExtensionID.authorityKeyIdentifier].map { try .init($0) }
+        get throws(Certificate.Error) {
+            guard let ext = self[oid: .X509ExtensionID.authorityKeyIdentifier] else { return nil }
+            return try .init(ext)
         }
     }
 
@@ -245,8 +251,9 @@ extension Certificate.Extensions {
     /// Throws if it is not possible to decode the EKU extension.
     @inlinable
     public var extendedKeyUsage: ExtendedKeyUsage? {
-        get throws {
-            try self[oid: .X509ExtensionID.extendedKeyUsage].map { try .init($0) }
+        get throws(Certificate.Error) {
+            guard let ext = self[oid: .X509ExtensionID.extendedKeyUsage] else { return nil }
+            return try .init(ext)
         }
     }
 
@@ -256,8 +263,9 @@ extension Certificate.Extensions {
     /// Throws if it is not possible to decode the basic constraints extension.
     @inlinable
     public var basicConstraints: BasicConstraints? {
-        get throws {
-            try self[oid: .X509ExtensionID.basicConstraints].map { try .init($0) }
+        get throws(Certificate.Error) {
+            guard let ext = self[oid: .X509ExtensionID.basicConstraints] else { return nil }
+            return try .init(ext)
         }
     }
 
@@ -267,8 +275,9 @@ extension Certificate.Extensions {
     /// Throws if it is not possible to decode the key usage extension.
     @inlinable
     public var keyUsage: KeyUsage? {
-        get throws {
-            try self[oid: .X509ExtensionID.keyUsage].map { try .init($0) }
+        get throws(Certificate.Error) {
+            guard let ext = self[oid: .X509ExtensionID.keyUsage] else { return nil }
+            return try .init(ext)
         }
     }
 
@@ -278,8 +287,9 @@ extension Certificate.Extensions {
     /// Throws if it is not possible to decode the name constraints extension.
     @inlinable
     public var nameConstraints: NameConstraints? {
-        get throws {
-            try self[oid: .X509ExtensionID.nameConstraints].map { try .init($0) }
+        get throws(Certificate.Error) {
+            guard let ext = self[oid: .X509ExtensionID.nameConstraints] else { return nil }
+            return try .init(ext)
         }
     }
 
@@ -289,8 +299,9 @@ extension Certificate.Extensions {
     /// Throws if it is not possible to decode the SAN extension.
     @inlinable
     public var subjectAlternativeNames: SubjectAlternativeNames? {
-        get throws {
-            try self[oid: .X509ExtensionID.subjectAlternativeName].map { try .init($0) }
+        get throws(Certificate.Error) {
+            guard let ext = self[oid: .X509ExtensionID.subjectAlternativeName] else { return nil }
+            return try .init(ext)
         }
     }
 }

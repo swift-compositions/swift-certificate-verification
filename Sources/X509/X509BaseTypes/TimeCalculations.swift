@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 // This file contains code derived from the musl implementation at
 // https://git.musl-libc.org/cgit/musl/tree/src/time/__secs_to_tm.c and
@@ -21,7 +21,7 @@
 //
 // The copyright for the original implementation is:
 //
-//----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 // Copyright © 2005-2020 Rich Felker, et al.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -42,7 +42,7 @@
 // CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 
 extension Int64 {
     // 2000-03-01 (mod 400 year, immediately after feb29
@@ -93,17 +93,22 @@ extension Int64 {
         switch month {
         case 0, 2, 4, 5, 7, 9, 10:
             return 31
+
         case 1, 3, 6, 8:
             return 30
+
         case 11:
             return 29
+
         default:
-            fatalError()
+            fatalError("month index \(month) is outside the March-indexed range 0...11")
         }
     }
 
     @inlinable
-    package var utcDateFromTimestamp: (year: Int, month: Int, day: Int, hours: Int, minutes: Int, seconds: Int) {
+    package var utcDateFromTimestamp:
+        (year: Int, month: Int, day: Int, hours: Int, minutes: Int, seconds: Int)
+    {
         let secs = self - .leapoch
         var (days, remsecs) = secs.quotientAndRemainder(dividingBy: 86400)
 
@@ -182,7 +187,11 @@ extension Int64 {
     }
 
     @inlinable
-    package init(timestampFromUTCDate date: (year: Int, month: Int, day: Int, hours: Int, minutes: Int, seconds: Int)) {
+    package init(
+        timestampFromUTCDate date: (
+            year: Int, month: Int, day: Int, hours: Int, minutes: Int, seconds: Int
+        )
+    ) {
         assert((1...12).contains(date.month))
         assert((0...31).contains(date.day))
         assert((0..<24).contains(date.hours))
@@ -227,12 +236,15 @@ extension Int64 {
             case 300...:
                 centuries = 3
                 rem &-= 300
+
             case 200...:
                 centuries = 2
                 rem &-= 200
+
             case 100...:
                 centuries = 1
                 rem &-= 100
+
             default:
                 assert(rem > 0)
                 centuries = 0
@@ -249,7 +261,8 @@ extension Int64 {
 
         leaps += (97 * cycles) + (24 * centuries) - (isLeap ? 1 : 0)
         return (
-            seconds: ((year - 100) * .secondsPerYear) + (leaps * .secondsPerDay) + .secondsFromEpochToYear2000
+            seconds: ((year - 100) * .secondsPerYear) + (leaps * .secondsPerDay)
+                + .secondsFromEpochToYear2000
                 + .secondsPerDay, isLeap: isLeap
         )
     }
@@ -262,28 +275,40 @@ extension Int64 {
         switch month {
         case 0:
             secondsThroughMonth = 0
+
         case 1:
             secondsThroughMonth = 31 * .secondsPerDay
+
         case 2:
             secondsThroughMonth = 59 * .secondsPerDay
+
         case 3:
             secondsThroughMonth = 90 * .secondsPerDay
+
         case 4:
             secondsThroughMonth = 120 * .secondsPerDay
+
         case 5:
             secondsThroughMonth = 151 * .secondsPerDay
+
         case 6:
             secondsThroughMonth = 181 * .secondsPerDay
+
         case 7:
             secondsThroughMonth = 212 * .secondsPerDay
+
         case 8:
             secondsThroughMonth = 243 * .secondsPerDay
+
         case 9:
             secondsThroughMonth = 273 * .secondsPerDay
+
         case 10:
             secondsThroughMonth = 304 * .secondsPerDay
+
         case 11:
             secondsThroughMonth = 334 * .secondsPerDay
+
         default:
             fatalError("Invalid month: \(month)")
         }

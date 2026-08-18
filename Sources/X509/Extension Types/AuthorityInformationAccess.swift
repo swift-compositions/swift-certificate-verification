@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -35,7 +35,8 @@ public struct AuthorityInformationAccess {
     ///
     /// - Parameter descriptions: The descriptions to include in the AIA extension.
     @inlinable
-    public init<Descriptions: Sequence>(_ descriptions: Descriptions) where Descriptions.Element == AccessDescription {
+    public init<Descriptions: Sequence>(_ descriptions: Descriptions)
+    where Descriptions.Element == AccessDescription {
         self.descriptions = Array(descriptions)
     }
 
@@ -47,14 +48,19 @@ public struct AuthorityInformationAccess {
     ///     `ISO_8824.ObjectIdentifier.X509ExtensionID.authorityInformationAccess`.
     @inlinable
     @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
-    public init(_ ext: Certificate.Extension) throws {
+    public init(_ ext: Certificate.Extension) throws(Certificate.Error) {
         guard ext.oid == .X509ExtensionID.authorityInformationAccess else {
             throw Certificate.Error.extension(
                 .incorrectOID(expected: .X509ExtensionID.authorityInformationAccess, found: ext.oid)
             )
         }
 
-        let aiaSyntax = try AuthorityInfoAccessSyntax(derEncoded: ext.value)
+        let aiaSyntax: AuthorityInfoAccessSyntax
+        do {
+            aiaSyntax = try AuthorityInfoAccessSyntax(derEncoded: ext.value)
+        } catch {
+            throw Certificate.Error.der(error)
+        }
         self.descriptions = aiaSyntax.descriptions.map { AccessDescription($0) }
     }
 }
@@ -99,7 +105,10 @@ extension AuthorityInformationAccess: RandomAccessCollection {
 
 extension AuthorityInformationAccess: RangeReplaceableCollection {
     @inlinable
-    public mutating func replaceSubrange(_ subrange: Range<Int>, with newElements: some Collection<AccessDescription>) {
+    public mutating func replaceSubrange(
+        _ subrange: Range<Int>,
+        with newElements: some Collection<AccessDescription>
+    ) {
         self.descriptions.replaceSubrange(subrange, with: newElements)
     }
 }
@@ -170,8 +179,10 @@ extension AuthorityInformationAccess.AccessDescription {
             switch oid {
             case .AccessMethodIdentifiers.ocspServer:
                 self.backing = .ocspServer
+
             case .AccessMethodIdentifiers.issuingCA:
                 self.backing = .issuingCA
+
             default:
                 self.backing = .unknownType(oid)
             }
@@ -195,8 +206,10 @@ extension AuthorityInformationAccess.AccessDescription.AccessMethod: CustomStrin
         switch self.backing {
         case .ocspServer:
             return "OCSP Server"
+
         case .issuingCA:
             return "Issuer"
+
         case .unknownType(let oid):
             return String(describing: oid)
         }
@@ -208,8 +221,10 @@ extension AuthorityInformationAccess.AccessDescription.AccessMethod: CustomDebug
         switch self.backing {
         case .ocspServer:
             return "\"OCSP Server\""
+
         case .issuingCA:
             return "\"Issuer\""
+
         case .unknownType(let oid):
             return String(reflecting: oid)
         }
@@ -228,7 +243,7 @@ extension Certificate.Extension {
     ///   - aia: The extension to wrap
     ///   - critical: Whether this extension should have the critical bit set.
     @inlinable
-    public init(_ aia: AuthorityInformationAccess, critical: Bool) throws {
+    public init(_ aia: AuthorityInformationAccess, critical: Bool) throws(ISO_8824.Error) {
         let asn1Representation = AuthorityInfoAccessSyntax(aia)
         var serializer = ISO_8825.DER.Serializer()
         try serializer.serialize(asn1Representation)
@@ -264,13 +279,24 @@ struct AuthorityInfoAccessSyntax: ISO_8825.DER.ImplicitlyTaggable, Sendable {
     }
 
     @inlinable
-    init(derEncoded rootNode: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        self.descriptions = try ISO_8825.DER.sequence(of: AIAAccessDescription.self, identifier: identifier, rootNode: rootNode)
+    init(
+        derEncoded rootNode: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        self.descriptions = try ISO_8825.DER.sequence(
+            of: AIAAccessDescription.self,
+            identifier: identifier,
+            rootNode: rootNode
+        )
     }
 
     @inlinable
-    func serialize(into coder: inout ISO_8825.DER.Serializer, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        try coder.appendConstructedNode(identifier: identifier) { (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) -> Void in
+    func serialize(
+        into coder: inout ISO_8825.DER.Serializer,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        try coder.appendConstructedNode(identifier: identifier) {
+            (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) in
             for description in descriptions {
                 try coder.serialize(description)
             }
@@ -304,8 +330,14 @@ struct AIAAccessDescription: ISO_8825.DER.ImplicitlyTaggable, Sendable {
     }
 
     @inlinable
-    init(derEncoded rootNode: ISO_8825.Node, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) { (nodes: inout ISO_8825.Node.Collection.Iterator) throws(ISO_8824.Error) -> AIAAccessDescription in
+    init(
+        derEncoded rootNode: ISO_8825.Node,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) {
+            (
+                nodes: inout ISO_8825.Node.Collection.Iterator
+            ) throws(ISO_8824.Error) -> AIAAccessDescription in
             let accessMethod = try ISO_8824.ObjectIdentifier(derEncoded: &nodes)
             let accessLocation = try GeneralName(derEncoded: &nodes)
             return AIAAccessDescription(accessMethod: accessMethod, accessLocation: accessLocation)
@@ -313,10 +345,14 @@ struct AIAAccessDescription: ISO_8825.DER.ImplicitlyTaggable, Sendable {
     }
 
     @inlinable
-    func serialize(into coder: inout ISO_8825.DER.Serializer, withIdentifier identifier: ISO_8824.Identifier) throws(ISO_8824.Error) {
-        try coder.appendConstructedNode(identifier: identifier) { (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) -> Void in
-            try coder.serialize(self.accessMethod)
-            try coder.serialize(self.accessLocation)
+    func serialize(
+        into coder: inout ISO_8825.DER.Serializer,
+        withIdentifier identifier: ISO_8824.Identifier
+    ) throws(ISO_8824.Error) {
+        try coder.appendConstructedNode(identifier: identifier) {
+            (coder: inout ISO_8825.DER.Serializer) throws(ISO_8824.Error) in
+            try coder.serialize(accessMethod)
+            try coder.serialize(accessLocation)
         }
     }
 }
@@ -336,8 +372,10 @@ extension ISO_8824.ObjectIdentifier {
         switch accessMethod.backing {
         case .ocspServer:
             self = .AccessMethodIdentifiers.ocspServer
+
         case .issuingCA:
             self = .AccessMethodIdentifiers.issuingCA
+
         case .unknownType(let oid):
             self = oid
         }

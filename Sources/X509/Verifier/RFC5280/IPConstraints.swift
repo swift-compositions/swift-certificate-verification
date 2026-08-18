@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import ISO_8824
 import ISO_8825
@@ -26,14 +26,19 @@ extension NameConstraintsPolicy {
     /// Additionally, RFC 5280 requires that the constraint be equivalent to a subnet defined using CIDR notation.
     /// This implies that we do not tolerate arbitrary masks.
     @inlinable
-    package static func ipAddressMatchesConstraint(ipAddress: ISO_8824.OctetString, constraint: ISO_8824.OctetString) -> Bool {
+    package static func ipAddressMatchesConstraint(
+        ipAddress: ISO_8824.OctetString,
+        constraint: ISO_8824.OctetString
+    ) -> Bool {
         switch (ipAddress.bytes.count, constraint.bytes.count) {
         case (4, 8):
             // IPv4
             return addressIsInSubnet(address: ipAddress.bytes, subnet: constraint.bytes)
+
         case (16, 32):
             // IPv6
             return addressIsInSubnet(address: ipAddress.bytes, subnet: constraint.bytes)
+
         default:
             // No match or an invalid format.
             return false

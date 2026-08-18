@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import RFC_3986
 
@@ -40,7 +40,13 @@ extension NameConstraintsPolicy {
     package static func uriNameMatchesConstraint(uriName: String, constraint: String) -> Bool {
         // If we can't parse the URL, the constraint is definitely not satisfied.
         // If there is no authority component then the last rule above applies.
-        guard let parsed = try? RFC_3986.URI(uriName), let host = parsed.host else {
+        let parsed: RFC_3986.URI
+        do {
+            parsed = try RFC_3986.URI(uriName)
+        } catch {
+            return false
+        }
+        guard let host = parsed.host else {
             return false
         }
 

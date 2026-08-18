@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftCertificates open source project
 //
@@ -10,15 +10,20 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import Foundation
-import Testing
 import ISO_8824
 import ISO_8825
+import Testing
+
 @testable import Certificates
+
 #if canImport(Android)
-import Android
+    import Android
+#endif
+#if canImport(WinSDK)
+    import WinSDK
 #endif
 
 @Suite struct `IPAddress Tests` {
@@ -56,57 +61,114 @@ import Android
 
         // Confirm a few CIDR masks
         (.v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe80::", mask: "ffff:ffff:ffff:ffff::"), true),
-        (.v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe80::8d:0:0:0", mask: "ffff:ffff:ffff:ffff:ffff::"), true),
-        (.v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe80::8d:f7d:0:0", mask: "ffff:ffff:ffff:ffff:ffff:ffff::"), true),
+        (
+            .v6("fe80::8d:f7d:79c5:5719"),
+            .v6(subnet: "fe80::8d:0:0:0", mask: "ffff:ffff:ffff:ffff:ffff::"), true
+        ),
+        (
+            .v6("fe80::8d:f7d:79c5:5719"),
+            .v6(subnet: "fe80::8d:f7d:0:0", mask: "ffff:ffff:ffff:ffff:ffff:ffff::"), true
+        ),
         (
             .v6("fe80::8d:f7d:79c5:5719"),
             .v6(subnet: "fe80::8d:f7d:79c5:0", mask: "ffff:ffff:ffff:ffff:ffff:ffff:ffff:0"), true
         ),
         (
             .v6("fe80::8d:f7d:79c5:5719"),
-            .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"), true
+            .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"),
+            true
         ),
-        (.v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe81::", mask: "ffff:ffff:ffff:ffff::"), false),
+        (
+            .v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe81::", mask: "ffff:ffff:ffff:ffff::"),
+            false
+        ),
         (
             .v6("fe80::8d:f7d:79d5:5719"),
-            .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"), false
+            .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"),
+            false
         ),
 
         // CIDR mask with zero bytes in weird places.
-        (.v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "::ffff"), false),
-        (.v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "::ffff:ffff"), false),
-        (.v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "ffff::ffff"), false),
-        (.v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "ffff:0:0:ffff::ffff"), false),
-
-        // CIDR masks that aren't all zeros
-        (.v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "8000::"), true),
-        (.v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "fffe::"), true),
-        (.v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe81::8d:f7d:79c5:5719", mask: "ffff:ffff::"), false),
-
-        // CIDR masks with weird bit patterns
-        (.v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe81::8d:f7d:79c5:5719", mask: "ffff:ffff:c9c9::"), false),
+        (
+            .v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "::ffff"),
+            false
+        ),
         (
             .v6("fe80::8d:f7d:79c5:5719"),
-            .v6(subnet: "fe81::8d:f7d:79c5:5719", mask: "ffff:ffff:feff:ffff:ffff:ffff:ffff:ffff"), false
+            .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "::ffff:ffff"), false
+        ),
+        (
+            .v6("fe80::8d:f7d:79c5:5719"),
+            .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "ffff::ffff"), false
+        ),
+        (
+            .v6("fe80::8d:f7d:79c5:5719"),
+            .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "ffff:0:0:ffff::ffff"), false
+        ),
+
+        // CIDR masks that aren't all zeros
+        (
+            .v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "8000::"),
+            true
+        ),
+        (
+            .v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "fffe::"),
+            true
+        ),
+        (
+            .v6("fe80::8d:f7d:79c5:5719"),
+            .v6(subnet: "fe81::8d:f7d:79c5:5719", mask: "ffff:ffff::"), false
+        ),
+
+        // CIDR masks with weird bit patterns
+        (
+            .v6("fe80::8d:f7d:79c5:5719"),
+            .v6(subnet: "fe81::8d:f7d:79c5:5719", mask: "ffff:ffff:c9c9::"), false
+        ),
+        (
+            .v6("fe80::8d:f7d:79c5:5719"),
+            .v6(subnet: "fe81::8d:f7d:79c5:5719", mask: "ffff:ffff:feff:ffff:ffff:ffff:ffff:ffff"),
+            false
         ),
 
         // All zero mask matches nothing
         (.v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "::", mask: "::"), false),
 
         // Require exactly double the bytes for the subnet.
-        (.v4("17.250.78.1"), ISO_8824.OctetString(contentBytes: .init(repeating: 0xff, count: 1)), false),
-        (.v4("17.250.78.1"), ISO_8824.OctetString(contentBytes: .init(repeating: 0xff, count: 7)), false),
-        (.v4("17.250.78.1"), ISO_8824.OctetString(contentBytes: .init(repeating: 0xff, count: 9)), false),
-        (.v6("fe80::8d:f7d:79c5:5719"), ISO_8824.OctetString(contentBytes: .init(repeating: 0xff, count: 1)), false),
-        (.v6("fe80::8d:f7d:79c5:5719"), ISO_8824.OctetString(contentBytes: .init(repeating: 0xff, count: 31)), false),
-        (.v6("fe80::8d:f7d:79c5:5719"), ISO_8824.OctetString(contentBytes: .init(repeating: 0xff, count: 33)), false),
+        (
+            .v4("17.250.78.1"),
+            ISO_8824.OctetString(contentBytes: .init(repeating: 0xff, count: 1)), false
+        ),
+        (
+            .v4("17.250.78.1"),
+            ISO_8824.OctetString(contentBytes: .init(repeating: 0xff, count: 7)), false
+        ),
+        (
+            .v4("17.250.78.1"),
+            ISO_8824.OctetString(contentBytes: .init(repeating: 0xff, count: 9)), false
+        ),
+        (
+            .v6("fe80::8d:f7d:79c5:5719"),
+            ISO_8824.OctetString(contentBytes: .init(repeating: 0xff, count: 1)), false
+        ),
+        (
+            .v6("fe80::8d:f7d:79c5:5719"),
+            ISO_8824.OctetString(contentBytes: .init(repeating: 0xff, count: 31)), false
+        ),
+        (
+            .v6("fe80::8d:f7d:79c5:5719"),
+            ISO_8824.OctetString(contentBytes: .init(repeating: 0xff, count: 33)), false
+        ),
     ]
 
     @Test func `constraints`() throws {
         // (presented name, constraint, match)
         for (presentedName, constraint, match) in Self.fixtures {
             #expect(
-                NameConstraintsPolicy.ipAddressMatchesConstraint(ipAddress: presentedName, constraint: constraint)
+                NameConstraintsPolicy.ipAddressMatchesConstraint(
+                    ipAddress: presentedName,
+                    constraint: constraint
+                )
                     == match
             )
         }
