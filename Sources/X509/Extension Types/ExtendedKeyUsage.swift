@@ -27,7 +27,8 @@ public struct ExtendedKeyUsage {
     ///
     /// - Parameter usages: The purposes for which the certificate may be used.
     @inlinable
-    public init<Usages: Sequence>(_ usages: Usages) throws(Certificate.Error) where Usages.Element == Usage {
+    public init<Usages: Sequence>(_ usages: Usages) throws(Certificate.Error)
+    where Usages.Element == Usage {
         self.usages = Array(usages)
 
         // This limit is somewhat arbitrary. Linear search for under 32 elements

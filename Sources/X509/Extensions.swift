@@ -214,7 +214,9 @@ extension Certificate.Extensions {
     @inlinable
     public var authorityInformationAccess: AuthorityInformationAccess? {
         get throws(Certificate.Error) {
-            guard let ext = self[oid: .X509ExtensionID.authorityInformationAccess] else { return nil }
+            guard let ext = self[oid: .X509ExtensionID.authorityInformationAccess] else {
+                return nil
+            }
             return try .init(ext)
         }
     }
