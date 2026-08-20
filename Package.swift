@@ -1,4 +1,4 @@
-// swift-tools-version: 6.3.3
+// swift-tools-version: 6.4
 // Institute swift-certificates — L3 X.509 chain/verification runtime.
 // True fork of apple/swift-certificates at 24ccdeeeed4dfaae7955fcac9dbf5489ed4f1a25
 // (1.18.0) per certificates-n5-decision-packet.md GATE B; see NOTICE.txt.
@@ -10,11 +10,11 @@ let package = Package(
     // disagrees. Declaring "swift-certificates" here made this package unoverridable.
     name: "swift-certificate-verification",
     platforms: [
-        .macOS("27"),
-        .iOS("27"),
-        .tvOS("27"),
-        .watchOS("27"),
-        .visionOS("27"),
+        .macOS(.v27),
+        .iOS(.v27),
+        .tvOS(.v27),
+        .watchOS(.v27),
+        .visionOS(.v27),
     ],
     products: [
         .library(
