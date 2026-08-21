@@ -1,17 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2022 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import Crypto
 import ISO_8824
 import ISO_8825
@@ -213,8 +199,7 @@ extension Certificate.Test.Unit {
         func conformsToRangeReplaceableCollection(_ value: some Any) -> Bool {
             value is any RangeReplaceableCollection
         }
-        // writing out `ext is any RangeReplaceableCollection` will produce a warning that this is always true
-        // therefore we go through this indirection to silence this warning
+
         #expect(conformsToRangeReplaceableCollection(ext))
     }
 
@@ -313,7 +298,7 @@ extension Certificate.Test.Unit {
     }
 
     @Test func `printing SAN fields`() throws {
-        // This is mostly redundant with general name, so we're only checking formatting.
+
         let san = SubjectAlternativeNames([
             .dnsName("example.com"),
             .dnsName("example.org"),
@@ -347,7 +332,7 @@ extension Certificate.Test.Unit {
     }
 
     @Test func `printing name constraints`() throws {
-        // This test is again mostly redundant with general name, so we're just testing the composition
+
         var ext = NameConstraints(
             permittedSubtrees: [
                 .dnsName("example.com"), .uniformResourceIdentifier("http://example.com"),
@@ -413,7 +398,6 @@ extension Certificate.Test.Unit {
                 == _RSA.Signing.PublicKey(Certificate.PublicKey(rsa.publicKey))?.derRepresentation
         )
 
-        // Don't project to other things
         #expect(P256.Signing.PublicKey(Certificate.PublicKey(p384.publicKey)) == nil)
         #expect(P256.Signing.PublicKey(Certificate.PublicKey(p521.publicKey)) == nil)
         #expect(P256.Signing.PublicKey(Certificate.PublicKey(rsa.publicKey)) == nil)
@@ -471,25 +455,25 @@ extension Certificate.Test.Unit {
         #expect(
             bytes
                 == [
-                    0x30, 0x3d,  // SEQUENCE, length 61 bytes
-                    0xa1, 0x3b,  // [1], length 59 bytes
-                    0xa4, 0x39,  // [4], length 57 bytes
-                    0x30, 0x37,  // SEQUENCE, length 55 bytes
-                    0x31, 0xb,  // SET, length 11 bytes
-                    0x30, 0x9,  // SEQUENCE, length 9 bytes
-                    0x6, 0x3, 0x55, 0x4, 0x3,  // OID, common name
-                    0xc, 0x2, 0x43, 0x41,  // UTF-8 string, "CA"
-                    0x31, 0x11,  // SET, length 17 bytes
-                    0x30, 0xf,  // SEQUENCE, length 15 bytes
-                    0x6, 0x3, 0x55, 0x4, 0xa,  // OID, organizationName
-                    // UTF-8 string, "Some Org"
+                    0x30, 0x3d,
+                    0xa1, 0x3b,
+                    0xa4, 0x39,
+                    0x30, 0x37,
+                    0x31, 0xb,
+                    0x30, 0x9,
+                    0x6, 0x3, 0x55, 0x4, 0x3,
+                    0xc, 0x2, 0x43, 0x41,
+                    0x31, 0x11,
+                    0x30, 0xf,
+                    0x6, 0x3, 0x55, 0x4, 0xa,
+
                     0xc, 0x8, 0x53, 0x6f, 0x6d, 0x65, 0x20, 0x4f, 0x72, 0x67,
-                    0x31, 0x15,  // SET, length 21 bytes
-                    0x30, 0x13,  // SEQUENCE, length 19 bytes
-                    0x6, 0x3, 0x55, 0x4, 0x6,  // OID, countryName
+                    0x31, 0x15,
+                    0x30, 0x13,
+                    0x6, 0x3, 0x55, 0x4, 0x6,
                     0x13, 0xc, 0x53, 0x6f, 0x6d, 0x65, 0x20, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x72,
                     0x79,
-                    // Printable string, "Some Country"
+
                 ]
         )
     }
@@ -500,11 +484,11 @@ extension Certificate.Test.Unit {
             MCowBQYDK2VwAyEAGb9ECWmEzf6FQbrBZ9w7lshQhqowtrbLDFw4rXAxZuE=
             -----END PUBLIC KEY-----
             """
-        let resultingKey = try Certificate.PublicKey(pemEncoded: pemKey)  // -> RFC 7468
+        let resultingKey = try Certificate.PublicKey(pemEncoded: pemKey)
         let unwrappedKey = Curve25519.Signing.PublicKey(resultingKey)
         let reWrappedKey = Certificate.PublicKey(unwrappedKey!)
         #expect(reWrappedKey == resultingKey)
-        #expect(try reWrappedKey.serializeAsPEM().pemString == pemKey)  // -> RFC 7468
+        #expect(try reWrappedKey.serializeAsPEM().pemString == pemKey)
     }
 
     @available(macOS 11.0, iOS 14, tvOS 14, watchOS 7, macCatalyst 14, visionOS 1.0, *)
@@ -514,8 +498,8 @@ extension Certificate.Test.Unit {
             MC4CAQAwBQYDK2VwBCIEINTuctv5E1hK1bbY8fdp+K06/nwoy/HU++CXqI9EdVhC
             -----END PRIVATE KEY-----
             """
-        let resultingKey = try Certificate.PrivateKey(pemEncoded: pemKey)  // -> RFC 7468
-        #expect(try resultingKey.serializeAsPEM().pemString == pemKey)  // -> RFC 7468
+        let resultingKey = try Certificate.PrivateKey(pemEncoded: pemKey)
+        #expect(try resultingKey.serializeAsPEM().pemString == pemKey)
     }
 }
 
@@ -534,7 +518,6 @@ extension Certificate.Test.`Edge Case` {
                     "static number generator is out of numbers"
                 )
 
-                // assemble UInt64 from eight UInt8s
                 var uint64 = UInt64()
                 for byte in 0..<(MemoryLayout<UInt64>.size) {
                     let offset = startOffset + byte
@@ -589,8 +572,7 @@ extension Certificate.Test.Integration {
     @available(macOS 11.0, iOS 14, tvOS 14, watchOS 7, macCatalyst 14, visionOS 1.0, *)
     @Test func `certificate description`() throws {
         let caPrivateKey = P384.Signing.PrivateKey()
-        // IMPL-108: known-valid input; construction cannot fail.
-        // swiftlint:disable:next force_try
+
         let certificateName1 = try! DistinguishedName {
             CountryName("US")
             OrganizationName("Apple")
@@ -644,8 +626,7 @@ extension Certificate.Test.Integration {
         )
 
         let intermediatePrivateKey = P256.Signing.PrivateKey()
-        // IMPL-108: known-valid input; construction cannot fail.
-        // swiftlint:disable:next force_try
+
         let intermediateName = try! DistinguishedName {
             CountryName("US")
             OrganizationName("Apple")
@@ -655,8 +636,7 @@ extension Certificate.Test.Integration {
         let intermediateNotValidAfter = Self.referenceTime + .days(5 * 365)
 
         let intermediate: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(bytes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
@@ -672,8 +652,7 @@ extension Certificate.Test.Integration {
                     )
                     KeyUsage(keyCertSign: true)
                     AuthorityKeyIdentifier(
-                        // IMPL-108: known-valid input; construction cannot fail.
-                        // swiftlint:disable:next force_try
+
                         keyIdentifier: try! ca.extensions.subjectKeyIdentifier!.keyIdentifier
                     )
                     SubjectKeyIdentifier(
@@ -747,8 +726,7 @@ extension Certificate.Test.Integration {
                 )
                 KeyUsage(keyCertSign: true)
                 AuthorityKeyIdentifier(
-                    // IMPL-108: known-valid input; construction cannot fail.
-                    // swiftlint:disable:next force_try
+
                     keyIdentifier: try! intermediate.extensions.subjectKeyIdentifier!.keyIdentifier
                 )
             },
@@ -789,11 +767,11 @@ extension Certificate.Test.Integration {
             tfY8sNT1Ng72ht+UBwByuze20UsL9qMsmknQCA==
             -----END CERTIFICATE-----
             """
-        let parsedCert = try Certificate(pemEncoded: cert)  // -> RFC 7468
+        let parsedCert = try Certificate(pemEncoded: cert)
         #expect(parsedCert.publicKey.isValidSignature(parsedCert.signature, for: parsedCert))
         #expect(Curve25519.Signing.PublicKey(parsedCert.publicKey) != nil)
 
-        let reEncoded = try parsedCert.serializeAsPEM().pemString  // -> RFC 7468
+        let reEncoded = try parsedCert.serializeAsPEM().pemString
         #expect(cert == reEncoded)
     }
 

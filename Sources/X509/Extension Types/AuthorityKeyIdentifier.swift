@@ -1,43 +1,16 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2022 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import ISO_8824
 import ISO_8825
 import Standard_Library_Extensions
 
-/// Provides information about the public key corresponding to the private key that was
-/// used to sign a specific certificate.
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 public struct AuthorityKeyIdentifier {
-    /// An opaque sequence of bytes uniquely derived from the public key of the issuing
-    /// CA.
-    ///
-    /// This is commonly a hash of the subject public key info from the issuing certificate.
+
     public var keyIdentifier: ArraySlice<UInt8>?
 
-    /// The name of the issuer of the issuing cert.
     public var authorityCertIssuer: [GeneralName]?
 
-    /// The serial number of the issuing cert.
     public var authorityCertSerialNumber: Certificate.SerialNumber?
 
-    /// Create a new ``AuthorityKeyIdentifier`` extension value.
-    ///
-    /// - Parameters:
-    ///   - keyIdentifier: An opaque sequence of bytes uniquely derived from the public key of the issuing CA.
-    ///   - authorityCertIssuer: The name of the issuer of the issuing cert.
-    ///   - authorityCertSerialNumber: The serial number of the issuing cert.
     @inlinable
     public init(
         keyIdentifier: ArraySlice<UInt8>? = nil,
@@ -49,12 +22,6 @@ public struct AuthorityKeyIdentifier {
         self.authorityCertSerialNumber = authorityCertSerialNumber
     }
 
-    /// Create a new ``AuthorityKeyIdentifier`` object
-    /// by unwrapping a ``Certificate/Extension``.
-    ///
-    /// - Parameter ext: The ``Certificate/Extension`` to unwrap
-    /// - Throws: if the ``Certificate/Extension/oid`` is not equal to
-    ///     `ISO_8824.ObjectIdentifier.X509ExtensionID.authorityKeyIdentifier`.
     @inlinable
     public init(_ ext: Certificate.Extension) throws(Certificate.Error) {
         guard ext.oid == .X509ExtensionID.authorityKeyIdentifier else {
@@ -113,11 +80,7 @@ extension AuthorityKeyIdentifier: CustomDebugStringConvertible {
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension Certificate.Extension {
-    /// Construct an opaque ``Certificate/Extension`` from this AKI extension.
-    ///
-    /// - Parameters:
-    ///   - aki: The extension to wrap
-    ///   - critical: Whether this extension should have the critical bit set.
+
     @inlinable
     public init(_ aki: AuthorityKeyIdentifier, critical: Bool) throws(ISO_8824.Error) {
         let asn1Representation = AuthorityKeyIdentifierValue(aki)
@@ -131,7 +94,6 @@ extension Certificate.Extension {
     }
 }
 
-// MARK: ASN1 helpers
 @usableFromInline
 struct AuthorityKeyIdentifierValue: ISO_8825.DER.ImplicitlyTaggable, Sendable {
     @inlinable

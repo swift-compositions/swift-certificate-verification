@@ -1,17 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2024 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 @_spi(Testing) import Certificates
 import ISO_8824
 import ISO_8825
@@ -23,46 +9,14 @@ import Testing
     import Foundation
 #endif
 
-// These certificates are bound from the frozen DER corpus rather than issued in-test
-// (issuance is an excluded surface in slice 1). Each was frozen to match the original
-// in-test certificate's subject DN and SAN contents exactly, so every assertion below
-// is preserved verbatim — see Fixtures/MANIFEST.md for the per-fixture provenance and
-// the rationale for freezing rather than remapping onto the pre-existing leaves.
-//
-// This suite installs each certificate as both the trust anchor and the leaf and runs
-// only ServerIdentityPolicy, so chain construction, expiry and signature validity are
-// not exercised; only the subject DN and SAN contents are load-bearing.
-
-// IMPL-108: known-valid fixture input; construction cannot fail.
-// swiftlint:disable force_try
-/// This cert contains the following SAN fields:
-/// DNS:*.WILDCARD.EXAMPLE.com - A straightforward wildcard, should be accepted
-/// DNS:FO*.EXAMPLE.com - A suffix wildcard, should be accepted
-/// DNS:*AR.EXAMPLE.com - A prefix wildcard, should be accepted
-/// DNS:B*Z.EXAMPLE.com - An infix wildcard
-/// DNS:TRAILING.PERIOD.EXAMPLE.com. - A domain with a trailing period, should match
-/// DNS:XN--STRAE-OQA.UNICODE.EXAMPLE.com. - An IDN A-label, should match.
-/// DNS:XN--X*-GIA.UNICODE.EXAMPLE.com. - An IDN A-label with a wildcard, invalid.
-/// DNS:WEIRDWILDCARD.*.EXAMPLE.com. - A wildcard not in the leftmost label, invalid.
-/// DNS:*.*.DOUBLE.EXAMPLE.com. - Two wildcards, invalid.
-/// DNS:*.XN--STRAE-OQA.EXAMPLE.com. - A wildcard followed by a new IDN A-label, this is fine.
-/// A SAN with a null in it, should be ignored.
-///
-/// This also contains a commonName of httpbin.org.
 private let weirdoSANCert = try! Fixture.certificate("leaf-weirdo-sans")
-// swiftlint:enable force_try
 
-// IMPL-108: known-valid input; construction cannot fail.
-// swiftlint:disable:next force_try
 private let multiSANCert = try! Fixture.certificate("leaf-multi-san-hosts")
-// IMPL-108: known-valid input; construction cannot fail.
-// swiftlint:disable:next force_try
+
 private let multiCNCert = try! Fixture.certificate("leaf-multi-cn")
-// IMPL-108: known-valid input; construction cannot fail.
-// swiftlint:disable:next force_try
+
 private let noCNCert = try! Fixture.certificate("leaf-no-cn")
-// IMPL-108: known-valid input; construction cannot fail.
-// swiftlint:disable:next force_try
+
 private let unicodeCNCert = try! Fixture.certificate("leaf-unicode-cn")
 
 extension ServerIdentityPolicy {

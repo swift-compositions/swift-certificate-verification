@@ -1,31 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2023 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import ISO_8824
 import ISO_8825
 
-/// Provides a result-builder style DSL for constructing a ``VerifierPolicy``.
-///
-/// This DSL allows us to construct dynamic ``VerifierPolicy`` at runtime without using type erasure.
-/// The resulting ``VerifierPolicy`` will use the listed policy in the order of declaration to check if a chain meets all policies.
-/// For Example, a simple ``Verifier`` with a simple policy can be constructed like this:
-/// ```swift
-/// let verifier = Verifier(rootCertificates: roots) {
-///     RFC5280Policy()
-///     OCSPVerifierPolicy(failureMode: .soft, requester: requester)
-/// }
-/// ```
 @resultBuilder
 public struct PolicyBuilder: Sendable {}
 
@@ -39,7 +14,6 @@ extension PolicyBuilder {
     }
 }
 
-// MARK: empty policy
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension PolicyBuilder {
     @usableFromInline
@@ -64,7 +38,6 @@ extension PolicyBuilder {
     }
 }
 
-// MARK: concatenated policies
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension PolicyBuilder {
     @usableFromInline
@@ -119,7 +92,6 @@ extension PolicyBuilder {
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension PolicyBuilder.Tuple2: Sendable where First: Sendable, Second: Sendable {}
 
-// MARK: if
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension PolicyBuilder {
     @usableFromInline
@@ -154,10 +126,9 @@ extension PolicyBuilder {
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension PolicyBuilder.WrappedOptional: Sendable where Wrapped: Sendable {}
 
-// MARK: if/else and switch
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension PolicyBuilder {
-    /// implementation detail of ``PolicyBuilder`` which should not be used outside the implementation of ``PolicyBuilder``.
+
     public struct _Either<First: VerifierPolicy, Second: VerifierPolicy>: VerifierPolicy {
         @usableFromInline
         enum Storage {

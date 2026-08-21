@@ -1,17 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2022 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import ISO_8824
 import ISO_8825
 
@@ -175,29 +161,11 @@ extension GeneralName: CustomStringConvertible {
 }
 
 extension ISO_8825.`Any` {
-    /// The DER bytes this ANY wraps, recovered by re-serializing it.
-    ///
-    /// Every other case of ``GeneralName``'s description renders a spec-mirroring RFC 5280
-    /// §4.2.1.6 CHOICE label over its payload; `ediPartyName` and `x400Address` used to
-    /// render `String(reflecting:)` of the ANY itself, which leaks a *Swift* type name into
-    /// a description whose job is to show the *specification* shape. Rendering the bytes
-    /// bare matches `ipAddress`, three cases above, which is the same situation: an opaque
-    /// octet payload inside a spec-named case.
-    ///
-    /// It has to be recovered by serializing rather than read directly, because
-    /// ``ISO_8825/Any`` deliberately exposes no byte accessor — its documented contract is
-    /// that a caller may decode it, create it, or serialize it, and nothing else. That is
-    /// why the `ipAddress` precedent could not simply be copied: `ISO_8824.OctetString`
-    /// publishes `bytes`, and this type does not. Serializing is the sanctioned route, and
-    /// is exactly what ``GeneralName/serialize(into:withIdentifier:)`` already does for
-    /// these two cases.
+
     @usableFromInline
     var derBytes: [UInt8] {
         var serializer = ISO_8825.DER.Serializer()
-        // `Any.serialize` writes its stored bytes verbatim and has no failure path; the
-        // `throws` belongs to the protocol requirement, not to this type. A description
-        // must not trap or propagate, so an empty rendering is the fail-quiet answer for a
-        // branch that cannot be reached.
+
         do {
             try self.serialize(into: &serializer)
         } catch {
@@ -206,25 +174,6 @@ extension ISO_8825.`Any` {
         return Array(serializer.serializedBytes)
     }
 }
-
-// GeneralName ::= CHOICE {
-//     otherName                       [0]     OtherName,
-//     rfc822Name                      [1]     IA5String,
-//     dNSName                         [2]     IA5String,
-//     x400Address                     [3]     ORAddress,
-//     directoryName                   [4]     Name,
-//     ediPartyName                    [5]     EDIPartyName,
-//     uniformResourceIdentifier       [6]     IA5String,
-//     iPAddress                       [7]     OCTET STRING,
-//     registeredID                    [8]     OBJECT IDENTIFIER }
-//
-// OtherName ::= SEQUENCE {
-//     type-id    OBJECT IDENTIFIER,
-//     value      [0] EXPLICIT ANY DEFINED BY type-id }
-//
-// EDIPartyName ::= SEQUENCE {
-//     nameAssigner            [0]     DirectoryString OPTIONAL,
-//     partyName               [1]     DirectoryString }
 
 extension GeneralName {
     public struct OtherName: Hashable, Sendable, ISO_8825.DER.ImplicitlyTaggable {

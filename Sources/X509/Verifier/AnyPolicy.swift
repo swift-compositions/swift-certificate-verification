@@ -1,47 +1,18 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2022-2023 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
 import ISO_8824
 import ISO_8825
 
-/// ``AnyPolicy`` can be used to erase the concrete type of some ``VerifierPolicy``.
-///  Only use ``AnyPolicy`` if type erasure is necessary.
-///  Instead try to use conditional inclusion of different policies using ``PolicyBuilder``.
-///
-/// Use ``AnyPolicy`` at the top level during construction of a ``Verifier`` to get a ``Verifier`` of type `Verifier<AnyPolicy>` e.g.:
-/// ```swift
-/// let verifier = Verifier(rootCertificates: CertificateStore()) {
-///     AnyPolicy {
-///         RFC5280Policy()
-///     }
-/// }
-/// ```
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 public struct AnyPolicy: VerifierPolicy {
     @usableFromInline
-    // Deliberate type-erasure surface (API-ERR-006 opt-out).
-    // swiftlint:disable:next no_any_protocol_existential
+
     var policy: any VerifierPolicy
 
     @inlinable
-    /// Erases the type of some ``VerifierPolicy`` to ``AnyPolicy``.
-    /// - Parameter policy: the concrete ``VerifierPolicy``
+
     public init(_ policy: some VerifierPolicy) {
         self.policy = policy
     }
 
-    /// Erases the type of some ``VerifierPolicy`` to ``AnyPolicy``.
-    /// - Parameter makePolicy: the ``VerifierPolicy`` constructed using the ``PolicyBuilder`` DSL.
     @inlinable
     public init(@PolicyBuilder makePolicy: () throws -> some VerifierPolicy) rethrows {
         self.init(try makePolicy())
@@ -67,12 +38,8 @@ extension AnyPolicy: Sendable {}
 struct LegacyPolicySet: VerifierPolicy {
     let verifyingCriticalExtensions: [ISO_8824.ObjectIdentifier]
 
-    // Deliberate type-erasure surface (API-ERR-006 opt-out).
-    // swiftlint:disable:next no_any_protocol_existential
     var policies: [any VerifierPolicy]
 
-    // Deliberate type-erasure surface (API-ERR-006 opt-out).
-    // swiftlint:disable:next no_any_protocol_existential
     init(policies: [any VerifierPolicy]) {
         self.policies = policies
 

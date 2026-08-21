@@ -1,17 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2025 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import Crypto
 import ISO_8824
 import ISO_8825
@@ -97,7 +83,6 @@ extension Certificate.Test.DER {
         NVOFBkpdn627G190
         """
 
-    /// A Safari codesign chain
     static let codesignCerts = [
         """
         MIIEtDCCA5ygAwIBAgIIZO/q/sI56KUwDQYJKoZIhvcNAQEFBQAwfzELMAkGA1UE
@@ -351,7 +336,6 @@ extension Certificate.Test.DER {
                 )
             ])
 
-            // CRL Distribution Points
             Certificate.Extension(
                 oid: [2, 5, 29, 31],
                 critical: false,
@@ -366,7 +350,6 @@ extension Certificate.Test.DER {
                 ]
             )
 
-            // Certificate policies
             Certificate.Extension(
                 oid: [2, 5, 29, 32],
                 critical: false,
@@ -430,16 +413,12 @@ extension Certificate.Test.DER {
         }
         let certs = try binaryCerts.map { try Certificate(derEncoded: $0) }
 
-        // Confirm basic signature validation.
         #expect(certs[1].publicKey.isValidSignature(certs[0].signature, for: certs[0]))
         #expect(certs[2].publicKey.isValidSignature(certs[1].signature, for: certs[1]))
     }
 
     @Test func `reencoding does not change the bytes`() throws {
-        // This test validates that we don't change the TBS bytes when we re-encode a certificate.
-        //
-        // The easiest way to do this is to produce a slightly _weird_ certificate that encodes the signature algorithm
-        // in a way we wouldn't.
+
         let name = try DistinguishedName {
             CommonName("Test")
         }
@@ -467,7 +446,6 @@ extension Certificate.Test.DER {
 
         let tbsCertificateBytes = coder.serializedBytes
 
-        // Ok, we can construct this into a real certificate now by signing it and producing the signature block.
         let signature = try Certificate.PrivateKey(key).sign(
             bytes: tbsCertificateBytes,
             signatureAlgorithm: .sha256WithRSAEncryption
@@ -482,8 +460,6 @@ extension Certificate.Test.DER {
 
         let serializedCert = coder.serializedBytes
 
-        // Great, done! Now we can deserialize this into a certificate, which should happen without error.
-        // Do a few spot checks to confirm it came out ok.
         let cert = try Certificate(derEncoded: serializedCert)
         #expect(cert.subject == name)
         #expect(cert.issuer == name)
@@ -492,7 +468,6 @@ extension Certificate.Test.DER {
         #expect(cert.publicKey == Certificate.PublicKey(key.publicKey))
         #expect(Certificate.PublicKey(key.publicKey).isValidSignature(cert.signature, for: cert))
 
-        // Ok, serialize it back. We must not have canonicalised this.
         coder = ISO_8825.DER.Serializer()
         try coder.serialize(cert)
         let reserializedCert = coder.serializedBytes
@@ -501,7 +476,7 @@ extension Certificate.Test.DER {
     }
 
     @Test func `RSA key format output is correct`() throws {
-        // A quick test here, we just encode and decode an RSA key.
+
         let publicKey = try Certificate.PublicKey(
             _RSA.Signing.PrivateKey(keySize: .bits2048).publicKey
         )
@@ -516,8 +491,7 @@ extension Certificate.Test.DER {
     }
 
     @Test func `incorrect parameter size`() throws {
-        // This certificate tripped us up and revealed a bug in our ECDSA
-        // parsing, so let's use it as a regression test.
+
         let cert = Array(
             Data(
                 base64Encoded: """
@@ -606,13 +580,11 @@ extension Certificate.Test.DER {
             issuerPrivateKey: .init(issuerKey)
         )
 
-        // We should be able to serialize and deserialize this, and have it remain equal.
         var serializer = ISO_8825.DER.Serializer()
         try serializer.serialize(leaf)
         let parsed = try Certificate(derEncoded: serializer.serializedBytes)
         #expect(parsed == leaf)
 
-        // And we should be able to validate it.
         let roots = CertificateStore([issuer])
         var verifier = Verifier(rootCertificates: roots) {
             RFC5280Policy(fixedExpiryValidationTime: now + 1)
@@ -861,8 +833,7 @@ extension Certificate.Test.DER.`Private Key` {
 
     @Test func `decode Ed25519`() throws {
         let key = Curve25519.Signing.PrivateKey()
-        // swift-crpto offers a similar API but returning Data; use ours as it has wider platform
-        // avaialble requirements.
+
         let derBytes = key.derRepresentation as [UInt8]
         let parsedKey = try Certificate.PrivateKey(derBytes: derBytes)
 
@@ -870,12 +841,10 @@ extension Certificate.Test.DER.`Private Key` {
     }
 
     @Test func `decode RSA`() throws {
-        // Unlike other algorithms, RSA's bytes representation is not in PKCS#8 format, so we have
-        // to bridge it by first serialising the key as a PKCS#8 PEM document, and then getting
-        // its DER bytes.
+
         let key = try _CryptoExtras._RSA.Signing.PrivateKey(keySize: .bits2048)
-        let pkcs8 = key.pkcs8PEMRepresentation  // -> RFC 7468
-        let pemDoc = try PEMDocument(pemString: pkcs8)  // -> RFC 7468
+        let pkcs8 = key.pkcs8PEMRepresentation
+        let pemDoc = try PEMDocument(pemString: pkcs8)
         let derBytes = pemDoc.derBytes
         let parsedKey = try Certificate.PrivateKey(derBytes: derBytes)
 

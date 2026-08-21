@@ -1,17 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2023 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import ISO_8824
 import ISO_8825
 import Testing
@@ -21,14 +7,9 @@ import Testing
 extension NameConstraints {
     @Suite struct Test {
         @Suite struct Unit {
-            // Built via the array-form initializer rather than the
-            // DistinguishedNameBuilder DSL (an excluded issuance-side surface in
-            // slice 1). Attribute encodings match the DSL's: countryName as
-            // PrintableString, the rest as UTF8String — so the names, and
-            // therefore the equality semantics under test, are unchanged.
+
             static let names: [DistinguishedName] = [
-                // IMPL-108: known-valid input; construction cannot fail.
-                // swiftlint:disable:next force_try
+
                 try! DistinguishedName([
                     RelativeDistinguishedName.Attribute(
                         type: .RDNAttributeType.countryName,
@@ -43,8 +24,7 @@ extension NameConstraints {
                         utf8String: "Apple"
                     ),
                 ]),
-                // IMPL-108: known-valid input; construction cannot fail.
-                // swiftlint:disable:next force_try
+
                 try! DistinguishedName([
                     RelativeDistinguishedName.Attribute(
                         type: .RDNAttributeType.countryName,
@@ -63,8 +43,7 @@ extension NameConstraints {
                         utf8String: "Test"
                     ),
                 ]),
-                // IMPL-108: known-valid input; construction cannot fail.
-                // swiftlint:disable:next force_try
+
                 try! DistinguishedName([
                     RelativeDistinguishedName.Attribute(
                         type: .RDNAttributeType.countryName,
@@ -82,7 +61,7 @@ extension NameConstraints {
             ]
 
             @Test func `directory name matches`() throws {
-                // The key here is that a distinguished name only matches a constraint if they're equal.
+
                 for firstName in Self.names {
                     for secondName in Self.names {
                         #expect(
@@ -111,13 +90,12 @@ extension NameConstraints {
                         }
 
                         self.assertValueIsSet = { constraints in
-                            // check Equatable conformance
+
                             #expect(
                                 constraints[keyPath: keyPath] == value,
                                 sourceLocation: sourceLocation
                             )
 
-                            // check Hashable conformance
                             var lhsHasher = Hasher()
                             lhsHasher.combine(constraints[keyPath: keyPath])
                             var rhsHasher = Hasher()
@@ -204,10 +182,6 @@ extension NameConstraints {
                         value: [".example.com", ".apple.com"]
                     ),
                 ]
-
-                // This will set the properties to the above values in order (and in reversed order).
-                // After it sets each property it asserts that the previous latest value of other properties are still set
-                // to their previous latest values and are not modified.
 
                 var nameConstraints = NameConstraints()
                 var latestValueForProperty:

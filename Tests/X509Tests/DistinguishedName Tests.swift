@@ -1,17 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2022 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import ISO_8824
 import ISO_8825
 import Testing
@@ -423,7 +409,7 @@ extension DistinguishedName.Test.`Edge Case` {
             (.init(type: .RDNAttributeType.commonName, printableString: "foo"), "foo"),
             (.init(type: .RDNAttributeType.commonName, utf8String: "bar"), "bar"),
             (.init(type: .RDNAttributeType.commonName, ia5String: "foo"), "foo"),
-            /// ISO_8824.IA5String with wrong tag
+
             (
                 .init(
                     type: .RDNAttributeType.commonName,
@@ -431,7 +417,7 @@ extension DistinguishedName.Test.`Edge Case` {
                 ),
                 nil
             ),
-            /// ISO_8824.IA5String byte that falls outside the range of 7-bit ASCII
+
             (
                 .init(
                     type: .RDNAttributeType.commonName,
@@ -485,7 +471,7 @@ extension DistinguishedName.Test.`Edge Case` {
     }
 
     @Test func `rdn attribute values can be parsed when printable string is invalid`() throws {
-        // '&' is not allowed in PrintableString.
+
         let value = try ISO_8825.`Any`(
             erasing: ISO_8824.UTF8String("Wells Fargo & Company"),
             withIdentifier: .printableString
@@ -586,8 +572,4 @@ extension DistinguishedName.Test.Integration {
         #expect(serializer.serializedBytes == expectedBytes)
     }
 
-    // `distinguished name builder` and `distinguished name builder flow` were
-    // deferred here: they test the DistinguishedNameBuilder result-builder DSL,
-    // which is an excluded (issuance-side) surface in slice 1. See the
-    // deferred-tests ledger. The 17 remaining cases are DN/RDN essence.
 }

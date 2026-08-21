@@ -1,20 +1,5 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2022 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import Certificate_Internals
 
-/// A collection of ``Certificate`` objects for use in a verifier.
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 public struct CertificateStore: Sendable, Hashable {
 
@@ -26,16 +11,11 @@ public struct CertificateStore: Sendable, Hashable {
         self.init([])
     }
 
-    /// Wrap a ``CustomCertificateStore`` in a ``CertificateStore`` so the custom
-    /// implementation it can be used interchangeably. For details on why one
-    /// may decide to implement a ``CustomCertificateStore``, please see the
-    /// documentation on that protocol.
     @inlinable
     public init(custom: some CustomCertificateStore) {
         backing = .custom(AnyCustomCertificateStore(custom))
     }
 
-    /// Initialize a certificate store from a sequence of certificates.
     @inlinable
     public init(_ certificates: some Sequence<Certificate>) {
         backing = .concrete(.init(certificates))

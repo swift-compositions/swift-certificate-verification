@@ -1,17 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2022 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import ISO_8824
 import ISO_8825
 
@@ -33,12 +19,7 @@ package struct SubjectPublicKeyInfo: ISO_8825.DER.ImplicitlyTaggable, Hashable, 
         derEncoded rootNode: ISO_8825.Node,
         withIdentifier identifier: ISO_8824.Identifier
     ) throws(ISO_8824.Error) {
-        // The SPKI block looks like this:
-        //
-        // SubjectPublicKeyInfo  ::=  SEQUENCE  {
-        //   algorithm         AlgorithmIdentifier,
-        //   subjectPublicKey  BIT STRING
-        // }
+
         self = try ISO_8825.DER.sequence(rootNode, identifier: identifier) {
             (
                 nodes: inout ISO_8825.Node.Collection.Iterator

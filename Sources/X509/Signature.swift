@@ -1,34 +1,9 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2022 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import ISO_8824
 import ISO_8825
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension Certificate {
-    /// An abstract representation of the cryptographic signature on a certificate.
-    ///
-    /// Certificates may have a wide range of signature types. This type provides a runtime
-    /// abstraction across these types. It ensures that we understand the algorithm used to
-    /// sign the certificate, and enables us to provide verification logic, without forcing
-    /// users to wrestle with the wide variety of runtime types that may represent a
-    /// signature.
-    ///
-    /// This type is almost entirely opaque. It is validated by the injected
-    /// ``Certificate/Verify`` witness, which reconstructs whatever signature type its
-    /// backend requires from ``rawRepresentation``. Otherwise, this type has essentially
-    /// no behaviours.
+
     public struct Signature {
         @usableFromInline
         var backing: BackingSignature
@@ -93,11 +68,7 @@ extension Certificate.Signature: CustomStringConvertible {
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension Certificate.Signature {
-    /// The signature as the model holds it: a decoded DER `r`/`s` pair for ECDSA, and
-    /// the raw signature octets for Ed25519.
-    ///
-    /// `ECDSASignature` is this module's own DER type, not a backend type — holding it
-    /// keeps the module free of a cryptographic dependency.
+
     @usableFromInline
     enum BackingSignature: Hashable, Sendable {
         case ecdsa(ECDSASignature)
@@ -134,14 +105,13 @@ extension Certificate.Signature {
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension Certificate.Signature {
-    /// The raw byte representation of the signature.
+
     @inlinable
     public var rawRepresentation: [UInt8] {
         switch self.backing {
         case .ecdsa(let sig):
             var serializer = ISO_8825.DER.Serializer()
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             try! serializer.serialize(sig)
             return serializer.serializedBytes
 
@@ -166,8 +136,7 @@ extension ISO_8824.OctetString {
         switch signature.backing {
         case .ecdsa(let sig):
             var serializer = ISO_8825.DER.Serializer()
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             try! serializer.serialize(sig)
             self = ISO_8824.OctetString(contentBytes: serializer.serializedBytes[...])
 

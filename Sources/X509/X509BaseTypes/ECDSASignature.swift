@@ -1,29 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2023 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
 import ISO_8824
 import ISO_8825
 
-/// An ECDSA signature is laid out as follows:
-///
-/// ECDSASignature ::= SEQUENCE {
-///   r INTEGER,
-///   s INTEGER
-/// }
-///
-/// We define this type here because an X.509 certificate may have an ECDSA signature
-/// in it without reference to what key created it. We need to be able to store it
-/// abstractly, and then turn it into the signature type we need on request.
 @usableFromInline
 struct ECDSASignature: ISO_8825.DER.ImplicitlyTaggable, Hashable, Sendable {
     @inlinable
@@ -71,8 +48,6 @@ struct ECDSASignature: ISO_8825.DER.ImplicitlyTaggable, Hashable, Sendable {
         }
     }
 
-    /// Build the DER `r`/`s` pair from a fixed-width raw ECDSA signature — the `r || s`
-    /// concatenation, each half padded to the curve's coordinate width.
     @inlinable
     init(rawSignatureBytes raw: [UInt8]) {
         let half = raw.count / 2
@@ -84,10 +59,7 @@ struct ECDSASignature: ISO_8825.DER.ImplicitlyTaggable, Hashable, Sendable {
 }
 
 extension ArraySlice where Element == UInt8 {
-    /// Normalizes a sequence of bytes that represent an unsigned big endian raw integer into the
-    /// form we'd get from decoding an ASN1 integer.
-    ///
-    /// This means we strip leading zero bytes.
+
     @inlinable
     package init<Bytes: Collection>(normalisingToASN1IntegerForm bigEndianRawInteger: Bytes)
     where Bytes.Element == UInt8 {

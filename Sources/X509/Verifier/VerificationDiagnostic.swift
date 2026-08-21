@@ -1,16 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2023 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
 import ISO_8824
 import ISO_8825
 
@@ -69,11 +56,8 @@ public struct VerificationDiagnostic: Sendable {
         var issuer: Certificate
     }
 
-    /// - Note: all ``LoadingTrustRootsFailed`` are considered equal,
-    /// best we can because the underlying storage type ``Error`` doesn't conform to Eqautable
     struct LoadingTrustRootsFailed: Hashable, Sendable {
-        // Deliberate type-erasure surface (API-ERR-006 opt-out).
-        // swiftlint:disable:next no_any_protocol_existential
+
         var error: any Swift.Error
 
         static func == (lhs: Self, rhs: Self) -> Bool {
@@ -232,8 +216,7 @@ extension VerificationDiagnostic {
 
     @usableFromInline
     static func loadingTrustRootsFailed(
-        // Deliberate type-erasure surface (API-ERR-006 opt-out).
-        // swiftlint:disable:next no_any_protocol_existential
+
         _ error: any Swift.Error
     ) -> Self {
         .init(storage: .loadingTrustRootsFailed(error))
@@ -354,8 +337,7 @@ extension VerificationDiagnostic.Storage {
     }
 
     static func loadingTrustRootsFailed(
-        // Deliberate type-erasure surface (API-ERR-006 opt-out).
-        // swiftlint:disable:next no_any_protocol_existential
+
         _ error: any Swift.Error
     ) -> Self {
         .loadingTrustRootsFailed(.init(error: error))
@@ -374,11 +356,9 @@ extension Certificate.Extensions {
     }
 }
 
-// MARK: CustomStringConvertible
-
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension VerificationDiagnostic: CustomStringConvertible {
-    /// Produces a human readable description of this ``VerificationDiagnostic`` that is potentially expensive to compute.
+
     public var description: String {
         String(describing: storage)
     }
@@ -575,22 +555,17 @@ extension VerificationDiagnostic.LoadingTrustRootsFailed: CustomStringConvertibl
     }
 }
 
-// MARK: CustomDebugStringConvertible
-
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension VerificationDiagnostic: CustomDebugStringConvertible {
     public var debugDescription: String {
-        // this just adds quotes around the string and escapes any characters not suitable for displaying in a structural display.
+
         String(reflecting: String(describing: self))
     }
 }
 
-// MARK: Multiline Description
-
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension VerificationDiagnostic {
-    /// Produces a human readable description of this ``VerificationDiagnostic`` over multiple lines for better readability
-    /// but includes otherwise the same information as ``description``.
+
     public var multilineDescription: String {
         self.storage.multilineDescription
     }

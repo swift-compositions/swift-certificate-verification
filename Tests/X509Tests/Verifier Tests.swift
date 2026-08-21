@@ -1,17 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2025 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 @preconcurrency import Crypto
 import ISO_8824
 import ISO_8825
@@ -33,16 +19,14 @@ import Testing
         private static let referenceTime = Date()
 
         private static let ca1PrivateKey = P384.Signing.PrivateKey()
-        // IMPL-108: known-valid input; construction cannot fail.
-        // swiftlint:disable:next force_try
+
         private static let ca1Name = try! DistinguishedName {
             CountryName("US")
             OrganizationName("Apple")
             CommonName("Swift Certificate Test CA 1")
         }
         private static let ca1: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -67,8 +51,7 @@ import Testing
             )
         }()
         private static let ca1WithoutSubjectKeyIdentifier: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -88,8 +71,7 @@ import Testing
             )
         }()
         private static let ca1CrossSignedByCA2: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -105,8 +87,7 @@ import Testing
                     )
                     KeyUsage(keyCertSign: true)
                     AuthorityKeyIdentifier(
-                        // IMPL-108: known-valid input; construction cannot fail.
-                        // swiftlint:disable:next force_try
+
                         keyIdentifier: try! ca2.extensions.subjectKeyIdentifier!.keyIdentifier
                     )
                     SubjectKeyIdentifier(
@@ -120,8 +101,7 @@ import Testing
         }()
         private static let ca1AlternativePrivateKey = P384.Signing.PrivateKey()
         private static let ca1WithAlternativePrivateKey: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -149,16 +129,14 @@ import Testing
         }()
 
         private static let ca2PrivateKey = P384.Signing.PrivateKey()
-        // IMPL-108: known-valid input; construction cannot fail.
-        // swiftlint:disable:next force_try
+
         private static let ca2Name = try! DistinguishedName {
             CountryName("US")
             OrganizationName("Apple")
             CommonName("Swift Certificate Test CA 2")
         }
         private static let ca2: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -183,8 +161,7 @@ import Testing
             )
         }()
         private static let ca2CrossSignedByCA1: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -200,8 +177,7 @@ import Testing
                     )
                     KeyUsage(keyCertSign: true)
                     AuthorityKeyIdentifier(
-                        // IMPL-108: known-valid input; construction cannot fail.
-                        // swiftlint:disable:next force_try
+
                         keyIdentifier: try! ca1.extensions.subjectKeyIdentifier!.keyIdentifier
                     )
                     SubjectKeyIdentifier(
@@ -215,16 +191,14 @@ import Testing
         }()
 
         private static let intermediate1PrivateKey = P256.Signing.PrivateKey()
-        // IMPL-108: known-valid input; construction cannot fail.
-        // swiftlint:disable:next force_try
+
         private static let intermediate1Name = try! DistinguishedName {
             CountryName("US")
             OrganizationName("Apple")
             CommonName("Swift Certificate Test Intermediate CA 1")
         }
         private static let intermediate1: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -240,8 +214,7 @@ import Testing
                     )
                     KeyUsage(keyCertSign: true)
                     AuthorityKeyIdentifier(
-                        // IMPL-108: known-valid input; construction cannot fail.
-                        // swiftlint:disable:next force_try
+
                         keyIdentifier: try! ca1.extensions.subjectKeyIdentifier!.keyIdentifier
                     )
                     SubjectKeyIdentifier(
@@ -256,8 +229,7 @@ import Testing
             )
         }()
         private static let intermediate1WithoutSKIAKI: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -277,8 +249,7 @@ import Testing
             )
         }()
         private static let intermediate1WithIncorrectSKIAKI: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -294,8 +265,7 @@ import Testing
                     )
                     KeyUsage(keyCertSign: true)
                     AuthorityKeyIdentifier(
-                        // IMPL-108: known-valid input; construction cannot fail.
-                        // swiftlint:disable:next force_try
+
                         keyIdentifier: try! ca2.extensions.subjectKeyIdentifier!.keyIdentifier
                     )
                     SubjectKeyIdentifier(
@@ -310,16 +280,13 @@ import Testing
 
         private static let localhostLeafPrivateKey = P256.Signing.PrivateKey()
         private static let localhostLeaf: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             let localhostLeafName = try! DistinguishedName {
                 CountryName("US")
                 OrganizationName("Apple")
                 CommonName("localhost")
             }
 
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -335,8 +302,7 @@ import Testing
                     )
                     KeyUsage(keyCertSign: true)
                     AuthorityKeyIdentifier(
-                        // IMPL-108: known-valid input; construction cannot fail.
-                        // swiftlint:disable:next force_try
+
                         keyIdentifier: try! intermediate1.extensions.subjectKeyIdentifier!
                             .keyIdentifier
                     )
@@ -347,16 +313,13 @@ import Testing
 
         private static let isolatedSelfSignedCertKey = P256.Signing.PrivateKey()
         private static let isolatedSelfSignedCert: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             let isolatedSelfSignedCertName = try! DistinguishedName {
                 CountryName("US")
                 OrganizationName("Apple")
                 CommonName("Isolated Self-Signed Cert")
             }
 
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -377,16 +340,13 @@ import Testing
         }()
 
         private static let isolatedSelfSignedCertWithWeirdCriticalExtension: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             let isolatedSelfSignedCertName = try! DistinguishedName {
                 CountryName("US")
                 OrganizationName("Apple")
                 CommonName("Isolated Self-Signed Cert")
             }
 
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -402,7 +362,6 @@ import Testing
                     )
                     KeyUsage(keyCertSign: true)
 
-                    // An opaque extension that just so happens to be critical
                     Certificate.Extension(
                         oid: [1, 2, 3, 4, 5],
                         critical: true,
@@ -413,89 +372,29 @@ import Testing
             )
         }()
 
-        // MARK: Deeply crazy PKI
-        //
-        // This section defines a deeply crazy PKI. The PKI has one root CA and two intermediate CAs, and looks roughly like this:
-        //
-        //                       ┌────────────────┐
-        //                       │                │
-        //             ┌─────────│    Root CA     │
-        //             │         │                │
-        //             │         └────────────────┘          ┌─────────────────────────────────────────────────────────────────┐
-        //             │                  ┌──────────────────┼───────────────────┐                                             │
-        //             │                  │                  │                ┌──┼──────────────┐        ┌─────────┐           │
-        // ┌ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─ ─ ─ ─ ┼ ─ ─ ─ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─     │  │   ┌ ─ ─ ─ ─ ─│─ ─ ─ ─ ┼ ─ ─ ─ ─ ┼ ─ ─ ─ ─ ┐ │
-        //             ▼                  ▼                  ▼           │    │  │              ▼        │         ▼           │
-        // │   ┌────────────────┐ ┌────────────────┐ ┌────────────────┐        │  │   │ ┌────────────────┐│┌────────────────┐ │ │
-        //    │                │ │                │ │                │   │    │  │     │                │││                │   │
-        // │   │       T1       │ │       T2       │ │       T3       │        │  └───┼─│       X1       │││       X2       │─┼─┘
-        //    │                │ │                │ │                │   │    │        │                │││                │
-        // │   └────────────────┘ └────────────────┘ └────────────────┘        │      │ └────────────────┘│└────────────────┘ │
-        //             │                  │                  │           │    │                          │
-        // └ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─ ─ ─ ─ ┼ ─ ─ ─ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─     │      └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┼ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
-        //             └──────────────────┼──────────────────┼────────────────┘                          │
-        //                                └──────────────────┼───────────────────────────────────────────┘
-        //                                                   │
-        //                                ┌──────────────────┘
-        //                                │
-        //                                ▼
-        //                       ┌────────────────┐
-        //                       │                │
-        //                       │      Leaf      │
-        //                       │                │
-        //                       └────────────────┘
-        //
-        // T and X are both intermediate certificates. All certificates within their boxes have the same subject name. However, not all
-        // of those certificates are the same.
-        //
-        // The goal of this PKI is to test our understanding of what certificates are "the same". We reject paths that pass through "the
-        // same" certificate, so the goal of this test was to produce a path that would preferentially attempt to add "the same"
-        // certificates from T again and again.
-        //
-        // Our criteria for "not the same" are "different subject name", "different public key", or "different subject alternative name".
-        // That implies we need three certificates to test all the rejection criteria. Additionally, we need these certificates to appear
-        // in a specific preference order, to force us to actually _try_ the Ts we already have in the path.
-        //
-        // Our goal is to ultimately build the chain: Leaf - T3 - X2 - T2 - X1 - T1 - Root. However, each time we return to T we want to
-        // try all the prior Ts and reject them due to having previously visited them. We don't much care about the order of the Xs.
-        //
-        // To get the checking order correct, we'll have Leaf contain an AKI extension. T3 will contain a matching SKI, T2 will contain no
-        // SKI, and T1 will contain an incorrect SKI. This will force a priority order of T3, T2, T1. To ensure this priority order is maintained
-        // once we get to the X intermediate, we'll have both X certificates contain the same AKI as the Leaf. This means that X1 has an AKI
-        // that doesn't match the SKI of its issuer: that's ok, we tolerate that!
-        //
-        // T2 and T1 will use a different key than T3. Additionally, each cert will contain different subject alternative names.
-        //
-        // Finally, we need two Xs that are considered "different" so that chain building doesn't fail. We differ them by using SAN.
-        //
-        // The following section builds this absolutely crazy PKI. We re-use `ca1` defined above as our root CA.
         private static let t1t2Key = P256.Signing.PrivateKey()
         private static let t3Key = P256.Signing.PrivateKey()
         private static let xKey = P256.Signing.PrivateKey()
         private static let insaneLeafKey = P256.Signing.PrivateKey()
-        // IMPL-108: known-valid input; construction cannot fail.
-        // swiftlint:disable:next force_try
+
         private static let tName = try! DistinguishedName {
             CountryName("US")
             OrganizationName("Apple")
             CommonName("T")
         }
-        // IMPL-108: known-valid input; construction cannot fail.
-        // swiftlint:disable:next force_try
+
         private static let xName = try! DistinguishedName {
             CountryName("US")
             OrganizationName("Apple")
             CommonName("X")
         }
-        // IMPL-108: known-valid input; construction cannot fail.
-        // swiftlint:disable:next force_try
+
         private static let leafName = try! DistinguishedName {
             CommonName("InsaneLeaf")
         }
 
         private static let t1: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -511,12 +410,10 @@ import Testing
                     )
                     KeyUsage(keyCertSign: true)
                     AuthorityKeyIdentifier(
-                        // IMPL-108: known-valid input; construction cannot fail.
-                        // swiftlint:disable:next force_try
+
                         keyIdentifier: try! ca1.extensions.subjectKeyIdentifier!.keyIdentifier
                     )
 
-                    // Note this is the SKI for the _wrong key_.
                     SubjectKeyIdentifier(
                         keyIdentifier: ArraySlice(
                             Insecure.SHA1.hash(data: ca1PrivateKey.publicKey.derRepresentation)
@@ -528,8 +425,7 @@ import Testing
             )
         }()
         private static let t2: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -549,8 +445,7 @@ import Testing
             )
         }()
         private static let t3: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -575,8 +470,7 @@ import Testing
             )
         }()
         private static let x1: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -601,8 +495,7 @@ import Testing
             )
         }()
         private static let x2: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -628,8 +521,7 @@ import Testing
             )
         }()
         private static let insaneLeaf: Certificate = {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             return try! Certificate(
                 version: .v3,
                 serialNumber: .init(),
@@ -1280,7 +1172,7 @@ extension `Verifier Tests`.Integration {
 
     @Test
     func `trust roots can be non self signed leaves`() async throws {
-        // we use a custom policy here to ignore the fact that the basic constraints extension is critical.
+
         struct IgnoreBasicConstraintsPolicy: VerifierPolicy {
             let verifyingCriticalExtensions: [ISO_8824.ObjectIdentifier] = [
                 .X509ExtensionID.basicConstraints

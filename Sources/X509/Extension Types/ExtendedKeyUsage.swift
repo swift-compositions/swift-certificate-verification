@@ -1,41 +1,15 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2022 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import ISO_8824
 import ISO_8825
 
-/// Indicates one or more purposes for which the certified public key
-/// may be used, in addition to or instead of the the purposes indicated
-/// in the ``KeyUsage`` extension.
 public struct ExtendedKeyUsage {
     @usableFromInline
     var usages: [Usage]
 
-    /// Construct an ``ExtendedKeyUsage`` extension containing the
-    /// given usages.
-    ///
-    /// - Parameter usages: The purposes for which the certificate may be used.
     @inlinable
     public init<Usages: Sequence>(_ usages: Usages) throws(Certificate.Error)
     where Usages.Element == Usage {
         self.usages = Array(usages)
 
-        // This limit is somewhat arbitrary. Linear search for under 32 elements
-        // is faster than hashing and fast enough to not be a significant performance bottleneck.
-        // We have this limit because a bad actor could increase the number of elements to an arbitrary number which
-        // will increase our decoding time exponentially.
-        // This can be used for DoS attacks so we have added this limit.
         let maxUsages = 32
         guard self.usages.count <= maxUsages else {
             throw Certificate.Error.der(
@@ -53,12 +27,6 @@ public struct ExtendedKeyUsage {
         }
     }
 
-    /// Create a new ``ExtendedKeyUsage`` object
-    /// by unwrapping a ``Certificate/Extension``.
-    ///
-    /// - Parameter ext: The ``Certificate/Extension`` to unwrap
-    /// - Throws: if the ``Certificate/Extension/oid`` is not equal to
-    ///     `ISO_8824.ObjectIdentifier.X509ExtensionID.extendedKeyUsage`.
     @inlinable
     @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
     public init(_ ext: Certificate.Extension) throws(Certificate.Error) {
@@ -77,7 +45,6 @@ public struct ExtendedKeyUsage {
         try self.init(asn1EKU.usages.map { Usage(oid: $0) })
     }
 
-    /// Create a new empty ``ExtendedKeyUsage`` object with no usages.
     @inlinable
     public init() {
         self.usages = []
@@ -86,10 +53,7 @@ public struct ExtendedKeyUsage {
 
 extension Array {
     @inlinable
-    /// Searches for duplicates using a linear scan.
-    /// This is more performant compared to hashing if we have less than ~64 usages
-    /// - Parameter areEqual: a predicate that returns true if the first and second arguments are considered equal
-    /// - Returns: a tuple of the first two indices duplicates found in `self`. `nil` is returned if no duplicates are found.
+
     package func findDuplicates(
         by areEqual: (Element, Element) -> Bool
     ) -> (first: Index, second: Index)? {
@@ -139,31 +103,13 @@ extension ExtendedKeyUsage: RandomAccessCollection {
 }
 
 extension ExtendedKeyUsage {
-    /// Append a new `usage` to the end of the ``ExtendedKeyUsage``, if it doesn't
-    /// already contain it.
-    ///
-    /// - Parameter usage: The ``Usage`` to add to the set.
-    ///
-    /// - Returns: A pair `(inserted, index)`, where `inserted` is a Boolean value
-    ///    indicating whether the operation added a new element, and `index` is
-    ///    the index of `usage` in the resulting ``ExtendedKeyUsage``.
+
     @inlinable
     @discardableResult
     public mutating func append(_ usage: Element) -> (inserted: Bool, index: Int) {
         self.insert(usage, at: self.endIndex)
     }
 
-    /// Insert a new `usage` to this set at the specified index, if `self` doesn't
-    /// already contain it.
-    ///
-    /// - Parameters:
-    ///     - usage: The ``Usage`` to insert if not already present.
-    ///     - index: The index to insert `usage` if not already present.
-    ///
-    /// - Returns: A pair `(inserted, index)`, where `inserted` is a Boolean value
-    ///    indicating whether the operation added a new element, and `index` is
-    ///    the index of `item` in the resulting set. If `inserted` is false, then
-    ///    the returned `index` may be different from the index requested.
     @inlinable
     @discardableResult
     public mutating func insert(
@@ -177,9 +123,6 @@ extension ExtendedKeyUsage {
         return (false, index)
     }
 
-    /// Removes the given `usage` from `self`, if present.
-    /// - Parameter usage: The  ``Usage`` to remove.
-    /// - Returns: The ``Usage`` that was removed or `nil` if `usage` was not present.
     @inlinable
     @discardableResult
     public mutating func remove(_ usage: Element) -> Element? {
@@ -191,9 +134,7 @@ extension ExtendedKeyUsage {
 }
 
 extension ExtendedKeyUsage {
-    /// An acceptable usage for a certificate as attested in an
-    /// ``ExtendedKeyUsage``
-    /// extension.
+
     public struct Usage {
         @usableFromInline
         enum Backing {
@@ -216,9 +157,6 @@ extension ExtendedKeyUsage {
             self.backing = backing
         }
 
-        /// Constructs a ``ExtendedKeyUsage/Usage`` from an opaque oid.
-        ///
-        /// - Parameter oid: The OID of the usage.
         @inlinable
         public init(oid: ISO_8824.ObjectIdentifier) {
             switch oid {
@@ -251,28 +189,20 @@ extension ExtendedKeyUsage {
             }
         }
 
-        /// The public key may be used for TLS web servers.
         public static let serverAuth = Self(.serverAuth)
 
-        /// The public key may be used for TLS web client authentication.
         public static let clientAuth = Self(.clientAuth)
 
-        /// The public key may be used for signing of downloadable executable code.
         public static let codeSigning = Self(.codeSigning)
 
-        /// The public key may be used for email protection.
         public static let emailProtection = Self(.emailProtection)
 
-        /// The public key may be used for binding the hash of an object to a time.
         public static let timeStamping = Self(.timeStamping)
 
-        /// The public key may be used for signing OCSP responses.
         public static let ocspSigning = Self(.ocspSigning)
 
-        /// The public key may be used for any purpose.
         public static let any = Self(.any)
 
-        /// The public key may be used for signing certificate transparency precertificates.
         public static let certificateTransparency = Self(.certificateTransparency)
     }
 }
@@ -353,11 +283,7 @@ extension ExtendedKeyUsage.Usage.Backing: Sendable {}
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension Certificate.Extension {
-    /// Construct an opaque ``Certificate/Extension`` from this Extended Key Usage extension.
-    ///
-    /// - Parameters:
-    ///   - eku: The extension to wrap
-    ///   - critical: Whether this extension should have the critical bit set.
+
     @inlinable
     public init(_ eku: ExtendedKeyUsage, critical: Bool) throws(ISO_8824.Error) {
         let asn1Representation = ASN1ExtendedKeyUsage(eku)
@@ -372,9 +298,7 @@ extension Certificate.Extension {
 }
 
 extension ISO_8824.ObjectIdentifier {
-    /// Construct the OID corresponding to a specific extended key usage.
-    ///
-    /// - Parameter usage: the EKU to use to construct the OID.
+
     @inlinable
     public init(_ usage: Certificates.ExtendedKeyUsage.Usage) {
         switch usage.backing {
@@ -407,32 +331,22 @@ extension ISO_8824.ObjectIdentifier {
         }
     }
 
-    /// An acceptable usage for a certificate as attested in an
-    /// ``ExtendedKeyUsage``
-    /// extension.
     public enum ExtendedKeyUsage: Sendable {
-        /// The public key may be used for any purpose.
+
         public static let any: ISO_8824.ObjectIdentifier = [2, 5, 29, 37, 0]
 
-        /// The public key may be used for TLS web servers.
         public static let serverAuth: ISO_8824.ObjectIdentifier = [1, 3, 6, 1, 5, 5, 7, 3, 1]
 
-        /// The public key may be used for TLS web client authentication.
         public static let clientAuth: ISO_8824.ObjectIdentifier = [1, 3, 6, 1, 5, 5, 7, 3, 2]
 
-        /// The public key may be used for signing of downloadable executable code.
         public static let codeSigning: ISO_8824.ObjectIdentifier = [1, 3, 6, 1, 5, 5, 7, 3, 3]
 
-        /// The public key may be used for email protection.
         public static let emailProtection: ISO_8824.ObjectIdentifier = [1, 3, 6, 1, 5, 5, 7, 3, 4]
 
-        /// The public key may be used for binding the hash of an object to a time.
         public static let timeStamping: ISO_8824.ObjectIdentifier = [1, 3, 6, 1, 5, 5, 7, 3, 8]
 
-        /// The public key may be used for signing OCSP responses.
         public static let ocspSigning: ISO_8824.ObjectIdentifier = [1, 3, 6, 1, 5, 5, 7, 3, 9]
 
-        /// The public key may be used for signing certificate transparency precertificates.
         public static let certificateTransparency: ISO_8824.ObjectIdentifier = [
             1, 3, 6, 1, 4, 1, 11129, 2, 4, 4,
         ]

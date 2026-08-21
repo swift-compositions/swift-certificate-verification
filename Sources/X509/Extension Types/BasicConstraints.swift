@@ -1,41 +1,12 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2022 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import ISO_8824
 import ISO_8825
 
-/// Identifies whether the subject of the certificate is a CA and the
-/// maximum verification depth of valid certificate paths that include this
-/// certificate.
 public enum BasicConstraints {
-    /// This entity is a certificate authority.
-    ///
-    /// If `maxPathLength` is non-nil, this length is the maximum number of intermediate
-    /// certificates that may follow this one in a valid certification path. Note that this
-    /// excludes the leaf, so a valid (and common) `maxPathLength` is `0`.
+
     case isCertificateAuthority(maxPathLength: Int?)
 
-    /// This entity is not a certificate authority, and may not be a valid issuer of any
-    /// certificate.
     case notCertificateAuthority
 
-    /// Create a new ``BasicConstraints`` object
-    /// by unwrapping a ``Certificate/Extension``.
-    ///
-    /// - Parameter ext: The ``Certificate/Extension`` to unwrap
-    /// - Throws: if the ``Certificate/Extension/oid`` is not equal to
-    ///     `ISO_8824.ObjectIdentifier.X509ExtensionID.basicConstraints`.
     @inlinable
     @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
     public init(_ ext: Certificate.Extension) throws(Certificate.Error) {
@@ -86,11 +57,7 @@ extension BasicConstraints: CustomDebugStringConvertible {
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension Certificate.Extension {
-    /// Construct an opaque ``Certificate/Extension`` from this Basic Constraints extension.
-    ///
-    /// - Parameters:
-    ///   - basicConstraints: The extension to wrap
-    ///   - critical: Whether this extension should have the critical bit set.
+
     @inlinable
     public init(_ basicConstraints: BasicConstraints, critical: Bool) throws(ISO_8824.Error) {
         let asn1Representation = BasicConstraintsValue(basicConstraints)
@@ -104,7 +71,6 @@ extension Certificate.Extension {
     }
 }
 
-// MARK: ASN1 helpers
 @usableFromInline
 struct BasicConstraintsValue: ISO_8825.DER.ImplicitlyTaggable, Sendable {
     @inlinable
@@ -123,7 +89,6 @@ struct BasicConstraintsValue: ISO_8825.DER.ImplicitlyTaggable, Sendable {
         self.isCA = isCA
         self.pathLenConstraint = pathLenConstraint
 
-        // CA's must not assert the path len constraint field unless isCA is true.
         guard pathLenConstraint == nil || isCA else {
             throw ISO_8824.Error.invalidASN1Object(
                 reason:

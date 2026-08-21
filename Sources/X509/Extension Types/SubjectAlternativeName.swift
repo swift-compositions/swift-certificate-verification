@@ -1,50 +1,20 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2022 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import ISO_8824
 import ISO_8825
 
-/// Allows identities to be bound to the subject of a certificate.
-///
-/// The identities attested in this extension belong to the subject of the certificate.
-/// Users of the certificate may validate that these names correspond to a name they are
-/// expecting, depending on the context.
 public struct SubjectAlternativeNames {
     @usableFromInline
     var names: [GeneralName]
 
-    /// Construct a Subject Alternative Name extension from a sequence of
-    /// ``GeneralName``s.
-    ///
-    /// - Parameter names: The names to bind to the subject of the certificate.
     @inlinable
     public init<Names: Sequence>(_ names: Names) where Names.Element == GeneralName {
         self.names = Array(names)
     }
 
-    /// Construct a Subject Alternative Name extension that attests to no names.
     @inlinable
     public init() {
         self.names = []
     }
 
-    /// Create a new ``SubjectAlternativeNames`` object
-    /// by unwrapping a ``Certificate/Extension``.
-    ///
-    /// - Parameter ext: The ``Certificate/Extension`` to unwrap
-    /// - Throws: if the ``Certificate/Extension/oid`` is not equal to
-    ///     `ISO_8824.ObjectIdentifier.X509ExtensionID.subjectAlternativeName`.
     @inlinable
     @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
     public init(_ ext: Certificate.Extension) throws(Certificate.Error) {
@@ -115,11 +85,7 @@ extension SubjectAlternativeNames: RandomAccessCollection, MutableCollection,
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension Certificate.Extension {
-    /// Construct an opaque ``Certificate/Extension`` from this Subject Alternative Name extension.
-    ///
-    /// - Parameters:
-    ///   - san: The extension to wrap
-    ///   - critical: Whether this extension should have the critical bit set.
+
     @inlinable
     public init(_ san: SubjectAlternativeNames, critical: Bool) throws(ISO_8824.Error) {
         let asn1Representation = GeneralNames(san.names)

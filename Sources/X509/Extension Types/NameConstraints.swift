@@ -1,30 +1,7 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2022 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import ISO_8824
 import ISO_8825
 import Standard_Library_Extensions
 
-/// Constraints the namespace within which all subject names issued by a given CA must reside.
-///
-/// These constraints apply both to the ``Certificate/subject`` and also to any
-/// ``SubjectAlternativeNames`` that may be present. Restrictions are applied to
-/// specific name _forms_, and when the form is not present then the restriction does not apply.
-///
-/// Restrictions are defined in terms of both permitted and forbidden subtrees. The forbidden trees
-/// are consulted first, and if a name is matched in a forbidden tree then it does not matter whether
-/// the same name is also matched in a permitted tree.
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 public struct NameConstraints {
     public struct DNSNames: Hashable, Sendable, Collection, ExpressibleByArrayLiteral,
@@ -421,10 +398,6 @@ public struct NameConstraints {
         }
     }
 
-    /// The DNS name trees that are permitted in certificates issued by this CA.
-    ///
-    /// These restrictions are expressed in forms like `host.example.com`. Any DNS name that can be
-    /// constructed by adding zero or more labels to the left-hand side of the name satisfies the constraint.
     public internal(set) var permittedDNSDomains: DNSNames {
         get {
             DNSNames(subtrees: permittedSubtrees)
@@ -440,10 +413,6 @@ public struct NameConstraints {
         }
     }
 
-    /// The DNS name trees that are forbidden in certificates issued by this CA.
-    ///
-    /// These restrictions are expressed in forms like `host.example.com`. Any DNS name that can be
-    /// constructed by adding zero or more labels to the left-hand side of the name satifies the constraint.
     public internal(set) var excludedDNSDomains: DNSNames {
         get {
             DNSNames(subtrees: excludedSubtrees)
@@ -459,16 +428,6 @@ public struct NameConstraints {
         }
     }
 
-    /// The IP ranges that are permitted in certificates issued by this CA.
-    ///
-    /// These restrictions are expressed as a subnet, represented in an ASN.1 octet string.
-    /// Due to the absence of a currency subnet and IP address type in Swift, these are preserved
-    /// as octet strings.
-    ///
-    /// As an example, the subnet 192.0.2.0/24 is encoded as the bytes `0xC0, 0x00, 0x02, 0x00, 0xFF, 0xFF, 0xFF, 0x00`.
-    /// This represents a subnet root and its mask.
-    ///
-    /// Any IP address attested that falls within one of these subnets matches the constraint.
     public internal(set) var permittedIPRanges: IPRanges {
         get {
             IPRanges(subtrees: permittedSubtrees)
@@ -484,16 +443,6 @@ public struct NameConstraints {
         }
     }
 
-    /// The IP ranges that are forbidden in certificates issued by this CA.
-    ///
-    /// These restrictions are expressed as a subnet, represented in an ASN.1 octet string.
-    /// Due to the absence of a currency subnet and IP address type in Swift, these are preserved
-    /// as octet strings.
-    ///
-    /// As an example, the subnet 192.0.2.0/24 is encoded as the bytes `0xC0, 0x00, 0x02, 0x00, 0xFF, 0xFF, 0xFF, 0x00`.
-    /// This represents a subnet root and its mask.
-    ///
-    /// Any IP address attested that falls within one of these subnets matches the constraint.
     public internal(set) var excludedIPRanges: IPRanges {
         get {
             IPRanges(subtrees: excludedSubtrees)
@@ -509,11 +458,6 @@ public struct NameConstraints {
         }
     }
 
-    /// The email addresses that are permitted in certificates issued by this CA.
-    ///
-    /// This form may contain a specific mailbox (e.g. `user@example.com`), all
-    /// addresses on a given host (e.g. `example.com`), or all mailboxes within a
-    /// given domain (e.g. `.example.com`).
     public internal(set) var permittedEmailAddresses: EmailAddresses {
         get {
             EmailAddresses(subtrees: permittedSubtrees)
@@ -529,11 +473,6 @@ public struct NameConstraints {
         }
     }
 
-    /// The email addresses that are permitted in certificates issued by this CA.
-    ///
-    /// This form may contain a specific mailbox (e.g. `user@example.com`), all
-    /// addresses on a given host (e.g. `example.com`), or all mailboxes within a
-    /// given domain (e.g. `.example.com`).
     public internal(set) var excludedEmailAddresses: EmailAddresses {
         get {
             EmailAddresses(subtrees: excludedSubtrees)
@@ -549,14 +488,6 @@ public struct NameConstraints {
         }
     }
 
-    /// The URI domains permitted in certificates issued by this CA.
-    ///
-    /// This constraint applies only to the host part of the URI. The constraint
-    /// must be specified as a fully-qualified domain name and may specify either
-    /// a host or a domain. When it specifies a domain the string will begin with a
-    /// period, and matches any name that can be expanded with one or more labels to
-    /// the left. Note that expanding with zero labels does not match: that is,
-    /// `.example.com` matches `host.example.com`, but not `example.com`.
     public internal(set) var permittedURIDomains: URIDomains {
         get {
             URIDomains(subtrees: permittedSubtrees)
@@ -572,14 +503,6 @@ public struct NameConstraints {
         }
     }
 
-    /// The URI domains forbidden in certificates issued by this CA.
-    ///
-    /// This constraint applies only to the host part of the URI. The constraint
-    /// must be specified as a fully-qualified domain name and may specify either
-    /// a host or a domain. When it specifies a domain the string will begin with a
-    /// period, and matches any name that can be expanded with one or more labels to
-    /// the left. Note that expanding with zero labels does not match: that is,
-    /// `.example.com` matches `host.example.com`, but not `example.com`.
     public internal(set) var forbiddenURIDomains: URIDomains {
         get {
             URIDomains(subtrees: excludedSubtrees)
@@ -595,31 +518,10 @@ public struct NameConstraints {
         }
     }
 
-    /// The complete set of permitted subtrees in ``GeneralName`` form.
-    ///
-    /// This contains the same data as the broken out forms (``permittedIPRanges``, ``permittedDNSDomains``,
-    /// ``permittedURIDomains``, ``permittedEmailAddresses``), but may also include other cases
-    /// that those helpers do not represent.
     public var permittedSubtrees: [GeneralName]
 
-    /// The complete set of forbidden subtrees in ``GeneralName`` form.
-    ///
-    /// This contains the same data as the broken out forms (``excludedIPRanges``, ``excludedDNSDomains``,
-    /// ``forbiddenURIDomains``, ``excludedEmailAddresses``), but may also include other cases
-    /// that those helpers do not represent.
     public var excludedSubtrees: [GeneralName]
 
-    /// Construct an extension constraining the names a CA may issue.
-    ///
-    /// - Parameters:
-    ///   - permittedDNSDomains: The DNS name trees that are permitted in certificates issued by this CA.
-    ///   - excludedDNSDomains: The DNS name trees that are forbidden in certificates issued by this CA.
-    ///   - permittedIPRanges: The IP address ranges that are permitted in certificates issued by this CA.
-    ///   - excludedIPRanges: The IP address ranges that are forbidden in certificates issued by this CA.
-    ///   - permittedEmailAddresses: The email address trees that are permitted in certificates issued by this CA.
-    ///   - excludedEmailAddresses: The email address trees that are forbidden in certificates issued by this CA.
-    ///   - permittedURIDomains: The URI domains that are permitted in certificates issued by this CA.
-    ///   - forbiddenURIDomains: The URI domains that are forbidden in certificates issued by this CA.
     @inlinable
     public init(
         permittedDNSDomains: some Sequence<String> = [],
@@ -662,11 +564,6 @@ public struct NameConstraints {
         )
     }
 
-    /// Construct an extension constraining the names a CA may issue.
-    ///
-    /// - Parameters:
-    ///   - permittedSubtrees: The complete set of permitted subtrees in ``GeneralName`` form.
-    ///   - excludedSubtrees: The complete set of excluded subtrees in ``GeneralName`` form.
     @inlinable
     public init(
         permittedSubtrees: [GeneralName] = [],
@@ -676,12 +573,6 @@ public struct NameConstraints {
         self.excludedSubtrees = excludedSubtrees
     }
 
-    /// Create a new ``NameConstraints`` object
-    /// by unwrapping a ``Certificate/Extension``.
-    ///
-    /// - Parameter ext: The ``Certificate/Extension`` to unwrap
-    /// - Throws: if the ``Certificate/Extension/oid`` is not equal to
-    ///     `ISO_8824.ObjectIdentifier.X509ExtensionID.nameConstraints`.
     @inlinable
     @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
     public init(_ ext: Certificate.Extension) throws(Certificate.Error) {
@@ -757,11 +648,7 @@ extension NameConstraints: CustomDebugStringConvertible {
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension Certificate.Extension {
-    /// Construct an opaque ``Certificate/Extension`` from this Name Constraints extension.
-    ///
-    /// - Parameters:
-    ///   - nameConstraints: The extension to wrap
-    ///   - critical: Whether this extension should have the critical bit set.
+
     @inlinable
     public init(_ nameConstraints: NameConstraints, critical: Bool) throws(ISO_8824.Error) {
         let asn1Representation = NameConstraintsValue(nameConstraints)
@@ -775,7 +662,6 @@ extension Certificate.Extension {
     }
 }
 
-// MARK: ASN1 Helpers
 @usableFromInline
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 struct NameConstraintsValue: ISO_8825.DER.ImplicitlyTaggable, Sendable {
@@ -851,30 +737,6 @@ struct NameConstraintsValue: ISO_8825.DER.ImplicitlyTaggable, Sendable {
     }
 }
 
-// This type does a weird cheat.
-//
-// Technically, NameConstraints is defined like this:
-//
-//       NameConstraints ::= SEQUENCE {
-//            permittedSubtrees       [0]     GeneralSubtrees OPTIONAL,
-//            excludedSubtrees        [1]     GeneralSubtrees OPTIONAL }
-//
-//       GeneralSubtrees ::= SEQUENCE SIZE (1..MAX) OF GeneralSubtree
-//
-//       GeneralSubtree ::= SEQUENCE {
-//            base                    GeneralName,
-//            minimum         [0]     BaseDistance DEFAULT 0,
-//            maximum         [1]     BaseDistance OPTIONAL }
-//
-//       BaseDistance ::= INTEGER (0..MAX)
-//
-// We can disregard `BaseDistance`, because as a practical matter it is never used, and so it's as though those
-// two fields were never there.
-//
-// The result is that each of the subtrees encodes as a sequence of sequence of single general name. We could
-// literally mirror that in Swift land, but at the top level we want to hold [GeneralName], so producing
-// [GeneralSubtree] will force a heap allocation. Instead, we inline the definition of GeneralSubtree into
-// GeneralSubtrees, to avoid the extra allocation.
 @usableFromInline
 struct GeneralSubtrees: ISO_8825.DER.ImplicitlyTaggable, Sendable {
     @inlinable

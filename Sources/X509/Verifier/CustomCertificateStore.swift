@@ -1,37 +1,12 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2022 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
-/// Implement the ``CustomCertificateStore`` if you want to perform dynamic
-/// certificate lookup, or if you need custom logic when matching the
-/// ``DistinguishedName`` of an Issuer with the Subject of the issuer
-/// certificate, then implement a custom certificate store used by the
-/// ```Verifier```.
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 public protocol CustomCertificateStore: Sendable, Hashable {
-    /// Obtain a list of certificates which has a given subject. Note that this
-    /// is an async method so that database lookups can be performed
-    /// asynchronously.
+
     subscript(subject: DistinguishedName) -> [Certificate]? {
         get async
     }
 
-    /// Validate if a given certificate is known to exist in this certificate
-    /// store. Note that this is an async method so that the existence check
-    /// can be performed against a database.
     func contains(_ certificate: Certificate) async -> Bool
 
-    /// Add a certificate to this certificate store.
     mutating func append(contentsOf certificates: some Sequence<Certificate>)
 }
 
@@ -39,8 +14,7 @@ public protocol CustomCertificateStore: Sendable, Hashable {
 @usableFromInline
 struct AnyCustomCertificateStore: CustomCertificateStore {
     @usableFromInline
-    // Deliberate type-erasure surface (API-ERR-006 opt-out).
-    // swiftlint:disable:next no_any_protocol_existential
+
     var value: any DynCustomCertificateStore
 
     @usableFromInline
@@ -81,8 +55,7 @@ extension AnyCustomCertificateStore: Hashable {
 extension AnyCustomCertificateStore {
     @usableFromInline
     protocol DynCustomCertificateStore: CustomCertificateStore {
-        // Deliberate type-erasure surface (API-ERR-006 opt-out).
-        // swiftlint:disable:next no_any_protocol_existential
+
         func isEqual(_ rhs: any DynCustomCertificateStore, recurse: Bool) -> Bool
     }
 }
@@ -111,8 +84,6 @@ extension AnyCustomCertificateStore {
             value.append(contentsOf: certificates)
         }
 
-        // Deliberate type-erasure surface (API-ERR-006 opt-out).
-        // swiftlint:disable:next no_any_protocol_existential
         func isEqual(_ rhs: any DynCustomCertificateStore, recurse: Bool) -> Bool {
             guard let rhs = rhs as? Self else {
                 guard recurse else {

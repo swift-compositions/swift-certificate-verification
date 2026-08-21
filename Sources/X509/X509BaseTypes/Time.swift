@@ -1,24 +1,7 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2022-2023 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import ISO_8824
 import ISO_8825
 import Time_Primitive
 
-// Time ::= CHOICE {
-// utcTime        ISO_8824.UTCTime,
-// generalTime    ISO_8824.GeneralizedTime }
 @usableFromInline
 enum Time: ISO_8825.DER.Parseable, ISO_8825.DER.Serializable, Hashable, Sendable {
     case utcTime(ISO_8824.UTCTime)
@@ -49,10 +32,6 @@ enum Time: ISO_8825.DER.Parseable, ISO_8825.DER.Serializable, Hashable, Sendable
         }
     }
 
-    // RFC 5280 §4.1.2.5 cutover law: dates through 2049 MUST be encoded as
-    // ISO_8824.UTCTime; 2050 and later as ISO_8824.GeneralizedTime. This civil-time conversion
-    // transfers to the L2 swift-rfc-5280 owner at the no-duplication
-    // reconciliation; it lives in-fork until that lane lands.
     @inlinable
     static func makeTime(from instant: Instant) throws(ISO_8824.Error) -> Time {
         let components = instant.utcDate
@@ -76,8 +55,7 @@ extension Instant {
 
     @inlinable
     package var utcDate: (year: Int, month: Int, day: Int, hours: Int, minutes: Int, seconds: Int) {
-        // Certificate validity has whole-second precision; the nanosecond
-        // fraction is deliberately dropped.
+
         self.secondsSinceUnixEpoch.utcDateFromTimestamp
     }
 
@@ -123,9 +101,7 @@ extension ISO_8824.GeneralizedTime {
             self = t
 
         case .utcTime(let t):
-            // This can never throw, all valid ISO_8824.UTCTimes are valid ISO_8824.GeneralizedTimes
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             self = try! ISO_8824.GeneralizedTime(
                 year: t.year,
                 month: t.month,
@@ -155,9 +131,7 @@ extension ISO_8824.GeneralizedTime {
 
     @inlinable
     package init(_ instant: Instant) {
-        // This cannot throw: any valid Instant can be represented.
-        // IMPL-108: known-valid input; construction cannot fail.
-        // swiftlint:disable:next force_try
+
         try! self.init(instant.utcDate)
     }
 }

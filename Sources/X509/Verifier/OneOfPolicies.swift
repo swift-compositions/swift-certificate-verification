@@ -1,32 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2024 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import ISO_8824
 import ISO_8825
 
-/// Provides a result-builder style DSL for constructing a ``VerifierPolicy`` in which one of the specified policies must match.
-///
-/// This DSL allows us to construct ``OneOfPolicies`` within a ``PolicyBuilder``.
-/// ```swift
-/// let verifier = Verifier(rootCertificates: CertificateStore()) {
-///     RFC5280Policy()
-///     OneOfPolicies {
-///         PolicyA()
-///         PolicyB()
-///     }
-/// }
-/// ```
 @resultBuilder
 public struct OneOfPolicyBuilder: Sendable {}
 
@@ -40,7 +14,6 @@ extension OneOfPolicyBuilder {
     }
 }
 
-// MARK: empty policy
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension OneOfPolicyBuilder {
     @usableFromInline
@@ -65,7 +38,6 @@ extension OneOfPolicyBuilder {
     }
 }
 
-// MARK: concatenated policies
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension OneOfPolicyBuilder {
     @usableFromInline
@@ -128,7 +100,6 @@ extension OneOfPolicyBuilder {
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension OneOfPolicyBuilder.Tuple2: Sendable where First: Sendable, Second: Sendable {}
 
-// MARK: if
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension OneOfPolicyBuilder {
     @usableFromInline
@@ -164,7 +135,6 @@ extension OneOfPolicyBuilder {
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension OneOfPolicyBuilder.WrappedOptional: Sendable where Wrapped: Sendable {}
 
-// MARK: if/else and switch
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension OneOfPolicyBuilder {
     @inlinable
@@ -182,18 +152,6 @@ extension OneOfPolicyBuilder {
     }
 }
 
-/// Use this to build a policy where any one of the sub-policies must be met for the overall policy to be met.
-/// For example, the following policy requires that RFC5280Policy is always met, and either PolicyA or PolicyB is met.
-/// It does not require that both PolicyA and PolicyB are met.
-/// ```swift
-/// let verifier = Verifier(rootCertificates: CertificateStore()) {
-///     RFC5280Policy()
-///     OneOfPolicies {
-///         PolicyA()
-///         PolicyB()
-///     }
-/// }
-/// ```
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 public struct OneOfPolicies<Policy: VerifierPolicy>: VerifierPolicy {
     @usableFromInline

@@ -1,17 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2025 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 @preconcurrency import Crypto
 import ISO_8824
 import ISO_8825
@@ -43,7 +29,7 @@ extension CertificateStore {
                         Issue.record("could not cast \(error) to \(Certificate.Error.self)")
                         return
                     }
-                    // -> trust-witness batch: system-trust error surface pending
+
                     #expect(error.code == .failedToLoadSystemTrustStore)
                 }
             }
@@ -145,9 +131,7 @@ extension CertificateStore {
 
             private static let ca1PrivateKey = P384.Signing.PrivateKey()
             private static let ca1: Certificate = {
-                // Force CA to encode using printableString:
-                // IMPL-108: known-valid input; construction cannot fail.
-                // swiftlint:disable:next force_try
+
                 let ca1Name = try! DistinguishedName([
                     RelativeDistinguishedName([
                         RelativeDistinguishedName.Attribute(
@@ -172,8 +156,7 @@ extension CertificateStore {
                         )
                     ]),
                 ])
-                // IMPL-108: known-valid input; construction cannot fail.
-                // swiftlint:disable:next force_try
+
                 return try! Certificate(
                     version: .v3,
                     serialNumber: .init(),
@@ -200,15 +183,14 @@ extension CertificateStore {
 
             private static let leafPrivateKey = P256.Signing.PrivateKey()
             private static let leafCert: Certificate = {
-                // IMPL-108: known-valid input; construction cannot fail.
-                // swiftlint:disable:next force_try
+
                 try! Certificate(
                     version: .v3,
                     serialNumber: .init(),
                     publicKey: .init(leafPrivateKey.publicKey),
                     notValidBefore: referenceTime - .days(365),
                     notValidAfter: referenceTime + .days(365),
-                    // Force leaf to encode using utf8String:
+
                     issuer: DistinguishedName([
                         RelativeDistinguishedName([
                             RelativeDistinguishedName.Attribute(
@@ -233,8 +215,7 @@ extension CertificateStore {
                             )
                         ]),
                     ]),
-                    // IMPL-108: known-valid input; construction cannot fail.
-                    // swiftlint:disable:next force_try
+
                     subject: try! DistinguishedName {
                         CountryName("US")
                         OrganizationName("Apple")
@@ -247,8 +228,7 @@ extension CertificateStore {
                         )
                         KeyUsage(keyCertSign: true)
                         AuthorityKeyIdentifier(
-                            // IMPL-108: known-valid input; construction cannot fail.
-                            // swiftlint:disable:next force_try
+
                             keyIdentifier: try! ca1.extensions.subjectKeyIdentifier!.keyIdentifier
                         )
                     },
@@ -257,7 +237,7 @@ extension CertificateStore {
             }()
 
             @Test func `custom certificate store`() async throws {
-                // MUST fail due to encoding of DN mismatch:
+
                 var concreteStore = CertificateStore()
                 concreteStore.append(Self.ca1)
 
@@ -274,7 +254,6 @@ extension CertificateStore {
                     return
                 }
 
-                // The custom CertStore should normalize the DN so it no longer fails:
                 var customStore = CertificateStore(custom: CertStore([]))
                 customStore.append(Self.ca1)
 

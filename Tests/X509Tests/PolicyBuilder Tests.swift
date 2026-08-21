@@ -1,17 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2025 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import ISO_8824
 import ISO_8825
 import Testing
@@ -45,13 +31,7 @@ extension PolicyBuilder {
 }
 
 extension PolicyBuilder {
-    // These suites exercise policy COMPOSITION (the PolicyBuilder DSL and the
-    // meets/fails-to-meet plumbing); the policies under test never inspect the
-    // certificate, so it is only a vehicle for building a chain. Bound to a frozen
-    // DER fixture rather than issued in-test — issuance is an excluded surface in
-    // slice 1, and this preserves every assertion in the file unchanged.
-    // IMPL-108: known-valid input; construction cannot fail.
-    // swiftlint:disable:next force_try
+
     fileprivate static let certificate = try! Fixture.certificate("root-ca")
 
     fileprivate static let chain = UnverifiedCertificateChain([
@@ -300,10 +280,7 @@ extension PolicyBuilder.Test.Unit {
     }
 
     @Test func `any policy type is preserved`() {
-        // tested at compile time
-        // RFC5280Policy takes the validation instant by injection (Q4 ruling: the
-        // verifier never reads a system clock), so this compile-time composition
-        // check supplies the corpus's frozen 2026-01-01 instant.
+
         let _: Verifier<AnyPolicy> = Verifier(rootCertificates: CertificateStore(), verify: .crypto)
         {
             AnyPolicy {
@@ -313,16 +290,14 @@ extension PolicyBuilder.Test.Unit {
     }
 
     @Test func `all of policies non throwing`() {
-        // creating a AllOfPolicies with a non-throwing closure can't throw
-        // This is tested at compile time (lack of `try` keyword)
+
         _ = AllOfPolicies {
             Policy(result: .meetsPolicy)
         }
     }
 
     @Test func `one of policies non throwing`() {
-        // creating a OneOfPolicies with a non-throwing closure can't throw
-        // This is tested at compile time (lack of `try` keyword)
+
         _ = OneOfPolicies {
             Policy(result: .meetsPolicy)
         }
@@ -351,7 +326,7 @@ extension PolicyBuilder.Test.`Edge Case` {
             OneOfPolicies {}
         }
         let `false` = false
-        // This is effectively empty because the branch is never true
+
         await PolicyBuilder.assertFailsToMeetPolicy {
             OneOfPolicies {
                 if `false` {
@@ -361,7 +336,7 @@ extension PolicyBuilder.Test.`Edge Case` {
         }
 
         let policy: Policy? = nil
-        // This is effectively empty because the optional is always nil
+
         await PolicyBuilder.assertFailsToMeetPolicy {
             OneOfPolicies {
                 if let policy {
@@ -372,7 +347,7 @@ extension PolicyBuilder.Test.`Edge Case` {
     }
 
     @Test func `all of policies throwing`() {
-        // Creating a AllOfPolicies which throws an error inside will itself throw
+
         struct TestError: Swift.Error {}
         func throwingPolicyBuilder() throws -> Policy {
             throw TestError()
@@ -386,7 +361,7 @@ extension PolicyBuilder.Test.`Edge Case` {
     }
 
     @Test func `one of policies throwing`() {
-        // Creating a OneOfPolicies which throws an error inside will itself throw
+
         struct TestError: Swift.Error {}
         func throwingPolicyBuilder() throws -> Policy {
             throw TestError()
@@ -402,7 +377,7 @@ extension PolicyBuilder.Test.`Edge Case` {
 
 extension PolicyBuilder.Test.Integration {
     @Test func `verifying critical extensions with one of`() {
-        // When both policies specify the same exts, then the overall policy also has those exts
+
         #expect(
             Set(
                 OneOfPolicies {
@@ -413,7 +388,7 @@ extension PolicyBuilder.Test.Integration {
                 [1, 1]
             ]
         )
-        // When both policies specify the different exts, the overall has the intersection
+
         #expect(
             Set(
                 OneOfPolicies {
@@ -424,7 +399,7 @@ extension PolicyBuilder.Test.Integration {
                 [1, 2]
             ]
         )
-        // Here the sets are disjoint so the overall is empty
+
         #expect(
             Set(
                 OneOfPolicies {
@@ -436,7 +411,7 @@ extension PolicyBuilder.Test.Integration {
     }
 
     @Test func `verifying critical extensions with one of and all of`() {
-        // All of means we get all the exts
+
         #expect(
             Set(
                 OneOfPolicies {

@@ -1,17 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2025 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 @preconcurrency import Crypto
 import ISO_8824
 import ISO_8825
@@ -38,24 +24,16 @@ extension RFC5280Policy {
 extension RFC5280Policy.Test.Unit {
     @Test
     func `ignores key usage`() async throws {
-        // This test doesn't have a base policy version, only the combined policy does this.
+
         let alternativeIntermediate = TestPKI.issueIntermediate(
             name: TestPKI.unconstrainedIntermediateName,
             key: .init(TestPKI.unconstrainedIntermediateKey.publicKey),
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             extensions: try! Certificate.Extensions {
                 Critical(
                     BasicConstraints.isCertificateAuthority(maxPathLength: 0)
                 )
 
-                // This key usage is forbidden by RFC 5280 in the context of an intermediate:
-                //
-                //   If the keyUsage extension is present, then the subject public key
-                //   MUST NOT be used to verify signatures on certificates or CRLs unless
-                //   the corresponding keyCertSign or cRLSign bit is set.
-                //
-                // We don't care here.
                 Critical(
                     KeyUsage(digitalSignature: true)
                 )
@@ -122,7 +100,7 @@ extension RFC5280Policy.Test.`Edge Case` {
         let roots = CertificateStore([TestPKI.unconstrainedCA])
         let leaf = TestPKI.issueLeaf(
             notValidBefore: TestPKI.startDate + 1.0,
-            notValidAfter: TestPKI.startDate + 2.0,  // One second validity window
+            notValidAfter: TestPKI.startDate + 2.0,
             issuer: .unconstrainedIntermediate
         )
 
@@ -143,20 +121,17 @@ extension RFC5280Policy.Test.`Edge Case` {
     @Test
     func `expiry check correct when delay between initialization and validation`() async throws {
         let currentTime = Date()
-        // Create a certificate that expires 1 second in the future.
+
         let leaf = TestPKI.issueLeaf(
             notValidBefore: currentTime,
-            notValidAfter: currentTime + 1,  // Certificate expires in 1 second.
+            notValidAfter: currentTime + 1,
             issuer: .unconstrainedIntermediate
         )
 
-        // Construct the policy incorrectly: .now corresponds to the point of initialization.
         let timeAtInitPolicy = RFC5280Policy(fixedExpiryValidationTime: .now)
 
-        // Construct the policy correctly; the current time will be obtained at the point of validation.
         let timeAtValidationPolicy = RFC5280Policy()
 
-        // Now wait for 2 seconds before validating. Certificate will have then expired.
         try await Task.sleep(for: .seconds(2))
 
         var timeAtInitVerifier = Verifier(
@@ -170,7 +145,6 @@ extension RFC5280Policy.Test.`Edge Case` {
             timeAtValidationPolicy
         }
 
-        // Run the verifiers
         let timeAtInitResult = await timeAtInitVerifier.validate(
             leaf: leaf,
             intermediates: CertificateStore([TestPKI.unconstrainedIntermediate])
@@ -180,8 +154,6 @@ extension RFC5280Policy.Test.`Edge Case` {
             intermediates: CertificateStore([TestPKI.unconstrainedIntermediate])
         )
 
-        // The incorrectly constructed policy, whose validation time corresponds to the point of initialization,
-        // will determine the certificate to be valid.
         guard case .validCertificate = timeAtInitResult else {
             Issue.record(
                 "validation time < certificate expiration, but the certificate was determined to be invalid."
@@ -189,8 +161,6 @@ extension RFC5280Policy.Test.`Edge Case` {
             return
         }
 
-        // The correctly initialized policy will determine the certificate to be invalid: at the point of validation,
-        // the current time will be obtained; this time will be strictly after the certificate expired.
         guard case .couldNotValidate(let policyFailures) = timeAtValidationResult else {
             Issue.record("An expired certificate was incorrectly determined to be valid.")
             return
@@ -215,7 +185,7 @@ extension RFC5280Policy.Test.`Edge Case` {
         let roots = CertificateStore([TestPKI.unconstrainedCA])
         let leaf = TestPKI.issueLeaf(
             notValidBefore: TestPKI.startDate,
-            // Later than the intermediate.
+
             notValidAfter: TestPKI.unconstrainedIntermediate.notValidAfter + 2.0,
             issuer: .unconstrainedIntermediate
         )
@@ -249,8 +219,8 @@ extension RFC5280Policy.Test.`Edge Case` {
         let roots = CertificateStore([TestPKI.unconstrainedCA])
         let leaf = TestPKI.issueLeaf(
             notValidBefore: TestPKI.startDate,
-            notValidAfter: TestPKI.unconstrainedCA.notValidAfter + 2.0,  // Later than the root.
-            // Issue off the root directly to avoid the intermediate getting involved.
+            notValidAfter: TestPKI.unconstrainedCA.notValidAfter + 2.0,
+
             issuer: .unconstrainedRoot
         )
 
@@ -283,7 +253,7 @@ extension RFC5280Policy.Test.`Edge Case` {
         let roots = CertificateStore([TestPKI.unconstrainedCA])
         let leaf = TestPKI.issueLeaf(
             notValidBefore: TestPKI.startDate + 2.0,
-            notValidAfter: TestPKI.startDate + 3.0,  // One second validity window
+            notValidAfter: TestPKI.startDate + 3.0,
             issuer: .unconstrainedIntermediate
         )
 
@@ -317,7 +287,7 @@ extension RFC5280Policy.Test.`Edge Case` {
     {
         let roots = CertificateStore([TestPKI.unconstrainedCA])
         let leaf = TestPKI.issueLeaf(
-            // Earlier than the intermediate
+
             notValidBefore: TestPKI.unconstrainedIntermediate.notValidBefore - 2.0,
             notValidAfter: TestPKI.unconstrainedIntermediate.notValidAfter,
             issuer: .unconstrainedIntermediate
@@ -352,9 +322,9 @@ extension RFC5280Policy.Test.`Edge Case` {
     func `not yet valid root is not rejected if validity checking is disabled`() async throws {
         let roots = CertificateStore([TestPKI.unconstrainedCA])
         let leaf = TestPKI.issueLeaf(
-            notValidBefore: TestPKI.unconstrainedCA.notValidBefore - 2.0,  // Earlier than the root
+            notValidBefore: TestPKI.unconstrainedCA.notValidBefore - 2.0,
             notValidAfter: TestPKI.startDate,
-            // Issue off the root directly to avoid the intermediate getting involved.
+
             issuer: .unconstrainedRoot
         )
 
@@ -387,7 +357,7 @@ extension RFC5280Policy.Test.`Edge Case` {
         let roots = CertificateStore([TestPKI.unconstrainedCA])
         let leaf = TestPKI.issueLeaf(
             notValidBefore: TestPKI.startDate + 3.0,
-            notValidAfter: TestPKI.startDate + 2.0,  // invalid order
+            notValidAfter: TestPKI.startDate + 2.0,
             issuer: .unconstrainedIntermediate
         )
 
@@ -501,11 +471,10 @@ extension RFC5280Policy.Test.`Edge Case` {
 
     @Test
     func `fails on weird critical extension in leaf`() async throws {
-        // This test doesn't have a base policy version, only the combined policy does this.
+
         let leaf = TestPKI.issueLeaf(
             issuer: .unconstrainedIntermediate,
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             customExtensions: try! Certificate.Extensions {
                 Critical(
                     BasicConstraints.notCertificateAuthority
@@ -702,10 +671,7 @@ extension RFC5280Policy.Test.Integration {
 
     @Test
     func `directory name constraints permitted subtrees`() async throws {
-        // Fun fact! These tests require additional permitted subtrees, because they _also_ have to match the subject names
-        // of the certificates. So let's add those too to omit them from the testing.
-        // IMPL-108: known-valid input; construction cannot fail.
-        // swiftlint:disable:next force_try
+
         let leafName = try! DistinguishedName {
             CountryName("US")
             OrganizationName("Apple")
@@ -730,10 +696,7 @@ extension RFC5280Policy.Test.Integration {
 
     @Test
     func `directory name constraints permitted subtrees base policy`() async throws {
-        // Fun fact! These tests require additional permitted subtrees, because they _also_ have to match the subject names
-        // of the certificates. So let's add those too to omit them from the testing.
-        // IMPL-108: known-valid input; construction cannot fail.
-        // swiftlint:disable:next force_try
+
         let leafName = try! DistinguishedName {
             CountryName("US")
             OrganizationName("Apple")
@@ -768,8 +731,7 @@ extension RFC5280Policy.Test.Integration {
 
     @Test
     func `uri name constraints excluded subtrees`() async throws {
-        // This adapts the basic checks from the DNS name case, as they apply to the host part of the constraint. However,
-        // to each case we add a little URI special sauce to confirm that they all still work (or don't!).
+
         for (dnsName, constraint, match) in DNSNamesTests.fixtures {
             for uri in DNSNamesTests.urisThatMatch(dnsName) {
                 try await Test.nameconstraintsExcludedSubtrees(
@@ -779,7 +741,6 @@ extension RFC5280Policy.Test.Integration {
                     policyFactory: .rfc5280
                 )
 
-                // Never works inverted
                 try await Test.nameconstraintsExcludedSubtrees(
                     excludedSubtrees: [.uniformResourceIdentifier(uri)],
                     subjectAlternativeNames: [.uniformResourceIdentifier(constraint)],
@@ -789,7 +750,7 @@ extension RFC5280Policy.Test.Integration {
             }
 
             if constraint.isEmpty {
-                // We don't test the "don't match" case on the empty constraint, because everything matches the empty constraint
+
                 continue
             }
 
@@ -806,8 +767,7 @@ extension RFC5280Policy.Test.Integration {
 
     @Test
     func `uri name constraints excluded subtrees base policy`() async throws {
-        // This adapts the basic checks from the DNS name case, as they apply to the host part of the constraint. However,
-        // to each case we add a little URI special sauce to confirm that they all still work (or don't!).
+
         for (dnsName, constraint, match) in DNSNamesTests.fixtures {
             for uri in DNSNamesTests.urisThatMatch(dnsName) {
                 try await Test.nameconstraintsExcludedSubtrees(
@@ -817,7 +777,6 @@ extension RFC5280Policy.Test.Integration {
                     policyFactory: .nameConstraints
                 )
 
-                // Never works inverted
                 try await Test.nameconstraintsExcludedSubtrees(
                     excludedSubtrees: [.uniformResourceIdentifier(uri)],
                     subjectAlternativeNames: [.uniformResourceIdentifier(constraint)],
@@ -827,7 +786,7 @@ extension RFC5280Policy.Test.Integration {
             }
 
             if constraint.isEmpty {
-                // We don't test the "don't match" case on the empty constraint, because everything matches the empty constraint
+
                 continue
             }
 
@@ -844,8 +803,7 @@ extension RFC5280Policy.Test.Integration {
 
     @Test
     func `uri name constraints permitted subtrees`() async throws {
-        // This adapts the basic checks from the DNS name case, as they apply to the host part of the constraint. However,
-        // to each case we add a little URI special sauce to confirm that they all still work (or don't!).
+
         for (dnsName, constraint, match) in DNSNamesTests.fixtures {
             for uri in DNSNamesTests.urisThatMatch(dnsName) {
                 try await Test.nameconstraintsPermittedSubtrees(
@@ -855,7 +813,6 @@ extension RFC5280Policy.Test.Integration {
                     policyFactory: .rfc5280
                 )
 
-                // Never works inverted
                 try await Test.nameconstraintsPermittedSubtrees(
                     permittedSubtrees: [.uniformResourceIdentifier(uri)],
                     subjectAlternativeNames: [.uniformResourceIdentifier(constraint)],
@@ -865,7 +822,7 @@ extension RFC5280Policy.Test.Integration {
             }
 
             if constraint.isEmpty {
-                // We don't test the "don't match" case on the empty constraint, because everything matches the empty constraint
+
                 continue
             }
 
@@ -882,8 +839,7 @@ extension RFC5280Policy.Test.Integration {
 
     @Test
     func `uri name constraints permitted subtrees base policy`() async throws {
-        // This adapts the basic checks from the DNS name case, as they apply to the host part of the constraint. However,
-        // to each case we add a little URI special sauce to confirm that they all still work (or don't!).
+
         for (dnsName, constraint, match) in DNSNamesTests.fixtures {
             for uri in DNSNamesTests.urisThatMatch(dnsName) {
                 try await Test.nameconstraintsPermittedSubtrees(
@@ -893,7 +849,6 @@ extension RFC5280Policy.Test.Integration {
                     policyFactory: .nameConstraints
                 )
 
-                // Never works inverted
                 try await Test.nameconstraintsPermittedSubtrees(
                     permittedSubtrees: [.uniformResourceIdentifier(uri)],
                     subjectAlternativeNames: [.uniformResourceIdentifier(constraint)],
@@ -903,7 +858,7 @@ extension RFC5280Policy.Test.Integration {
             }
 
             if constraint.isEmpty {
-                // We don't test the "don't match" case on the empty constraint, because everything matches the empty constraint
+
                 continue
             }
 
@@ -947,7 +902,6 @@ extension RFC5280Policy.Test {
             }
         }
 
-        // This do-nothing policy
         struct CatchAllPolicy: VerifierPolicy {
             let verifyingCriticalExtensions: [ISO_8824.ObjectIdentifier] = [
                 .X509ExtensionID.basicConstraints,
@@ -970,8 +924,7 @@ extension RFC5280Policy.Test {
         policyFactory: PolicyFactory
     ) async throws {
         let alternativeRoot = TestPKI.issueCA(
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             extensions: try! Certificate.Extensions {
                 Critical(
                     BasicConstraints.isCertificateAuthority(maxPathLength: nil)
@@ -985,8 +938,7 @@ extension RFC5280Policy.Test {
         let alternativeIntermediate = TestPKI.issueIntermediate(
             name: TestPKI.unconstrainedIntermediateName,
             key: .init(TestPKI.unconstrainedIntermediateKey.publicKey),
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             extensions: try! Certificate.Extensions {
                 Critical(
                     BasicConstraints.isCertificateAuthority(maxPathLength: 0)
@@ -1001,8 +953,7 @@ extension RFC5280Policy.Test {
         let intermediateWithAConstrainedNameForSomeReason = TestPKI.issueIntermediate(
             name: TestPKI.unconstrainedIntermediateName,
             key: .init(TestPKI.unconstrainedIntermediateKey.publicKey),
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             extensions: try! Certificate.Extensions {
                 Critical(
                     BasicConstraints.isCertificateAuthority(maxPathLength: 0)
@@ -1020,7 +971,6 @@ extension RFC5280Policy.Test {
             issuer: .unconstrainedIntermediate
         )
 
-        // Test a constraint on the root affecting the leaf
         var roots = CertificateStore([alternativeRoot])
         var verifier = Verifier(rootCertificates: roots) {
             policyFactory.create(TestPKI.startDate + 2.5)
@@ -1032,7 +982,7 @@ extension RFC5280Policy.Test {
 
         switch (match, result) {
         case (true, .couldNotValidate), (false, .validCertificate):
-            // Expected outcomes
+
             ()
 
         default:
@@ -1041,7 +991,6 @@ extension RFC5280Policy.Test {
             )
         }
 
-        // Test a constraint on the intermediate affecting the leaf.
         roots = CertificateStore([TestPKI.unconstrainedCA])
         verifier = Verifier(rootCertificates: roots) {
             policyFactory.create(TestPKI.startDate + 2.5)
@@ -1053,7 +1002,7 @@ extension RFC5280Policy.Test {
 
         switch (match, result) {
         case (true, .couldNotValidate), (false, .validCertificate):
-            // Expected outcomes
+
             ()
 
         default:
@@ -1062,7 +1011,6 @@ extension RFC5280Policy.Test {
             )
         }
 
-        // Test a constraint on the root affecting the intermediate
         roots = CertificateStore([alternativeRoot])
         verifier = Verifier(rootCertificates: roots) {
             policyFactory.create(TestPKI.startDate + 2.5)
@@ -1074,7 +1022,7 @@ extension RFC5280Policy.Test {
 
         switch (match, result) {
         case (true, .couldNotValidate), (false, .validCertificate):
-            // Expected outcomes
+
             ()
 
         default:
@@ -1083,7 +1031,6 @@ extension RFC5280Policy.Test {
             )
         }
 
-        // Unconstrained everything.
         roots = CertificateStore([TestPKI.unconstrainedCA])
         verifier = Verifier(rootCertificates: roots) {
             policyFactory.create(TestPKI.startDate + 2.5)
@@ -1112,8 +1059,7 @@ extension RFC5280Policy.Test {
         policyFactory: PolicyFactory
     ) async throws {
         let alternativeRoot = TestPKI.issueCA(
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             extensions: try! Certificate.Extensions {
                 Critical(
                     BasicConstraints.isCertificateAuthority(maxPathLength: nil)
@@ -1127,8 +1073,7 @@ extension RFC5280Policy.Test {
         let alternativeIntermediate = TestPKI.issueIntermediate(
             name: TestPKI.unconstrainedIntermediateName,
             key: .init(TestPKI.unconstrainedIntermediateKey.publicKey),
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             extensions: try! Certificate.Extensions {
                 Critical(
                     BasicConstraints.isCertificateAuthority(maxPathLength: 0)
@@ -1143,8 +1088,7 @@ extension RFC5280Policy.Test {
         let intermediateWithAConstrainedNameForSomeReason = TestPKI.issueIntermediate(
             name: TestPKI.unconstrainedIntermediateName,
             key: .init(TestPKI.unconstrainedIntermediateKey.publicKey),
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             extensions: try! Certificate.Extensions {
                 Critical(
                     BasicConstraints.isCertificateAuthority(maxPathLength: 0)
@@ -1162,7 +1106,6 @@ extension RFC5280Policy.Test {
             issuer: .unconstrainedIntermediate
         )
 
-        // Test a constraint on the root affecting the leaf
         var roots = CertificateStore([alternativeRoot])
         var verifier = Verifier(rootCertificates: roots) {
             policyFactory.create(TestPKI.startDate + 2.5)
@@ -1174,7 +1117,7 @@ extension RFC5280Policy.Test {
 
         switch (match, result) {
         case (true, .validCertificate), (false, .couldNotValidate):
-            // Expected outcomes
+
             ()
 
         default:
@@ -1183,7 +1126,6 @@ extension RFC5280Policy.Test {
             )
         }
 
-        // Test a constraint on the intermediate affecting the leaf.
         roots = CertificateStore([TestPKI.unconstrainedCA])
         verifier = Verifier(rootCertificates: roots) {
             policyFactory.create(TestPKI.startDate + 2.5)
@@ -1195,7 +1137,7 @@ extension RFC5280Policy.Test {
 
         switch (match, result) {
         case (true, .validCertificate), (false, .couldNotValidate):
-            // Expected outcomes
+
             ()
 
         default:
@@ -1204,7 +1146,6 @@ extension RFC5280Policy.Test {
             )
         }
 
-        // Test a constraint on the root affecting the intermediate
         roots = CertificateStore([alternativeRoot])
         verifier = Verifier(rootCertificates: roots) {
             policyFactory.create(TestPKI.startDate + 2.5)
@@ -1216,7 +1157,7 @@ extension RFC5280Policy.Test {
 
         switch (match, result) {
         case (true, .validCertificate), (false, .couldNotValidate):
-            // Expected outcomes
+
             ()
 
         default:
@@ -1230,7 +1171,7 @@ extension RFC5280Policy.Test {
         let roots = CertificateStore([TestPKI.unconstrainedCA])
         let leaf = TestPKI.issueLeaf(
             notValidBefore: TestPKI.startDate + 1.0,
-            notValidAfter: TestPKI.startDate + 2.0,  // One second validity window
+            notValidAfter: TestPKI.startDate + 2.0,
             issuer: .unconstrainedIntermediate
         )
 
@@ -1254,7 +1195,7 @@ extension RFC5280Policy.Test {
         let roots = CertificateStore([TestPKI.unconstrainedCA])
         let leaf = TestPKI.issueLeaf(
             notValidBefore: TestPKI.startDate,
-            // Later than the intermediate.
+
             notValidAfter: TestPKI.unconstrainedIntermediate.notValidAfter + 2.0,
             issuer: .unconstrainedIntermediate
         )
@@ -1279,8 +1220,8 @@ extension RFC5280Policy.Test {
         let roots = CertificateStore([TestPKI.unconstrainedCA])
         let leaf = TestPKI.issueLeaf(
             notValidBefore: TestPKI.startDate,
-            notValidAfter: TestPKI.unconstrainedCA.notValidAfter + 2.0,  // Later than the root.
-            // Issue off the root directly to avoid the intermediate getting involved.
+            notValidAfter: TestPKI.unconstrainedCA.notValidAfter + 2.0,
+
             issuer: .unconstrainedRoot
         )
 
@@ -1304,7 +1245,7 @@ extension RFC5280Policy.Test {
         let roots = CertificateStore([TestPKI.unconstrainedCA])
         let leaf = TestPKI.issueLeaf(
             notValidBefore: TestPKI.startDate + 2.0,
-            notValidAfter: TestPKI.startDate + 3.0,  // One second validity window
+            notValidAfter: TestPKI.startDate + 3.0,
             issuer: .unconstrainedIntermediate
         )
 
@@ -1327,7 +1268,7 @@ extension RFC5280Policy.Test {
     static func _notYetValidIntermediateIsRejected(_ policyFactory: PolicyFactory) async throws {
         let roots = CertificateStore([TestPKI.unconstrainedCA])
         let leaf = TestPKI.issueLeaf(
-            // Earlier than the intermediate
+
             notValidBefore: TestPKI.unconstrainedIntermediate.notValidBefore - 2.0,
             notValidAfter: TestPKI.unconstrainedIntermediate.notValidAfter,
             issuer: .unconstrainedIntermediate
@@ -1353,9 +1294,9 @@ extension RFC5280Policy.Test {
     static func _notYetValidRootIsRejected(_ policyFactory: PolicyFactory) async throws {
         let roots = CertificateStore([TestPKI.unconstrainedCA])
         let leaf = TestPKI.issueLeaf(
-            notValidBefore: TestPKI.unconstrainedCA.notValidBefore - 2.0,  // Earlier than the root
+            notValidBefore: TestPKI.unconstrainedCA.notValidBefore - 2.0,
             notValidAfter: TestPKI.startDate,
-            // Issue off the root directly to avoid the intermediate getting involved.
+
             issuer: .unconstrainedRoot
         )
 
@@ -1380,7 +1321,7 @@ extension RFC5280Policy.Test {
         let roots = CertificateStore([TestPKI.unconstrainedCA])
         let leaf = TestPKI.issueLeaf(
             notValidBefore: TestPKI.startDate + 3.0,
-            notValidAfter: TestPKI.startDate + 2.0,  // invalid order
+            notValidAfter: TestPKI.startDate + 2.0,
             issuer: .unconstrainedIntermediate
         )
 
@@ -1445,12 +1386,11 @@ extension RFC5280Policy.Test {
         _ policyFactory: PolicyFactory
     ) async throws {
         let invalidIntermediateCAs = [
-            // Explicitly not being a CA is bad
+
             TestPKI.issueIntermediate(
                 name: TestPKI.unconstrainedIntermediateName,
                 key: .init(TestPKI.unconstrainedIntermediateKey.publicKey),
-                // IMPL-108: known-valid input; construction cannot fail.
-                // swiftlint:disable:next force_try
+
                 extensions: try! Certificate.Extensions {
                     Critical(
                         BasicConstraints.notCertificateAuthority
@@ -1459,7 +1399,6 @@ extension RFC5280Policy.Test {
                 issuer: .unconstrainedRoot
             ),
 
-            // Not having BasicConstraints at all is also bad.
             TestPKI.issueIntermediate(
                 name: TestPKI.unconstrainedIntermediateName,
                 key: .init(TestPKI.unconstrainedIntermediateKey.publicKey),
@@ -1467,7 +1406,6 @@ extension RFC5280Policy.Test {
                 issuer: .unconstrainedRoot
             ),
 
-            // As is having broken BasicConstraints
             TestPKI.issueIntermediate(
                 name: TestPKI.unconstrainedIntermediateName,
                 key: .init(TestPKI.unconstrainedIntermediateKey.publicKey),
@@ -1492,7 +1430,6 @@ extension RFC5280Policy.Test {
                 return
             }
 
-            // Adding the better CA in works better, _and_ we don't use the bad intermediate!
             verifier = Verifier(rootCertificates: CertificateStore([TestPKI.unconstrainedCA])) {
                 policyFactory.create(TestPKI.startDate + 2.5)
             }
@@ -1512,7 +1449,6 @@ extension RFC5280Policy.Test {
                 Array(chain) == [leaf, TestPKI.unconstrainedIntermediate, TestPKI.unconstrainedCA]
             )
 
-            // And having a v1 intermediate is fine too.
             let v1Intermediate = TestPKI.issueIntermediate(
                 name: TestPKI.unconstrainedIntermediateName,
                 version: .v1,
@@ -1541,10 +1477,9 @@ extension RFC5280Policy.Test {
     static func _rootCAMustBeMarkedCAInBasicConstraints(_ policyFactory: PolicyFactory) async throws
     {
         let invalidRootCAs = [
-            // Explicitly not being a CA is bad
+
             TestPKI.issueCA(
-                // IMPL-108: known-valid input; construction cannot fail.
-                // swiftlint:disable:next force_try
+
                 extensions: try! Certificate.Extensions {
                     Critical(
                         BasicConstraints.notCertificateAuthority
@@ -1552,10 +1487,8 @@ extension RFC5280Policy.Test {
                 }
             ),
 
-            // Not having BasicConstraints at all is also bad.
             TestPKI.issueCA(extensions: Certificate.Extensions()),
 
-            // As is having broken BasicConstraints
             TestPKI.issueCA(extensions: try Certificate.Extensions([Self.brokenBasicConstraints])),
         ]
 
@@ -1577,7 +1510,6 @@ extension RFC5280Policy.Test {
                 return
             }
 
-            // Adding the better CA in works better, _and_ we don't use the bad root!
             verifier = Verifier(
                 rootCertificates: CertificateStore([badRoot, TestPKI.unconstrainedCA])
             ) {
@@ -1597,7 +1529,6 @@ extension RFC5280Policy.Test {
                 Array(chain) == [leaf, TestPKI.unconstrainedIntermediate, TestPKI.unconstrainedCA]
             )
 
-            // And a v1 root works too.
             let v1Root = TestPKI.issueCA(version: .v1, extensions: .init())
 
             verifier = Verifier(rootCertificates: CertificateStore([v1Root])) {
@@ -1620,14 +1551,11 @@ extension RFC5280Policy.Test {
     static func _pathLengthConstraintsFromIntermediatesAreApplied(
         _ policyFactory: PolicyFactory
     ) async throws {
-        // This test requires that we use a second-level intermediate, to police the first-level
-        // intermediate's path length constraint. This second level intermediate has a valid path length
-        // constraint.
+
         let secondLevelIntermediate = TestPKI.issueIntermediate(
             name: TestPKI.secondLevelIntermediateName,
             key: .init(TestPKI.secondLevelIntermediateKey.publicKey),
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             extensions: try! Certificate.Extensions {
                 Critical(
                     BasicConstraints.isCertificateAuthority(maxPathLength: 0)
@@ -1654,12 +1582,10 @@ extension RFC5280Policy.Test {
             return
         }
 
-        // Creating a new first-level intermediate with a better path length constraint works!
         let newFirstLevelIntermediate = TestPKI.issueIntermediate(
             name: TestPKI.unconstrainedIntermediateName,
             key: .init(TestPKI.unconstrainedIntermediateKey.publicKey),
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             extensions: try! Certificate.Extensions {
                 Critical(
                     BasicConstraints.isCertificateAuthority(maxPathLength: 1)
@@ -1694,12 +1620,9 @@ extension RFC5280Policy.Test {
 
     static func _pathLengthConstraintsOnRootsAreApplied(_ policyFactory: PolicyFactory) async throws
     {
-        // This test requires that we use a second-level intermediate, to police the first-level
-        // intermediate's path length constraint. This second level intermediate has a valid path length
-        // constraint.
+
         let alternativeRoot = TestPKI.issueCA(
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             extensions: try! Certificate.Extensions {
                 Critical(
                     BasicConstraints.isCertificateAuthority(maxPathLength: 0)
@@ -1722,7 +1645,6 @@ extension RFC5280Policy.Test {
             return
         }
 
-        // Adding back the good root works!
         verifier = Verifier(
             rootCertificates: CertificateStore([alternativeRoot, TestPKI.unconstrainedCA])
         ) {
@@ -1744,10 +1666,6 @@ extension RFC5280Policy.Test {
     static func _pathLengthConstraintsDoesOnlyCountNonSelfIssuedCertificates(
         _ policyFactory: PolicyFactory
     ) async throws {
-        // We are building a certificate chain that looks like this:
-        // Cert(Iss=Y, Sub=X, Key=1, pathLen=0)
-        // Cert(Iss=X, Sub=X, Key=2) // self issued with different public key
-        // Cert(Iss=X, Sub=Z, Key=3)
 
         let alternativeRoot = TestPKI.issueCA(
             extensions: try Certificate.Extensions {
@@ -1792,11 +1710,10 @@ extension RFC5280Policy.Test {
     }
 
     static func allExcludedSubtreesAreEvaluated(_ policyFactory: PolicyFactory) async throws {
-        // This confirms that so long as there exists _a_ constraint, it matches, even if there are others.
+
         let names: [GeneralName] = [
             .directoryName(
-                // IMPL-108: known-valid input; construction cannot fail.
-                // swiftlint:disable:next force_try
+
                 try! DistinguishedName {
                     CommonName("Excluded")
                 }
@@ -1812,8 +1729,7 @@ extension RFC5280Policy.Test {
             .ipAddress(ISO_8824.OctetString(contentBytes: [127, 0, 0, 1, 255, 0, 0, 0])),
         ]
         let alternativeRoot = TestPKI.issueCA(
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             extensions: try! Certificate.Extensions {
                 Critical(
                     BasicConstraints.isCertificateAuthority(maxPathLength: nil)
@@ -1868,10 +1784,9 @@ extension RFC5280Policy.Test {
         )
 
         for name in subtrees {
-            // First try excluded.
+
             var alternativeRoot = TestPKI.issueCA(
-                // IMPL-108: known-valid input; construction cannot fail.
-                // swiftlint:disable:next force_try
+
                 extensions: try! Certificate.Extensions {
                     Critical(
                         BasicConstraints.isCertificateAuthority(maxPathLength: nil)
@@ -1896,10 +1811,8 @@ extension RFC5280Policy.Test {
                 return
             }
 
-            // Then included
             alternativeRoot = TestPKI.issueCA(
-                // IMPL-108: known-valid input; construction cannot fail.
-                // swiftlint:disable:next force_try
+
                 extensions: try! Certificate.Extensions {
                     Critical(
                         BasicConstraints.isCertificateAuthority(maxPathLength: nil)
@@ -1932,8 +1845,7 @@ extension RFC5280Policy.Test {
 
     static func brokenExtensionsPreventValidation(_ policyFactory: PolicyFactory) async throws {
         let alternativeRoot = TestPKI.issueCA(
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             extensions: try! Certificate.Extensions {
                 Critical(
                     BasicConstraints.isCertificateAuthority(maxPathLength: nil)
@@ -1944,8 +1856,7 @@ extension RFC5280Policy.Test {
             }
         )
         let goodRootWithConstraint = TestPKI.issueCA(
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             extensions: try! Certificate.Extensions {
                 Critical(
                     BasicConstraints.isCertificateAuthority(maxPathLength: nil)
@@ -1959,8 +1870,7 @@ extension RFC5280Policy.Test {
         )
         let bustedSAN = TestPKI.issueLeaf(
             issuer: .unconstrainedIntermediate,
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             customExtensions: try! Certificate.Extensions {
                 Critical(
                     BasicConstraints.notCertificateAuthority
@@ -1972,7 +1882,6 @@ extension RFC5280Policy.Test {
         )
         let goodLeaf = TestPKI.issueLeaf(issuer: .unconstrainedIntermediate)
 
-        // First test the bad root.
         var roots = CertificateStore([alternativeRoot])
         var verifier = Verifier(rootCertificates: roots) {
             policyFactory.create(TestPKI.startDate + 2.5)
@@ -1987,7 +1896,6 @@ extension RFC5280Policy.Test {
             return
         }
 
-        // Then the bad leaf.
         roots = CertificateStore([goodRootWithConstraint])
         verifier = Verifier(rootCertificates: roots) {
             policyFactory.create(TestPKI.startDate + 2.5)
@@ -2004,13 +1912,11 @@ extension RFC5280Policy.Test {
     }
 
     static func excludedSubtreesBeatPermittedSubtrees(_ policyFactory: PolicyFactory) async throws {
-        // IMPL-108: known-valid input; construction cannot fail.
-        // swiftlint:disable:next force_try
+
         let name = try! DistinguishedName {
             CommonName("Example")
         }
 
-        // Having a name present in the excluded subtrees overrules the permitted ones.
         let names: [GeneralName] = [
             .dnsName("example.com"),
             .ipAddress(ISO_8824.OctetString(contentBytes: [127, 0, 0, 1, 255, 0, 0, 0])),
@@ -2021,8 +1927,7 @@ extension RFC5280Policy.Test {
         let alternativeIntermediate = TestPKI.issueIntermediate(
             name: TestPKI.unconstrainedIntermediateName,
             key: .init(TestPKI.unconstrainedIntermediateKey.publicKey),
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             extensions: try! Certificate.Extensions {
                 Critical(
                     BasicConstraints.isCertificateAuthority(maxPathLength: 0)

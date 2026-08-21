@@ -1,17 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2023 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import Testing
 
 @testable import Certificate_Internals
@@ -45,7 +31,7 @@ private func assertEqual(
     sourceLocation: SourceLocation = #_sourceLocation
 ) {
     _assertEqual(expected, initial: initial(), mutate, sourceLocation: sourceLocation)
-    // get a sequence that is not an `Array` to hit the slow path as well
+
     _assertEqual(
         expected.lazy.map { $0 },
         initial: initial(),

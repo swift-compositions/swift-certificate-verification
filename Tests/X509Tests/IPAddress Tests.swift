@@ -1,17 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2023 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import Foundation
 import ISO_8824
 import ISO_8825
@@ -28,7 +14,7 @@ import Testing
 
 @Suite struct `IPAddress Tests` {
     static let fixtures: [(ISO_8824.OctetString, ISO_8824.OctetString, Bool)] = [
-        // Confirm a few CIDR masks
+
         (.v4("17.250.78.1"), .v4(subnet: "17.0.0.0", mask: "255.0.0.0"), true),
         (.v4("17.250.78.1"), .v4(subnet: "17.250.0.66", mask: "255.255.0.0"), true),
         (.v4("17.250.78.1"), .v4(subnet: "17.250.78.0", mask: "255.255.255.0"), true),
@@ -36,30 +22,24 @@ import Testing
         (.v4("18.250.78.1"), .v4(subnet: "17.0.0.0", mask: "255.0.0.0"), false),
         (.v4("17.250.78.1"), .v4(subnet: "17.250.78.2", mask: "255.255.255.255"), false),
 
-        // CIDR mask with zero bytes in weird places.
         (.v4("17.250.78.1"), .v4(subnet: "17.250.78.1", mask: "0.0.0.255"), false),
         (.v4("17.250.78.1"), .v4(subnet: "17.250.78.1", mask: "0.0.255.255"), false),
         (.v4("17.250.78.1"), .v4(subnet: "17.250.78.1", mask: "0.255.255.255"), false),
         (.v4("17.250.78.1"), .v4(subnet: "17.250.78.1", mask: "255.0.255.0"), false),
         (.v4("17.250.78.1"), .v4(subnet: "17.250.78.1", mask: "255.255.0.255"), false),
 
-        // CIDR masks that aren't all zeros
         (.v4("17.250.78.1"), .v4(subnet: "17.0.0.0", mask: "128.0.0.0"), true),
         (.v4("17.255.78.1"), .v4(subnet: "17.254.0.0", mask: "255.254.0.0"), true),
         (.v4("17.255.78.1"), .v4(subnet: "17.254.0.0", mask: "255.255.0.0"), false),
 
-        // CIDR masks with weird bit patterns
         (.v4("17.250.78.1"), .v4(subnet: "17.250.78.1", mask: "255.255.62.0"), false),
         (.v4("17.250.78.1"), .v4(subnet: "17.250.78.1", mask: "255.239.255.255"), false),
 
-        // All zero mask matches nothing
         (.v4("17.250.78.1"), .v4(subnet: "0.0.0.0", mask: "0.0.0.0"), false),
 
-        // v4 address with v6 mask and vice-versa
         (.v4("17.250.78.1"), .v6(subnet: "8000::", mask: "8000::"), false),
         (.v6("fe80::"), .v4(subnet: "254.128.0.0", mask: "255.128.0.0"), false),
 
-        // Confirm a few CIDR masks
         (.v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe80::", mask: "ffff:ffff:ffff:ffff::"), true),
         (
             .v6("fe80::8d:f7d:79c5:5719"),
@@ -88,7 +68,6 @@ import Testing
             false
         ),
 
-        // CIDR mask with zero bytes in weird places.
         (
             .v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "::ffff"),
             false
@@ -106,7 +85,6 @@ import Testing
             .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "ffff:0:0:ffff::ffff"), false
         ),
 
-        // CIDR masks that aren't all zeros
         (
             .v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "fe80::8d:f7d:79c5:5719", mask: "8000::"),
             true
@@ -120,7 +98,6 @@ import Testing
             .v6(subnet: "fe81::8d:f7d:79c5:5719", mask: "ffff:ffff::"), false
         ),
 
-        // CIDR masks with weird bit patterns
         (
             .v6("fe80::8d:f7d:79c5:5719"),
             .v6(subnet: "fe81::8d:f7d:79c5:5719", mask: "ffff:ffff:c9c9::"), false
@@ -131,10 +108,8 @@ import Testing
             false
         ),
 
-        // All zero mask matches nothing
         (.v6("fe80::8d:f7d:79c5:5719"), .v6(subnet: "::", mask: "::"), false),
 
-        // Require exactly double the bytes for the subnet.
         (
             .v4("17.250.78.1"),
             ISO_8824.OctetString(contentBytes: .init(repeating: 0xff, count: 1)), false
@@ -162,7 +137,7 @@ import Testing
     ]
 
     @Test func `constraints`() throws {
-        // (presented name, constraint, match)
+
         for (presentedName, constraint, match) in Self.fixtures {
             #expect(
                 NameConstraintsPolicy.ipAddressMatchesConstraint(

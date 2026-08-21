@@ -1,51 +1,20 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2022 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import ISO_8824
 import ISO_8825
 
-/// Provides details on how to access information about the certificate issuer.
-///
-/// This extension behaves as a collection of ``AuthorityInformationAccess/AccessDescription`` objects.
-///
-/// In practice this most commonly contains OCSP servers and links to the issuing CA certificate.
 public struct AuthorityInformationAccess {
     @usableFromInline
     var descriptions: [AccessDescription]
 
-    /// Create a new empty ``AuthorityInformationAccess/`` object
-    /// containing no access descriptions.
     public init() {
         self.descriptions = []
     }
 
-    /// Create a new ``AuthorityInformationAccess/`` object
-    /// containing specific access descriptions.
-    ///
-    /// - Parameter descriptions: The descriptions to include in the AIA extension.
     @inlinable
     public init<Descriptions: Sequence>(_ descriptions: Descriptions)
     where Descriptions.Element == AccessDescription {
         self.descriptions = Array(descriptions)
     }
 
-    /// Create a new ``AuthorityInformationAccess`` object
-    /// by unwrapping a ``Certificate/Extension``.
-    ///
-    /// - Parameter ext: The ``Certificate/Extension`` to unwrap
-    /// - Throws: if the ``Certificate/Extension/oid`` is not equal to
-    ///     `ISO_8824.ObjectIdentifier.X509ExtensionID.authorityInformationAccess`.
     @inlinable
     @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
     public init(_ ext: Certificate.Extension) throws(Certificate.Error) {
@@ -114,16 +83,13 @@ extension AuthorityInformationAccess: RangeReplaceableCollection {
 }
 
 extension AuthorityInformationAccess {
-    /// Describes the location and format of additional information provided
-    /// by the issuer of a given certificate.
+
     public struct AccessDescription {
-        /// The format and meaning of the information at ``location``.
+
         public var method: AccessMethod
 
-        /// The location where the information may be found.
         public var location: GeneralName
 
-        /// Construct a new ``AuthorityInformationAccess/AccessDescription`` from constituent parts.
         @inlinable
         public init(method: AccessMethod, location: GeneralName) {
             self.method = method
@@ -155,9 +121,7 @@ extension AuthorityInformationAccess.AccessDescription: CustomDebugStringConvert
 }
 
 extension AuthorityInformationAccess.AccessDescription {
-    /// The format and meaning of the information included in a single
-    /// ``AuthorityInformationAccess/AccessDescription``
-    /// object.
+
     public struct AccessMethod {
         @usableFromInline
         var backing: Backing
@@ -188,10 +152,8 @@ extension AuthorityInformationAccess.AccessDescription {
             }
         }
 
-        /// Represents an OCSP server that can be queried for certificate revocation information.
         public static let ocspServer = Self(.ocspServer)
 
-        /// A location from which a copy of the issuing CA certificate may be obtained.
         public static let issuingCA = Self(.issuingCA)
     }
 }
@@ -237,11 +199,7 @@ extension AuthorityInformationAccess.AccessDescription.AccessMethod.Backing: Sen
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension Certificate.Extension {
-    /// Construct an opaque ``Certificate/Extension`` from this AIA extension.
-    ///
-    /// - Parameters:
-    ///   - aia: The extension to wrap
-    ///   - critical: Whether this extension should have the critical bit set.
+
     @inlinable
     public init(_ aia: AuthorityInformationAccess, critical: Bool) throws(ISO_8824.Error) {
         let asn1Representation = AuthorityInfoAccessSyntax(aia)
@@ -255,14 +213,6 @@ extension Certificate.Extension {
     }
 }
 
-// MARK: ASN.1 Helpers
-
-// AuthorityInfoAccessSyntax  ::=
-//         SEQUENCE SIZE (1..MAX) OF AccessDescription
-//
-// AccessDescription  ::=  SEQUENCE {
-//         accessMethod          OBJECT IDENTIFIER,
-//         accessLocation        GeneralName  }
 @usableFromInline
 struct AuthorityInfoAccessSyntax: ISO_8825.DER.ImplicitlyTaggable, Sendable {
     @inlinable

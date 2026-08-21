@@ -1,17 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2022 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 @preconcurrency import Crypto
 import Foundation
 import ISO_8824
@@ -40,66 +26,20 @@ private enum Fixtures {
     static let ed25519Key = Curve25519.Signing.PrivateKey()
     static let dummyData: Data = Data("the quick brown fox jumps over the lazy dog".utf8)
 
-    // RFC8446 defines the following values for signature schemes for TLS 1.3 (signature algorithms before).
-    // Swift Certificates only supports a handful of them.
-    //
-    // enum {
-    //     /* RSASSA-PKCS1-v1_5 algorithms */
-    //     rsa_pkcs1_sha256(0x0401),
-    //     rsa_pkcs1_sha384(0x0501),
-    //     rsa_pkcs1_sha512(0x0601),
-    //
-    //     /* ECDSA algorithms */
-    //     ecdsa_secp256r1_sha256(0x0403),
-    //     ecdsa_secp384r1_sha384(0x0503),
-    //     ecdsa_secp521r1_sha512(0x0603),
-    //
-    //     /* RSASSA-PSS algorithms with public key OID rsaEncryption */
-    //     rsa_pss_rsae_sha256(0x0804),
-    //     rsa_pss_rsae_sha384(0x0805),
-    //     rsa_pss_rsae_sha512(0x0806),
-    //
-    //     /* EdDSA algorithms */
-    //     ed25519(0x0807),
-    //     ed448(0x0808),
-    //
-    //     /* RSASSA-PSS algorithms with public key OID RSASSA-PSS */
-    //     rsa_pss_pss_sha256(0x0809),
-    //     rsa_pss_pss_sha384(0x080a),
-    //     rsa_pss_pss_sha512(0x080b),
-    //
-    //     /* Legacy algorithms */
-    //     rsa_pkcs1_sha1(0x0201),
-    //     ecdsa_sha1(0x0203),
-    //
-    //     /* Reserved Code Points */
-    //     private_use(0xFE00..0xFFFF),
-    //     (0xFFFF)
-    // } SignatureScheme;
     static let supportedRFC8446SignatureAlgorithms: [UInt16: Certificate.SignatureAlgorithm] = [
-        // RSASSA-PKCS1-v1_5 algorithms
+
         0x0401: Certificate.SignatureAlgorithm.sha256WithRSAEncryption,
         0x0501: Certificate.SignatureAlgorithm.sha384WithRSAEncryption,
         0x0601: Certificate.SignatureAlgorithm.sha512WithRSAEncryption,
 
-        // RSASSA-PSS algorithms with public key OID rsaEncryption
-        // Currently not supported
-
-        // ECDSA algorithms
         0x0403: Certificate.SignatureAlgorithm.ecdsaWithSHA256,
         0x0503: Certificate.SignatureAlgorithm.ecdsaWithSHA384,
         0x0603: Certificate.SignatureAlgorithm.ecdsaWithSHA512,
 
-        // EdDSA algorithms
         0x0807: Certificate.SignatureAlgorithm.ed25519,
-        // ed448 is currenlty not supported
 
-        // RSASSA-PSS algorithms with public key OID RSASSA-PSS
-        // Currently not supported
-
-        // Legacy algorithms
         0x0201: Certificate.SignatureAlgorithm.sha1WithRSAEncryption,
-        // ecdsa_sha1 is currenlty not supported
+
     ]
 }
 
@@ -133,8 +73,7 @@ extension Certificate.Signature.Test.Unit {
     @Test
     func `signature algorithm translates to correct rfc8446 value`() throws {
         for (value, algorithm) in Fixtures.supportedRFC8446SignatureAlgorithms {
-            // IMPL-108: known-valid input; construction cannot fail.
-            // swiftlint:disable:next force_try
+
             #expect(value == (try! algorithm.rfc8446SignatureSchemeValue))
         }
     }
@@ -180,9 +119,7 @@ extension Certificate.Signature.Test.Unit {
 }
 
 extension Certificate.Signature.Test.`Edge Case` {
-    // The base test implementation for the hash function mismatch tests. This test case validates that, if the combination is valid, we can
-    // create and then verify a certificate signature using this pair of key and algorithm. If it's invalid, it confirms that we can't create
-    // a signature of this combination, and that attempting to validate a signature would also fail.
+
     private func hashFunctionMismatchTest(
         privateKey: Certificate.PrivateKey,
         signatureAlgorithm: Certificate.SignatureAlgorithm,
@@ -229,7 +166,7 @@ extension Certificate.Signature.Test.`Edge Case` {
 
     @Test
     func `ecdsa signature correctly strips leading zeros from raw byte representation`() throws {
-        // We're testing a round-trip logic here, ensuring that the ECDSA signature correctly round-trips.
+
         func testECDSASignatureRoundTrip(rawSignatureBytes: [UInt8]) throws {
             let sig = ECDSASignature(rawSignatureBytes: rawSignatureBytes)
 
@@ -547,7 +484,7 @@ extension Certificate.Signature.Test.`Edge Case` {
 extension Certificate.Signature.Test.Integration {
     @Test
     func `p384 signature validates over tbs certificate`() throws {
-        // This is the P384 signature over LetsEncrypt Intermediate E1.
+
         let signatureBytes: [UInt8] = [
             0x30, 0x64, 0x02, 0x30, 0x7B, 0x74,
             0xD5, 0x52, 0x13, 0x8D, 0x61, 0xFE, 0x0D, 0xBA, 0x3F,
@@ -574,7 +511,6 @@ extension Certificate.Signature.Test.Integration {
 
         #expect(signature.rawRepresentation == .init(signatureBytes))
 
-        // Validate that the signature is valid over the TBS certificate bytes.
         let issuingPublicKeyBytes: [UInt8] = [
             0x04, 0xCD, 0x9B, 0xD5, 0x9F, 0x80, 0x83, 0x0A, 0xEC, 0x09, 0x4A, 0xF3,
             0x16, 0x4A, 0x3E, 0x5C, 0xCF, 0x77, 0xAC, 0xDE, 0x67, 0x05, 0x0D, 0x1D, 0x07, 0xB6,
@@ -712,7 +648,7 @@ extension Certificate.Signature.Test.Integration {
         signatureAlgorithm: Certificate.SignatureAlgorithm
     ) throws -> Bool {
         let singatureData = try #require(Data(base64Encoded: signatureBase64))
-        let publicKey = try Certificate.PublicKey(pemEncoded: publicKeyPEM)  // -> RFC 7468
+        let publicKey = try Certificate.PublicKey(pemEncoded: publicKeyPEM)
         return publicKey.isValidSignature(
             singatureData,
             for: Fixtures.dummyData,
@@ -720,15 +656,6 @@ extension Certificate.Signature.Test.Integration {
         )
     }
 
-    /// The key and signature were created with openssl for cross verification.
-    ///
-    /// ```bash
-    /// openssl ecparam -genkey -name prime256v1 -noout -out private_key.pem
-    /// openssl ec -in private_key.pem -pubout -out public_key.pem
-    /// echo -n "the quick brown fox jumps over the lazy dog" | openssl dgst -sha256 -sign private_key.pem -out signature.bin
-    /// cat signature.bin | base64 > signature.b64
-    /// echo -n "the quick brown fox jumps over the lazy dog" | openssl dgst -sha256 -verify public_key.pem -signature signature.bin
-    /// ```
     @Test
     func `verify external signature p256`() throws {
         let publicKeyString = """
@@ -750,15 +677,6 @@ extension Certificate.Signature.Test.Integration {
         )
     }
 
-    /// The key and signature were created with openssl for cross verification.
-    ///
-    /// ```bash
-    /// openssl ecparam -genkey -name secp384r1 -noout -out private_key.pem
-    /// openssl ec -in private_key.pem -pubout -out public_key.pem
-    /// echo -n "the quick brown fox jumps over the lazy dog" | openssl dgst -sha384 -sign private_key.pem -out signature.bin
-    /// cat signature.bin | base64 > signature.b64
-    /// echo -n "the quick brown fox jumps over the lazy dog" | openssl dgst -sha384 -verify public_key.pem -signature signature.bin
-    /// ```
     @Test
     func `verify external signature p384`() throws {
         let publicKeyString = """
@@ -781,15 +699,6 @@ extension Certificate.Signature.Test.Integration {
         )
     }
 
-    /// The key and signature were created with openssl for cross verification.
-    ///
-    /// ```bash
-    /// openssl ecparam -genkey -name secp521r1 -noout -out private_key.pem
-    /// openssl ec -in private_key.pem -pubout -out public_key.pem
-    /// echo -n "the quick brown fox jumps over the lazy dog" | openssl dgst -sha512 -sign private_key.pem -out signature.bin
-    /// cat signature.bin | base64 > signature.b64
-    /// echo -n "the quick brown fox jumps over the lazy dog" | openssl dgst -sha512 -verify public_key.pem -signature signature.bin
-    /// ```
     @Test
     func `verify external signature p521`() throws {
         let publicKeyString = """
@@ -813,17 +722,6 @@ extension Certificate.Signature.Test.Integration {
         )
     }
 
-    /// The key and signature were created with openssl for cross verification. The openssl that comes with macOS has
-    /// some problems here, but the hombrew version does the job.
-    ///
-    /// ```bash
-    /// openssl_brew="/opt/homebrew/opt/openssl@3/bin/openssl"  # adjust path as needed
-    /// $openssl_brew genpkey -algorithm Ed25519 -out private_key_ed25519.pem
-    /// $openssl_brew pkey -in private_key_ed25519.pem -pubout -out public_key_ed25519.pem
-    /// echo -n "the quick brown fox jumps over the lazy dog" | $openssl_brew dgst -sign private_key_ed25519.pem -out signature_ed25519.bin
-    /// base64 -i signature_ed25519.bin -o signature_ed25519.b64
-    /// echo -n "the quick brown fox jumps over the lazy dog" | $openssl_brew dgst -verify public_key_ed25519.pem -signature signature_ed25519.bin
-    /// ```
     @Test
     func `verify external signature ed25519`() throws {
         let publicKeyString = """

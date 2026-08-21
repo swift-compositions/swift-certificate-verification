@@ -1,20 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2023 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
-/// ``_TinyArray`` is a ``RandomAccessCollection`` optimised to store zero or one ``Element``.
-/// It supports arbitrary many elements but if only up to one ``Element`` is stored it does **not** allocate separate storage on the heap
-/// and instead stores the ``Element`` inline.
 public struct _TinyArray<Element> {
     @usableFromInline
     enum Storage {
@@ -25,8 +8,6 @@ public struct _TinyArray<Element> {
     @usableFromInline
     var storage: Storage
 }
-
-// MARK: - TinyArray "public" interface
 
 extension _TinyArray: Equatable where Element: Equatable {}
 extension _TinyArray: Hashable where Element: Hashable {}
@@ -119,8 +100,6 @@ extension _TinyArray {
     }
 }
 
-// MARK: - TinyArray.Storage "private" implementation
-
 extension _TinyArray.Storage: Equatable where Element: Equatable {
     @inlinable
     static func == (lhs: Self, rhs: Self) -> Bool {
@@ -129,8 +108,7 @@ extension _TinyArray.Storage: Equatable where Element: Equatable {
             return lhs == rhs
 
         case (.arbitrary(let lhs), .arbitrary(let rhs)):
-            // we don't use lhs.elementsEqual(rhs) so we can hit the fast path from Array
-            // if both arrays share the same underlying storage: https://github.com/apple/swift/blob/b42019005988b2d13398025883e285a81d323efa/stdlib/public/core/Array.swift#L1775
+
             return lhs == rhs
 
         case (.one(let element), .arbitrary(let array)),
@@ -146,7 +124,7 @@ extension _TinyArray.Storage: Equatable where Element: Equatable {
 extension _TinyArray.Storage: Hashable where Element: Hashable {
     @inlinable
     func hash(into hasher: inout Hasher) {
-        // same strategy as Array: https://github.com/apple/swift/blob/b42019005988b2d13398025883e285a81d323efa/stdlib/public/core/Array.swift#L1801
+
         hasher.combine(count)
         for element in self {
             hasher.combine(element)
@@ -216,8 +194,7 @@ extension _TinyArray.Storage {
             return
         }
         guard let secondElement = try iterator.next()?.get() else {
-            // newElements just contains a single element
-            // and we hit the fast path
+
             self = .one(firstElement)
             return
         }
@@ -248,7 +225,7 @@ extension _TinyArray.Storage {
         case .one(let firstElement):
             var iterator = newElements.makeIterator()
             guard let secondElement = iterator.next() else {
-                // newElements is empty, nothing to do
+
                 return
             }
             var elements: [Element] = []
@@ -260,16 +237,14 @@ extension _TinyArray.Storage {
 
         case .arbitrary(var elements):
             if elements.isEmpty {
-                // if `self` is currently empty and `newElements` just contains a single
-                // element, we skip allocating an array and set `self` to `.one(firstElement)`
+
                 var iterator = newElements.makeIterator()
                 guard let firstElement = iterator.next() else {
-                    // newElements is empty, nothing to do
+
                     return
                 }
                 guard let secondElement = iterator.next() else {
-                    // newElements just contains a single element
-                    // and we hit the fast path
+
                     self = .one(firstElement)
                     return
                 }
@@ -328,7 +303,7 @@ extension _TinyArray.Storage {
     mutating func sort(by areInIncreasingOrder: (Element, Element) throws -> Bool) rethrows {
         switch self {
         case .one:
-            // a collection of just one element is always sorted, nothing to do
+
             break
 
         case .arbitrary(var elements):

@@ -1,42 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftCertificates open source project
-//
-// Copyright (c) 2022 Apple Inc. and the SwiftCertificates project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftCertificates project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import ISO_8824
 import ISO_8825
 
-// TBSCertificate  ::=  SEQUENCE  {
-//      version         [0]  Version DEFAULT v1,
-//      serialNumber         CertificateSerialNumber,
-//      signature            AlgorithmIdentifier,
-//      issuer               Name,
-//      validity             Validity,
-//      subject              Name,
-//      subjectPublicKeyInfo SubjectPublicKeyInfo,
-//      issuerUniqueID  [1]  IMPLICIT UniqueIdentifier OPTIONAL,
-//                           -- If present, version MUST be v2 or v3
-//      subjectUniqueID [2]  IMPLICIT UniqueIdentifier OPTIONAL,
-//                           -- If present, version MUST be v2 or v3
-//      extensions      [3]  Extensions OPTIONAL
-//                           -- If present, version MUST be v3 --  }
-//
-// Version  ::=  INTEGER  {  v1(0), v2(1), v3(2)  }
-//
-// CertificateSerialNumber  ::=  INTEGER
-//
-// UniqueIdentifier  ::=  BIT STRING
-//
-// Extensions  ::=  SEQUENCE SIZE (1..MAX) OF Extension
 @usableFromInline
 typealias UniqueIdentifier = ISO_8824.BitString
 
@@ -157,14 +121,6 @@ package struct TBSCertificate: ISO_8825.DER.ImplicitlyTaggable, Hashable, Sendab
                 )
             }
 
-            // Decode-boundary bridge (N5 Option A): the DER.ImplicitlyTaggable conformance
-            // pins throws(ISO_8824.Error), but PublicKey(spki:) and Extensions(_:) validate
-            // (unsupported key algorithm, duplicate extension OID) and throw Certificate.Error.
-            // Map those to the ASN.1 error, preserving the detail; the typed Certificate.Error
-            // remains on the direct PublicKey(spki:)/Extensions(_:) APIs and at verify time.
-            // Catch-all (not just Certificate.Error): PublicKey(spki:) also surfaces
-            // crypto-backend errors on malformed key bytes. All are decode-boundary
-            // failures → map to the ASN.1 error, preserving the detail in the reason.
             let publicKey: Certificate.PublicKey
             do {
                 publicKey = try Certificate.PublicKey(spki: subjectPublicKeyInfo)
