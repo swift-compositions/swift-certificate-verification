@@ -23,17 +23,17 @@ let package = Package(
         .package(url: "https://github.com/swift-iso/swift-iso-8824.git", branch: "main"),
         .package(url: "https://github.com/swift-iso/swift-iso-8825.git", branch: "main"),
         .package(
-            url: "https://github.com/swift-primitives/swift-byte-primitives.git",
+            url: "https://github.com/swift-molecules/swift-byte.git",
             branch: "main"
         ),
 
         .package(
-            url: "https://github.com/swift-primitives/swift-standard-library-extensions.git",
+            url: "https://github.com/swift-molecules/swift-standard-library-extensions.git",
             branch: "main"
         ),
 
         .package(
-            url: "https://github.com/swift-primitives/swift-time-primitives.git",
+            url: "https://github.com/swift-molecules/swift-time.git",
             branch: "main"
         ),
 
@@ -51,12 +51,12 @@ let package = Package(
                 "Certificate Internals",
                 .product(name: "ISO 8824", package: "swift-iso-8824"),
                 .product(name: "ISO 8825", package: "swift-iso-8825"),
-                .product(name: "Byte Primitives", package: "swift-byte-primitives"),
+                .product(name: "Byte", package: "swift-byte"),
                 .product(
                     name: "Standard Library Extensions",
                     package: "swift-standard-library-extensions"
                 ),
-                .product(name: "Time Primitive", package: "swift-time-primitives"),
+                .product(name: "Time Primitive", package: "swift-time"),
                 .product(name: "RFC 791", package: "swift-rfc-791"),
                 .product(name: "RFC 4291", package: "swift-rfc-4291"),
                 .product(name: "RFC 3986", package: "swift-rfc-3986"),
@@ -72,7 +72,7 @@ let package = Package(
             dependencies: [
                 "Certificates",
                 "Certificate Internals",
-                .product(name: "Time Primitive", package: "swift-time-primitives"),
+                .product(name: "Time Primitive", package: "swift-time"),
 
                 .product(name: "Crypto", package: "swift-crypto"),
             ],
