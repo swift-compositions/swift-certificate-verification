@@ -23,7 +23,7 @@ let package = Package(
         .package(url: "https://github.com/swift-iso/swift-iso-8824.git", branch: "main"),
         .package(url: "https://github.com/swift-iso/swift-iso-8825.git", branch: "main"),
         .package(
-            url: "https://github.com/swift-molecules/swift-byte.git",
+            url: "https://github.com/swift-atoms/swift-byte.git",
             branch: "main"
         ),
 
@@ -33,7 +33,7 @@ let package = Package(
         ),
 
         .package(
-            url: "https://github.com/swift-molecules/swift-time.git",
+            url: "https://github.com/swift-atoms/swift-time.git",
             branch: "main"
         ),
 
@@ -56,7 +56,7 @@ let package = Package(
                     name: "Standard Library Extensions",
                     package: "swift-standard-library-extensions"
                 ),
-                .product(name: "Time Primitive", package: "swift-time"),
+                .product(name: "Time", package: "swift-time"),
                 .product(name: "RFC 791", package: "swift-rfc-791"),
                 .product(name: "RFC 4291", package: "swift-rfc-4291"),
                 .product(name: "RFC 3986", package: "swift-rfc-3986"),
@@ -72,7 +72,7 @@ let package = Package(
             dependencies: [
                 "Certificates",
                 "Certificate Internals",
-                .product(name: "Time Primitive", package: "swift-time"),
+                .product(name: "Time", package: "swift-time"),
 
                 .product(name: "Crypto", package: "swift-crypto"),
             ],
