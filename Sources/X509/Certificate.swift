@@ -1,6 +1,6 @@
 import ISO_8824
 import ISO_8825
-import Time_Primitive
+import Time
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 public struct Certificate {

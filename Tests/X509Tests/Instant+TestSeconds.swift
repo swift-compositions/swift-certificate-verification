@@ -1,4 +1,4 @@
-import Time_Primitive
+import Time
 
 extension Instant {
 

@@ -1,6 +1,6 @@
 import ISO_8824
 import ISO_8825
-import Time_Primitive
+import Time
 
 @usableFromInline
 enum Time: ISO_8825.DER.Parseable, ISO_8825.DER.Serializable, Hashable, Sendable {

@@ -1,7 +1,7 @@
 import ISO_8824
 import ISO_8825
 import Testing
-import Time_Primitive
+import Time
 
 @testable import Certificates
 

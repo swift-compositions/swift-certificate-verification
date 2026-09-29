@@ -1,5 +1,5 @@
 import Testing
-import Time_Primitive
+import Time
 
 @Suite struct `Instant Test Seconds` {}
 
