@@ -1,4 +1,5 @@
 import RFC_3986
+import RFC_4291
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, macCatalyst 13, visionOS 1.0, *)
 extension NameConstraintsPolicy {

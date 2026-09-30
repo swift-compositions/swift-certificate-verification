@@ -15,9 +15,9 @@ extension Certificate.Issuance {
 
 extension Certificate.Issuance.Test {
 
-    static let now = Instant(secondsSinceUnixEpoch: 1_767_225_600)
-    static let aYearEarlier = Instant(secondsSinceUnixEpoch: 1_735_689_600)
-    static let aDecadeLater = Instant(secondsSinceUnixEpoch: 2_051_222_400)
+    static let now = Time::Time.Instant(secondsSinceUnixEpoch: 1_767_225_600)
+    static let aYearEarlier = Time::Time.Instant(secondsSinceUnixEpoch: 1_735_689_600)
+    static let aDecadeLater = Time::Time.Instant(secondsSinceUnixEpoch: 2_051_222_400)
 
     static func name(_ commonName: String) throws -> DistinguishedName {
         try DistinguishedName([

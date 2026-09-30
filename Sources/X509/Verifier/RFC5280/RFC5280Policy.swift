@@ -24,7 +24,7 @@ public struct RFC5280Policy: VerifierPolicy, Sendable {
     let nameConstraintsPolicy: NameConstraintsPolicy
 
     @inlinable
-    public init(validationTime: Instant) {
+    public init(validationTime: Time::Time.Instant) {
         self.versionPolicy = VersionPolicy()
         self.expiryPolicy = ExpiryPolicy(validationTime: validationTime)
         self.basicConstraintsPolicy = BasicConstraintsPolicy()

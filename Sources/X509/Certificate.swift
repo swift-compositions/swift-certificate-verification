@@ -21,13 +21,13 @@ public struct Certificate {
     }
 
     @inlinable
-    public var notValidBefore: Instant {
-        Instant(self.tbsCertificate.validity.notBefore)
+    public var notValidBefore: Time::Time.Instant {
+        Time::Time.Instant(self.tbsCertificate.validity.notBefore)
     }
 
     @inlinable
-    public var notValidAfter: Instant {
-        Instant(self.tbsCertificate.validity.notAfter)
+    public var notValidAfter: Time::Time.Instant {
+        Time::Time.Instant(self.tbsCertificate.validity.notAfter)
     }
 
     @inlinable

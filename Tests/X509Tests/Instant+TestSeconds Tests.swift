@@ -1,10 +1,10 @@
 import Testing
 import Time
 
-@Suite struct `Instant Test Seconds` {}
+@Suite struct `Time::Time.Instant Test Seconds` {}
 
-extension `Instant Test Seconds` {
-    static let epoch = Instant(secondsSinceUnixEpoch: 1_767_225_600)
+extension `Time::Time.Instant Test Seconds` {
+    static let epoch = Time::Time.Instant(secondsSinceUnixEpoch: 1_767_225_600)
 
     @Test func `whole seconds advance the second and leave the fraction alone`() {
         let result = Self.epoch + 3.0

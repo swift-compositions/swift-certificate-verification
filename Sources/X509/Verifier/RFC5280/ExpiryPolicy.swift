@@ -12,7 +12,7 @@ struct ExpiryPolicy: VerifierPolicy, Sendable {
     let validationTime: ISO_8824.GeneralizedTime
 
     @inlinable
-    init(validationTime: Instant) {
+    init(validationTime: Time::Time.Instant) {
         self.validationTime = ISO_8824.GeneralizedTime(validationTime)
     }
 

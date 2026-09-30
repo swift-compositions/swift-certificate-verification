@@ -1,7 +1,9 @@
+import Byte
 import ISO_8824
 import ISO_8825
 import RFC_4291
 import RFC_791
+import Standard_Library_Extensions
 
 public struct ServerIdentityPolicy: Sendable {
     @usableFromInline
@@ -106,7 +108,7 @@ extension ServerIdentityPolicy {
     @_spi(Testing)
     public static func parsingIPv6Address(_ string: String) -> RFC_4291.IPv6.Address? {
         do {
-            return try RFC_4291.IPv6.Address(ascii: string.utf8.map(Byte.init))
+            return try RFC_4291.IPv6.Address(ascii: string.utf8.map(Byte.init(bitPattern:)))
         } catch {
             return nil
         }
@@ -172,15 +174,12 @@ extension ServerIdentityPolicy.IPAddress {
     init?(sanField: ISO_8824.OctetString) {
         switch sanField.bytes.count {
         case 4:
-            do {
-                self = .v4(try RFC_791.IPv4.Address(binary: sanField.bytes.map(Byte.init)))
-            } catch {
-                return nil
-            }
+            let octets = sanField.bytes.map(Byte.init(bitPattern:))
+            self = .v4(RFC_791.IPv4.Address(octets[0], octets[1], octets[2], octets[3]))
 
         case 16:
             do {
-                self = .v6(try RFC_4291.IPv6.Address(binary: sanField.bytes.map(Byte.init)))
+                self = .v6(try RFC_4291.IPv6.Address(binary: sanField.bytes.map(Byte.init(bitPattern:))))
             } catch {
                 return nil
             }

@@ -284,7 +284,7 @@ extension PolicyBuilder.Test.Unit {
         let _: Verifier<AnyPolicy> = Verifier(rootCertificates: CertificateStore(), verify: .crypto)
         {
             AnyPolicy {
-                RFC5280Policy(validationTime: Instant(secondsSinceUnixEpoch: 1_767_225_600))
+                RFC5280Policy(validationTime: Time::Time.Instant(secondsSinceUnixEpoch: 1_767_225_600))
             }
         }
     }

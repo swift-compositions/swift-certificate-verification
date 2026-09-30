@@ -33,7 +33,7 @@ enum Time: ISO_8825.DER.Parseable, ISO_8825.DER.Serializable, Hashable, Sendable
     }
 
     @inlinable
-    static func makeTime(from instant: Instant) throws(ISO_8824.Error) -> Time {
+    static func makeTime(from instant: Time::Time.Instant) throws(ISO_8824.Error) -> Time {
         let components = instant.utcDate
 
         guard ((1950)..<(2050)).contains(components.year) else {
@@ -45,7 +45,7 @@ enum Time: ISO_8825.DER.Parseable, ISO_8825.DER.Serializable, Hashable, Sendable
     }
 }
 
-extension Instant {
+extension Time::Time.Instant {
     @inlinable
     package init(
         fromUTCDate date: (year: Int, month: Int, day: Int, hours: Int, minutes: Int, seconds: Int)
@@ -72,7 +72,7 @@ extension Instant {
 
     @inlinable
     package init(_ time: ISO_8824.GeneralizedTime) {
-        self = Instant(
+        self = Time::Time.Instant(
             fromUTCDate: (
                 year: time.year, month: time.month, day: time.day, hours: time.hours,
                 minutes: time.minutes,
@@ -83,7 +83,7 @@ extension Instant {
 
     @inlinable
     package init(_ time: ISO_8824.UTCTime) {
-        self = Instant(
+        self = Time::Time.Instant(
             fromUTCDate: (
                 year: time.year, month: time.month, day: time.day, hours: time.hours,
                 minutes: time.minutes,
@@ -130,7 +130,7 @@ extension ISO_8824.GeneralizedTime {
     }
 
     @inlinable
-    package init(_ instant: Instant) {
+    package init(_ instant: Time::Time.Instant) {
 
         try! self.init(instant.utcDate)
     }

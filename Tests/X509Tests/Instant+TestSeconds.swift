@@ -1,8 +1,8 @@
 import Time
 
-extension Instant {
+extension Time::Time.Instant {
 
-    static func + (lhs: Instant, rhs: Double) -> Instant {
+    static func + (lhs: Time::Time.Instant, rhs: Double) -> Time::Time.Instant {
         let wholeSeconds = rhs.rounded(.towardZero)
         let fraction = rhs - wholeSeconds
 
@@ -19,7 +19,7 @@ extension Instant {
             seconds -= 1
         }
 
-        return Instant(
+        return Time::Time.Instant(
             _unchecked: (),
             secondsSinceUnixEpoch: seconds,
             nanosecondFraction: Int32(nanoseconds)

@@ -32,8 +32,8 @@ extension Certificates.Time.Test.Unit {
             minutes: 15,
             seconds: 55
         )
-        let expected = Instant(secondsSinceUnixEpoch: 1_656_677_755)
-        #expect(expected == Instant(.utcTime(utctime)))
+        let expected = Time::Time.Instant(secondsSinceUnixEpoch: 1_656_677_755)
+        #expect(expected == Time::Time.Instant(.utcTime(utctime)))
     }
 
     @Test func `convert generalized time to instant`() throws {
@@ -47,8 +47,8 @@ extension Certificates.Time.Test.Unit {
             seconds: 55,
             fractionalSeconds: 0.0
         )
-        let expected = Instant(secondsSinceUnixEpoch: 1_656_677_755)
-        #expect(expected == Instant(.generalTime(generalizedTime)))
+        let expected = Time::Time.Instant(secondsSinceUnixEpoch: 1_656_677_755)
+        #expect(expected == Time::Time.Instant(.generalTime(generalizedTime)))
     }
 
     @Test func `convert utc time as time to instant`() throws {
@@ -62,8 +62,8 @@ extension Certificates.Time.Test.Unit {
             seconds: 55
         )
         let time = Certificates.Time.utcTime(utctime)
-        let expected = Instant(secondsSinceUnixEpoch: 1_656_677_755)
-        #expect(expected == Instant(time))
+        let expected = Time::Time.Instant(secondsSinceUnixEpoch: 1_656_677_755)
+        #expect(expected == Time::Time.Instant(time))
     }
 
     @Test func `convert generalized time as time to instant`() throws {
@@ -78,8 +78,8 @@ extension Certificates.Time.Test.Unit {
             fractionalSeconds: 0.0
         )
         let time = Certificates.Time.generalTime(generalizedTime)
-        let expected = Instant(secondsSinceUnixEpoch: 1_656_677_755)
-        #expect(expected == Instant(time))
+        let expected = Time::Time.Instant(secondsSinceUnixEpoch: 1_656_677_755)
+        #expect(expected == Time::Time.Instant(time))
     }
 
     @Test func `we handle hours minutes and seconds properly`() throws {
