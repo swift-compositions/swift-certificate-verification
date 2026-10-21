@@ -85,29 +85,37 @@ extension Certificate.Issuance {
 
 extension Certificate.Issuance {
 
+    struct Period {
+        let notBefore: Time::Time.Instant
+        let notAfter: Time::Time.Instant
+    }
+
+    struct Authority {
+        let name: DistinguishedName
+        let key: Key
+        let signatureAlgorithm: Certificate.SignatureAlgorithm
+    }
+
     static func issue(
         version: Certificate.Version = .v3,
         serialNumber: Certificate.SerialNumber,
         publicKey: Certificate.PublicKey,
-        notValidBefore: Time::Time.Instant,
-        notValidAfter: Time::Time.Instant,
-        issuer: DistinguishedName,
+        period: Period,
         subject: DistinguishedName,
-        signatureAlgorithm: Certificate.SignatureAlgorithm,
         extensions: Certificate.Extensions,
-        issuerPrivateKey: Key
+        authority: Authority
     ) throws -> Certificate {
 
         let validity = Validity(
-            notBefore: try Time.makeTime(from: notValidBefore),
-            notAfter: try Time.makeTime(from: notValidAfter)
+            notBefore: try Time.makeTime(from: period.notBefore),
+            notAfter: try Time.makeTime(from: period.notAfter)
         )
 
         let tbsCertificate = TBSCertificate(
             version: version,
             serialNumber: serialNumber,
-            signature: signatureAlgorithm,
-            issuer: issuer,
+            signature: authority.signatureAlgorithm,
+            issuer: authority.name,
             validity: validity,
             subject: subject,
             publicKey: publicKey,
@@ -115,16 +123,16 @@ extension Certificate.Issuance {
         )
 
         let tbsCertificateBytes = try ISO_8825.DER.Serializer.serialized(element: tbsCertificate)
-        let signatureBytes = try issuerPrivateKey.signature(
+        let signatureBytes = try authority.key.signature(
             for: tbsCertificateBytes,
-            algorithm: signatureAlgorithm
+            algorithm: authority.signatureAlgorithm
         )
 
         var coder = ISO_8825.DER.Serializer()
         try coder.appendConstructedNode(identifier: .sequence) { coder in
 
             coder.serializeRawBytes(tbsCertificateBytes[...])
-            try coder.serialize(AlgorithmIdentifier(signatureAlgorithm))
+            try coder.serialize(AlgorithmIdentifier(authority.signatureAlgorithm))
             try coder.serialize(ISO_8824.BitString(bytes: signatureBytes[...]))
         }
 

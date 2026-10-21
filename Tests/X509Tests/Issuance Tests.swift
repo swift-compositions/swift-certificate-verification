@@ -54,13 +54,10 @@ extension Certificate.Issuance.Test.Unit {
         let root = try Certificate.Issuance.issue(
             serialNumber: Certificate.SerialNumber(1),
             publicKey: key.publicKey,
-            notValidBefore: Fixtures.aYearEarlier,
-            notValidAfter: Fixtures.aDecadeLater,
-            issuer: name,
+            period: .init(notBefore: Fixtures.aYearEarlier, notAfter: Fixtures.aDecadeLater),
             subject: name,
-            signatureAlgorithm: .ecdsaWithSHA256,
             extensions: try Fixtures.certificateAuthority(),
-            issuerPrivateKey: key
+            authority: .init(name: name, key: key, signatureAlgorithm: .ecdsaWithSHA256)
         )
 
         #expect(root.subject == name)
@@ -84,13 +81,10 @@ extension Certificate.Issuance.Test.Unit {
         let root = try Certificate.Issuance.issue(
             serialNumber: Certificate.SerialNumber(2),
             publicKey: key.publicKey,
-            notValidBefore: Fixtures.aYearEarlier,
-            notValidAfter: Fixtures.aDecadeLater,
-            issuer: name,
+            period: .init(notBefore: Fixtures.aYearEarlier, notAfter: Fixtures.aDecadeLater),
             subject: name,
-            signatureAlgorithm: .ecdsaWithSHA256,
             extensions: try Fixtures.certificateAuthority(),
-            issuerPrivateKey: key
+            authority: .init(name: name, key: key, signatureAlgorithm: .ecdsaWithSHA256)
         )
 
         #expect(
@@ -117,13 +111,10 @@ extension Certificate.Issuance.Test.Unit {
             let certificate = try Certificate.Issuance.issue(
                 serialNumber: Certificate.SerialNumber(3),
                 publicKey: key.publicKey,
-                notValidBefore: Fixtures.aYearEarlier,
-                notValidAfter: Fixtures.aDecadeLater,
-                issuer: name,
+                period: .init(notBefore: Fixtures.aYearEarlier, notAfter: Fixtures.aDecadeLater),
                 subject: name,
-                signatureAlgorithm: algorithm,
                 extensions: try Fixtures.certificateAuthority(),
-                issuerPrivateKey: key
+                authority: .init(name: name, key: key, signatureAlgorithm: algorithm)
             )
 
             #expect(
@@ -146,13 +137,10 @@ extension Certificate.Issuance.Test.Unit {
             try Certificate.Issuance.issue(
                 serialNumber: Certificate.SerialNumber(4),
                 publicKey: ed25519.publicKey,
-                notValidBefore: Fixtures.aYearEarlier,
-                notValidAfter: Fixtures.aDecadeLater,
-                issuer: name,
+                period: .init(notBefore: Fixtures.aYearEarlier, notAfter: Fixtures.aDecadeLater),
                 subject: name,
-                signatureAlgorithm: .ecdsaWithSHA256,
                 extensions: try Fixtures.certificateAuthority(),
-                issuerPrivateKey: ed25519
+                authority: .init(name: name, key: ed25519, signatureAlgorithm: .ecdsaWithSHA256)
             )
         }
     }
@@ -167,13 +155,10 @@ extension Certificate.Issuance.Test.Integration {
         let root = try Certificate.Issuance.issue(
             serialNumber: Certificate.SerialNumber(10),
             publicKey: rootKey.publicKey,
-            notValidBefore: Fixtures.aYearEarlier,
-            notValidAfter: Fixtures.aDecadeLater,
-            issuer: rootName,
+            period: .init(notBefore: Fixtures.aYearEarlier, notAfter: Fixtures.aDecadeLater),
             subject: rootName,
-            signatureAlgorithm: .ecdsaWithSHA384,
             extensions: try Fixtures.certificateAuthority(),
-            issuerPrivateKey: rootKey
+            authority: .init(name: rootName, key: rootKey, signatureAlgorithm: .ecdsaWithSHA384)
         )
 
         let leafKey = Certificate.Issuance.Key(P256.Signing.PrivateKey())
@@ -181,13 +166,10 @@ extension Certificate.Issuance.Test.Integration {
         let leaf = try Certificate.Issuance.issue(
             serialNumber: Certificate.SerialNumber(11),
             publicKey: leafKey.publicKey,
-            notValidBefore: Fixtures.aYearEarlier,
-            notValidAfter: Fixtures.aDecadeLater,
-            issuer: rootName,
+            period: .init(notBefore: Fixtures.aYearEarlier, notAfter: Fixtures.aDecadeLater),
             subject: leafName,
-            signatureAlgorithm: .ecdsaWithSHA256,
             extensions: try Fixtures.endEntity(),
-            issuerPrivateKey: rootKey
+            authority: .init(name: rootName, key: rootKey, signatureAlgorithm: .ecdsaWithSHA256)
         )
 
         var verifier = Verifier(
@@ -212,13 +194,10 @@ extension Certificate.Issuance.Test.Integration {
         let root = try Certificate.Issuance.issue(
             serialNumber: Certificate.SerialNumber(20),
             publicKey: rootKey.publicKey,
-            notValidBefore: Fixtures.aYearEarlier,
-            notValidAfter: Fixtures.aDecadeLater,
-            issuer: rootName,
+            period: .init(notBefore: Fixtures.aYearEarlier, notAfter: Fixtures.aDecadeLater),
             subject: rootName,
-            signatureAlgorithm: .ecdsaWithSHA384,
             extensions: try Fixtures.certificateAuthority(),
-            issuerPrivateKey: rootKey
+            authority: .init(name: rootName, key: rootKey, signatureAlgorithm: .ecdsaWithSHA384)
         )
 
         let leafKey = Certificate.Issuance.Key(P256.Signing.PrivateKey())
@@ -229,13 +208,10 @@ extension Certificate.Issuance.Test.Integration {
             try Certificate.Issuance.issue(
                 serialNumber: Certificate.SerialNumber(21),
                 publicKey: leafKey.publicKey,
-                notValidBefore: Fixtures.aYearEarlier,
-                notValidAfter: Fixtures.aDecadeLater,
-                issuer: rootName,
+                period: .init(notBefore: Fixtures.aYearEarlier, notAfter: Fixtures.aDecadeLater),
                 subject: leafName,
-                signatureAlgorithm: .ecdsaWithSHA384,
                 extensions: try Fixtures.endEntity(),
-                issuerPrivateKey: issuerKey
+                authority: .init(name: rootName, key: issuerKey, signatureAlgorithm: .ecdsaWithSHA384)
             )
         }
 
