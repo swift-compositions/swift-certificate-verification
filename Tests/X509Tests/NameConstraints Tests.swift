@@ -184,8 +184,7 @@ extension NameConstraints {
                 ]
 
                 var nameConstraints = NameConstraints()
-                var latestValueForProperty:
-                    [PartialKeyPath<NameConstraints>: NameConstraintsPropertyValue] = [:]
+                var latestValueForProperty: [PartialKeyPath<NameConstraints>: NameConstraintsPropertyValue] = [:]
 
                 for test in tests + tests.reversed() {
                     test.setValue(&nameConstraints)

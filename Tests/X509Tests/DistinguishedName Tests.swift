@@ -59,8 +59,7 @@ extension DistinguishedName.Test.Unit {
         #expect(Array(nameB) == expected)
     }
 
-    @Test func `simple relative distinguished name sorts its elements including by length`() throws
-    {
+    @Test func `simple relative distinguished name sorts its elements including by length`() throws {
         let expected = [
             RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcd"),
             RelativeDistinguishedName.Attribute(type: .NameAttributes.name, utf8String: "abcde"),

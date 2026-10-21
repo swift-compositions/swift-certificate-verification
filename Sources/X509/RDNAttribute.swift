@@ -44,15 +44,27 @@ extension ISO_8825.`Any` {
         switch storage {
         case .printable(let printableString):
 
-            self = try! .init(erasing: ISO_8824.PrintableString(printableString))
+            do {
+                self = try .init(erasing: ISO_8824.PrintableString(printableString))
+            } catch {
+                preconditionFailure("A stored printableString is always serializable: \(error)")
+            }
 
         case .utf8(let utf8String):
 
-            self = try! .init(erasing: ISO_8824.UTF8String(utf8String))
+            do {
+                self = try .init(erasing: ISO_8824.UTF8String(utf8String))
+            } catch {
+                preconditionFailure("A stored utf8String is always serializable: \(error)")
+            }
 
         case .ia5(let ia5String):
 
-            self = try! .init(erasing: ISO_8824.IA5String(ia5String))
+            do {
+                self = try .init(erasing: ISO_8824.IA5String(ia5String))
+            } catch {
+                preconditionFailure("A stored ia5String is always serializable: \(error)")
+            }
 
         case .any(let any):
             self = any
@@ -127,8 +139,13 @@ extension RelativeDistinguishedName.Attribute.Value.Storage: ISO_8825.DER.Parsea
         switch self {
         case .printable(let printableString):
 
-            let printableString = try! ISO_8824.PrintableString(printableString)
-            try printableString.serialize(into: &coder)
+            let validated: ISO_8824.PrintableString
+            do {
+                validated = try ISO_8824.PrintableString(printableString)
+            } catch {
+                preconditionFailure("A stored printable string is always valid: \(error)")
+            }
+            try validated.serialize(into: &coder)
 
         case .utf8(let utf8String):
             let string = ISO_8824.UTF8String(utf8String)
@@ -136,7 +153,12 @@ extension RelativeDistinguishedName.Attribute.Value.Storage: ISO_8825.DER.Parsea
 
         case .ia5(let ia5String):
 
-            let string = try! ISO_8824.IA5String(ia5String)
+            let string: ISO_8824.IA5String
+            do {
+                string = try ISO_8824.IA5String(ia5String)
+            } catch {
+                preconditionFailure("A stored IA5 string is always valid: \(error)")
+            }
             try string.serialize(into: &coder)
 
         case .any(let any):

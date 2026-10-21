@@ -69,21 +69,21 @@ extension AlgorithmIdentifier {
     static let p256PublicKey = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.idEcPublicKey,
 
-        parameters: try! .init(erasing: ISO_8824.ObjectIdentifier.NamedCurves.secp256r1)
+        parameters: erased(ISO_8824.ObjectIdentifier.NamedCurves.secp256r1)
     )
 
     @usableFromInline
     static let p384PublicKey = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.idEcPublicKey,
 
-        parameters: try! .init(erasing: ISO_8824.ObjectIdentifier.NamedCurves.secp384r1)
+        parameters: erased(ISO_8824.ObjectIdentifier.NamedCurves.secp384r1)
     )
 
     @usableFromInline
     static let p521PublicKey = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.idEcPublicKey,
 
-        parameters: try! .init(erasing: ISO_8824.ObjectIdentifier.NamedCurves.secp521r1)
+        parameters: erased(ISO_8824.ObjectIdentifier.NamedCurves.secp521r1)
     )
 
     @usableFromInline
@@ -108,7 +108,7 @@ extension AlgorithmIdentifier {
     static let sha1WithRSAEncryption = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.sha1WithRSAEncryption,
 
-        parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
+        parameters: erased(ISO_8824.Null())
     )
 
     @usableFromInline
@@ -121,7 +121,7 @@ extension AlgorithmIdentifier {
     static let sha256WithRSAEncryption = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.sha256WithRSAEncryption,
 
-        parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
+        parameters: erased(ISO_8824.Null())
     )
 
     @usableFromInline
@@ -134,7 +134,7 @@ extension AlgorithmIdentifier {
     static let sha384WithRSAEncryption = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.sha384WithRSAEncryption,
 
-        parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
+        parameters: erased(ISO_8824.Null())
     )
 
     @usableFromInline
@@ -147,7 +147,7 @@ extension AlgorithmIdentifier {
     static let sha512WithRSAEncryption = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.sha512WithRSAEncryption,
 
-        parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
+        parameters: erased(ISO_8824.Null())
     )
 
     @usableFromInline
@@ -160,7 +160,7 @@ extension AlgorithmIdentifier {
     static let rsaKey = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.rsaEncryption,
 
-        parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
+        parameters: erased(ISO_8824.Null())
     )
 
     @usableFromInline
@@ -173,7 +173,7 @@ extension AlgorithmIdentifier {
     static let sha1 = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.sha1,
 
-        parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
+        parameters: erased(ISO_8824.Null())
     )
 
     @usableFromInline
@@ -186,7 +186,7 @@ extension AlgorithmIdentifier {
     static let sha256 = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.sha256,
 
-        parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
+        parameters: erased(ISO_8824.Null())
     )
 
     @usableFromInline
@@ -199,7 +199,7 @@ extension AlgorithmIdentifier {
     static let sha384 = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.sha384,
 
-        parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
+        parameters: erased(ISO_8824.Null())
     )
 
     @usableFromInline
@@ -212,7 +212,7 @@ extension AlgorithmIdentifier {
     static let sha512 = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.sha512,
 
-        parameters: try! ISO_8825.`Any`(erasing: ISO_8824.Null())
+        parameters: erased(ISO_8824.Null())
     )
 
     @usableFromInline
@@ -302,18 +302,26 @@ extension AlgorithmIdentifier {
     static let ecdsaP256 = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.idEcPublicKey,
 
-        parameters: try! .init(erasing: ISO_8824.ObjectIdentifier.NamedCurves.secp256r1)
+        parameters: erased(ISO_8824.ObjectIdentifier.NamedCurves.secp256r1)
     )
     @usableFromInline
     static let ecdsaP384 = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.idEcPublicKey,
 
-        parameters: try! .init(erasing: ISO_8824.ObjectIdentifier.NamedCurves.secp384r1)
+        parameters: erased(ISO_8824.ObjectIdentifier.NamedCurves.secp384r1)
     )
     @usableFromInline
     static let ecdsaP521 = AlgorithmIdentifier(
         algorithm: .AlgorithmIdentifier.idEcPublicKey,
 
-        parameters: try! .init(erasing: ISO_8824.ObjectIdentifier.NamedCurves.secp521r1)
+        parameters: erased(ISO_8824.ObjectIdentifier.NamedCurves.secp521r1)
     )
+}
+
+private func erased<ASN1Type: ISO_8825.DER.Serializable>(_ value: ASN1Type) -> ISO_8825.`Any` {
+    do {
+        return try ISO_8825.`Any`(erasing: value)
+    } catch {
+        preconditionFailure("A well-known algorithm parameter is always serializable: \(error)")
+    }
 }

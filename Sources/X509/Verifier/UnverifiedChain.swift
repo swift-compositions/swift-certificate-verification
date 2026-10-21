@@ -10,7 +10,10 @@ public struct UnverifiedCertificateChain: Sendable, Hashable {
 
     @inlinable
     public var leaf: Certificate {
-        self.certificates.first!
+        guard let leaf = self.certificates.first else {
+            preconditionFailure("An unverified chain always contains at least one certificate")
+        }
+        return leaf
     }
 }
 

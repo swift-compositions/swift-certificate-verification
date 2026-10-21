@@ -102,15 +102,19 @@ extension ISO_8824.GeneralizedTime {
 
         case .utcTime(let t):
 
-            self = try! ISO_8824.GeneralizedTime(
-                year: t.year,
-                month: t.month,
-                day: t.day,
-                hours: t.hours,
-                minutes: t.minutes,
-                seconds: t.seconds,
-                fractionalSeconds: 0
-            )
+            do {
+                self = try ISO_8824.GeneralizedTime(
+                    year: t.year,
+                    month: t.month,
+                    day: t.day,
+                    hours: t.hours,
+                    minutes: t.minutes,
+                    seconds: t.seconds,
+                    fractionalSeconds: 0
+                )
+            } catch {
+                preconditionFailure("A valid UTC time is always a valid generalized time: \(error)")
+            }
         }
     }
 
@@ -132,7 +136,11 @@ extension ISO_8824.GeneralizedTime {
     @inlinable
     package init(_ instant: Time::Time.Instant) {
 
-        try! self.init(instant.utcDate)
+        do {
+            try self.init(instant.utcDate)
+        } catch {
+            preconditionFailure("A time instant always has a representable UTC date: \(error)")
+        }
     }
 }
 

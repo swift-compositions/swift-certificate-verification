@@ -37,13 +37,17 @@ public struct ValidatedCertificateChain: Sendable, Collection, RandomAccessColle
 
     @inlinable
     public var leaf: Certificate {
-
-        self.validatedChain.first!
+        guard let leaf = self.validatedChain.first else {
+            preconditionFailure("A validated chain always contains at least one certificate")
+        }
+        return leaf
     }
 
     @inlinable
     public var root: Certificate {
-
-        self.validatedChain.last!
+        guard let root = self.validatedChain.last else {
+            preconditionFailure("A validated chain always contains at least one certificate")
+        }
+        return root
     }
 }

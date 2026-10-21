@@ -100,9 +100,8 @@ extension DistinguishedName: ISO_8825.DER.Parseable {
         _ sequenceNodeIterator: inout ISO_8825.Node.Collection.Iterator
     ) throws(ISO_8824.Error) -> DistinguishedName {
 
-        let dnFactory:
-            (inout ISO_8825.Node.Collection.Iterator) throws(ISO_8824.Error) -> DistinguishedName =
-                DistinguishedName.init(derEncoded:)
+        let dnFactory: (inout ISO_8825.Node.Collection.Iterator) throws(ISO_8824.Error) -> DistinguishedName =
+            DistinguishedName.init(derEncoded:)
         return try dnFactory(&sequenceNodeIterator)
     }
 }

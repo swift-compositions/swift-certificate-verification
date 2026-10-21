@@ -281,8 +281,7 @@ extension PolicyBuilder.Test.Unit {
 
     @Test func `any policy type is preserved`() {
 
-        let _: Verifier<AnyPolicy> = Verifier(rootCertificates: CertificateStore(), verify: .crypto)
-        {
+        let _: Verifier<AnyPolicy> = Verifier(rootCertificates: CertificateStore(), verify: .crypto) {
             AnyPolicy {
                 RFC5280Policy(validationTime: Time::Time.Instant(secondsSinceUnixEpoch: 1_767_225_600))
             }

@@ -59,9 +59,7 @@ extension Int64 {
     }
 
     @inlinable
-    package var utcDateFromTimestamp:
-        (year: Int, month: Int, day: Int, hours: Int, minutes: Int, seconds: Int)
-    {
+    package var utcDateFromTimestamp: (year: Int, month: Int, day: Int, hours: Int, minutes: Int, seconds: Int) {
         let secs = self - .leapoch
         var (days, remsecs) = secs.quotientAndRemainder(dividingBy: 86400)
 

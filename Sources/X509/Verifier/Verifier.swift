@@ -122,8 +122,7 @@ public struct Verifier<Policy: VerifierPolicy> {
                 }
             }
 
-            if var intermediateParents = await intermediates[nextPartialCandidate.currentTip.issuer]
-            {
+            if var intermediateParents = await intermediates[nextPartialCandidate.currentTip.issuer] {
 
                 intermediateParents.sortBySuitabilityForIssuing(
                     certificate: nextPartialCandidate.currentTip

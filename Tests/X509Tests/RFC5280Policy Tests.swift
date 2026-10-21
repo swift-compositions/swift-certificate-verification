@@ -1474,8 +1474,7 @@ extension RFC5280Policy.Test {
         }
     }
 
-    static func _rootCAMustBeMarkedCAInBasicConstraints(_ policyFactory: PolicyFactory) async throws
-    {
+    static func _rootCAMustBeMarkedCAInBasicConstraints(_ policyFactory: PolicyFactory) async throws {
         let invalidRootCAs = [
 
             TestPKI.issueCA(
@@ -1618,8 +1617,7 @@ extension RFC5280Policy.Test {
         )
     }
 
-    static func _pathLengthConstraintsOnRootsAreApplied(_ policyFactory: PolicyFactory) async throws
-    {
+    static func _pathLengthConstraintsOnRootsAreApplied(_ policyFactory: PolicyFactory) async throws {
 
         let alternativeRoot = TestPKI.issueCA(
 

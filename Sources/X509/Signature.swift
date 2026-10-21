@@ -112,7 +112,11 @@ extension Certificate.Signature {
         case .ecdsa(let sig):
             var serializer = ISO_8825.DER.Serializer()
 
-            try! serializer.serialize(sig)
+            do {
+                try serializer.serialize(sig)
+            } catch {
+                preconditionFailure("A stored ECDSA signature is always serializable: \(error)")
+            }
             return serializer.serializedBytes
 
         case .ed25519(let bytes):
@@ -137,7 +141,11 @@ extension ISO_8824.OctetString {
         case .ecdsa(let sig):
             var serializer = ISO_8825.DER.Serializer()
 
-            try! serializer.serialize(sig)
+            do {
+                try serializer.serialize(sig)
+            } catch {
+                preconditionFailure("A stored ECDSA signature is always serializable: \(error)")
+            }
             self = ISO_8824.OctetString(contentBytes: serializer.serializedBytes[...])
 
         case .ed25519(let sig):

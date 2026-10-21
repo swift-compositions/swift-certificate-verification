@@ -126,31 +126,35 @@ extension RelativeDistinguishedName: ISO_8825.DER.ImplicitlyTaggable {
         _ elements: inout _TinyArray<RelativeDistinguishedName.Attribute>
     ) {
 
-        try! elements.sort { lhs, rhs in
-            var serializer = ISO_8825.DER.Serializer()
-            try serializer.serialize(lhs)
-            let lhsBytes = serializer.serializedBytes
+        do {
+            try elements.sort { lhs, rhs in
+                var serializer = ISO_8825.DER.Serializer()
+                try serializer.serialize(lhs)
+                let lhsBytes = serializer.serializedBytes
 
-            serializer = ISO_8825.DER.Serializer()
-            try serializer.serialize(rhs)
-            let rhsBytes = serializer.serializedBytes
+                serializer = ISO_8825.DER.Serializer()
+                try serializer.serialize(rhs)
+                let rhsBytes = serializer.serializedBytes
 
-            for (leftByte, rightByte) in zip(lhsBytes, rhsBytes) {
-                if leftByte < rightByte {
+                for (leftByte, rightByte) in zip(lhsBytes, rhsBytes) {
+                    if leftByte < rightByte {
 
-                    return true
-                } else if rightByte < leftByte {
+                        return true
+                    } else if rightByte < leftByte {
+
+                        return false
+                    }
+                }
+
+                let trailing = rhsBytes.dropFirst(lhsBytes.count)
+                if trailing.count == 0 || trailing.allSatisfy({ $0 == 0 }) {
 
                     return false
                 }
+                return true
             }
-
-            let trailing = rhsBytes.dropFirst(lhsBytes.count)
-            if trailing.count == 0 || trailing.allSatisfy({ $0 == 0 }) {
-
-                return false
-            }
-            return true
+        } catch {
+            preconditionFailure("Serializing attributes for sorting cannot fail: \(error)")
         }
     }
 }

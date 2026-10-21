@@ -16,7 +16,7 @@ struct NameConstraintsPolicy: VerifierPolicy, Sendable {
     func chainMeetsPolicyRequirements(chain: UnverifiedCertificateChain) -> PolicyEvaluationResult {
 
         if chain.count == 1 {
-            return Self._validateNameConstraints(chain[...], issuer: chain.first!)
+            return Self._validateNameConstraints(chain[...], issuer: chain.leaf)
         }
 
         var issuedCerts = chain[...]
